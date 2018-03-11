@@ -1,0 +1,8 @@
+# Node modules
+node_modules/
+
+# Distribution
+lib/
+
+# Flow type coverage reports
+flow-coverage/

@@ -1,0 +1,34 @@
+.ui.statDisplayIcon .image{
+  max-width: 3.5em;
+  min-width: 3.5em;
+}
+.ui.icon.button.statDisplayIcon {
+  padding: 0.2em;
+  margin: 0.2em;
+}
+.ui.shipDisplaySettings >.ui {
+  margin: 0.4rem;
+}
+.ui.shipDisplaySettings >.ui >.ui.buttons >.ui.formattingButton {
+  padding-right: 0.75em;
+  padding-left: 0.75em;
+}
+
+.ui.shipDisplaySettings >.ui >.ui.buttons >.ui.contentButton {
+  padding-left: 0.75em;
+  padding-right: 0.75em;
+}
+
+.ui.shipDisplaySettings >.ui.buttons {
+  #clear: both;
+  #align-self: center;
+  #display: flex;
+}
+
+.ui.shipDisplaySettings {
+  position: relative;
+  background-color: transparent;
+  align-self: center;
+  top: 50%;
+  transform: translate(0%, -50%);
+}

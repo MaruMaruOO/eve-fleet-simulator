@@ -1,0 +1,50 @@
+.ui.progress.shipStatBarMain {
+  #float: right;
+  width: 80%;
+  display: inline-block;
+  min-width: 0%;
+}
+.ui.image.shipStatBarIcon{
+  vertical-align: top;
+  max-width: 2.5em;
+  max-height: 2.5em;
+}
+.ui.card .content img, .ui.cards>.card .content img.shipStatBarIcon{
+  vertical-align: top;
+}
+.shipStatBarDiv{
+  padding-bottom: 0.4em;
+  #max-width: 70%;
+  #display: flex;
+}
+.shipCardHeader{
+  #float: right !important;
+  display: inline-block !important;
+  clear: none !important;
+}
+.shipCardBody{
+  float: right !important;
+  #display: inline-block !important;
+  clear: none !important;
+  left: 0px;
+  #direction: rtl;
+  #display: flex;
+  #flex-direction: column;
+  width: 60%;
+  #align-self: stretch !important;
+}
+.shipCardMeta{
+  #float: right;
+  bottom: 0em;
+  text-align: center;
+  max-width: 40%;
+  padding-top: .75em;
+  padding-right: 1em;
+}
+.shipCardSecondary{
+  max-width: 40%;
+}
+.shipCardSecondary>div>.image{
+  display: inline-block !important;
+  max-width: 50%;
+}
