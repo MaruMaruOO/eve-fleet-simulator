@@ -9,6 +9,20 @@
     "compileStart": "npm run build; node lib/index.js",
     "test": ""
   },
+  "flow-coverage-report": {
+    "excludeGlob": [
+      "./src/*/**.png",
+      "./src/*JSON*"
+    ],
+    "includeGlob": [
+      "./src/**/**.js*"
+    ],
+    "flowCommandPath": "./node_modules/flow-bin/cli.js",
+    "type": [
+      "html"
+    ],
+    "concurrentFiles": "8"
+  },
   "author": "",
   "license": "ISC",
   "devDependencies": {
