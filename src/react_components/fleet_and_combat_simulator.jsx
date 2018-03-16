@@ -7,7 +7,7 @@ import RunFleetActions from './../fleet_actions';
 import Side from './../side_class';
 import ShipData from './../ship_data_class';
 import Ship from './../ship_class';
-import type { SimulationState, SyntheticInputEvent } from './../flow_types';
+import type { SimulationState, SyntheticInputEvent, FleetStateTableContext } from './../flow_types';
 
 function FleetStateTableHeader(props: { side: 'red' | 'blue' }) {
   return (
@@ -28,7 +28,6 @@ function FleetStateTableHeader(props: { side: 'red' | 'blue' }) {
   );
 }
 
-type FleetStateTableContext = { parent: FleetAndCombatSimulator, side: 'red' | 'blue' };
 function FleetStateTable(shipInfo: { ship: ShipData, n: number }) {
   const context = (this: FleetStateTableContext);
   const side: Side = context.side === 'red' ? context.parent.red : context.parent.blue;
@@ -103,8 +102,6 @@ class FleetAndCombatSimulator extends React.Component<
   logUpdate = (blue: Side, red: Side, recordCount: number) => {
     this.redGraphData.push({ x: recordCount, y: red.ships.length });
     this.blueGraphData.push({ x: recordCount, y: blue.ships.length });
-    // blue.logSide();
-    // red.logSide();
   };
   RunSimulationLoop = (
     breakClause: number, interval: number,
@@ -217,7 +214,7 @@ class FleetAndCombatSimulator extends React.Component<
               <FleetStateTableHeader side="red" />
               { sideOneShips ?
                 <Table.Body>
-                  { sideOneShips.map(FleetStateTable, ({ parent: this, side: 'red' }: { parent: FleetAndCombatSimulator, side: 'red' | 'blue' })) }
+                  { sideOneShips.map(FleetStateTable, ({ parent: this, side: 'red' }: FleetStateTableContext)) }
                 </Table.Body> : null
               }
             </Table>
@@ -277,7 +274,7 @@ class FleetAndCombatSimulator extends React.Component<
               <FleetStateTableHeader side="blue" />
               { sideTwoShips ?
                 <Table.Body>
-                  { sideTwoShips.map(FleetStateTable, ({ parent: this, side: 'blue' }: { parent: FleetAndCombatSimulator, side: 'red' | 'blue' })) }
+                  { sideTwoShips.map(FleetStateTable, ({ parent: this, side: 'blue' }: FleetStateTableContext)) }
                 </Table.Body> : null
               }
             </Table>

@@ -7,7 +7,8 @@
     "build": "babel src/ -d lib/",
     "prepublish": "npm run build",
     "compileStart": "npm run build; node lib/index.js",
-    "test": ""
+    "test": "npm run staticChecks",
+    "staticChecks": "node node_modules/.bin/eslint src/*.js* src/**/*.js*; node node_modules/flow-coverage-report/bin/flow-coverage-report.js; node node_modules/.bin/flow; "
   },
   "flow-coverage-report": {
     "excludeGlob": [

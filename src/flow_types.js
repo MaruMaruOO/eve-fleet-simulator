@@ -1,5 +1,6 @@
 // @flow
 import { Dropdown } from 'semantic-ui-react';
+import FleetAndCombatSimulator from './react_components/fleet_and_combat_simulator';
 
 type Hp = {armor: number, hull: number, shield: number};
 type SingleResonance = {em: number, therm: number, kin: number, exp: number};
@@ -51,9 +52,11 @@ type SyntheticDropdownEvent = SyntheticEvent<Dropdown>;
 
 type SimulationState = 'setup' | 'running' | 'finished';
 
+type FleetStateTableContext = { parent: FleetAndCombatSimulator, side: 'red' | 'blue' };
+
 export type {
   Hp, SingleResonance, Resonance, WeaponData, WeaponType,
   WeaponAbility, ShipSize, ModuleQualityValue, VectorMaxLenThree,
   SyntheticInputEvent, SyntheticButtonEvent, SyntheticDropdownEvent,
-  SimulationState,
+  SimulationState, FleetStateTableContext,
 };
