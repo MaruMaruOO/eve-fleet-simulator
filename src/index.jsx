@@ -22,9 +22,9 @@ import { SidebarShipDisplay } from './react_components/sidebar_ship_display';
 import SidebarShipDisplaySettings from './react_components/sidebar_ship_display_settings';
 import FleetAndCombatSimulator from './react_components/fleet_and_combat_simulator';
 
-const root: Element = window.document.getElementById('root');
 
-// const reportStrings = [];
+const root: HTMLElement = document.getElementById('root') || document.createElement('div');
+
 const sideOneShips: { ship: ShipData, n: number }[] = [];
 const sideTwoShips: { ship: ShipData, n: number }[] = [];
 let initalDistance = 35000;

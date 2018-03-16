@@ -1,11 +1,13 @@
 // @flow
 import React from 'react';
-import { Divider, Table, Grid, Button, Input, Label, Dimmer, Segment } from 'semantic-ui-react';
-import {XYPlot, LineSeries} from 'react-vis';
+import { Divider, Table, Grid, Button, Dimmer, Segment } from 'semantic-ui-react';
+import { XYPlot, LineSeries } from 'react-vis';
 import { sideOneShips, sideTwoShips, UIRefresh } from './../index';
 import RunFleetActions from './../fleet_actions';
 import Side from './../side_class';
 import ShipData from './../ship_data_class';
+import Ship from './../ship_class';
+import type { SimulationState, SyntheticInputEvent } from './../flow_types';
 
 function FleetStateTableHeader(props: { side: 'red' | 'blue' }) {
   return (
@@ -26,8 +28,10 @@ function FleetStateTableHeader(props: { side: 'red' | 'blue' }) {
   );
 }
 
+type FleetStateTableContext = { parent: FleetAndCombatSimulator, side: 'red' | 'blue' };
 function FleetStateTable(shipInfo: { ship: ShipData, n: number }) {
-  const side = this.side === 'red' ? this.parent.red : this.parent.blue;
+  const context = (this: FleetStateTableContext);
+  const side: Side = context.side === 'red' ? context.parent.red : context.parent.blue;
   return (
     <Table.Row key={shipInfo.ship.name}>
       <Table.Cell>{ shipInfo.ship.name }</Table.Cell>
@@ -48,27 +52,49 @@ function BattleDisplay(props: { red: Side, blue: Side }) {
     <svg viewBox="0 0 200 100" className="battleDisplay">
       { props.red && props.red.ships ?
         props.red.ships.map((ship: Ship, i, fleet) => (
-          <rect key={'red' + i.toString()} fill={ship.iconColor} width={fleet.length > 50 ? 1 : 5} height="1"
-                x={100 - i / 25 - (ship.distanceFromTarget / 3000)} y={49 + (i % 2 ? i % 50 + 1 : -i % 50)}/>
+          <rect
+            key={`red${i.toString()}`}
+            fill={ship.iconColor}
+            width={fleet.length > 50 ? 1 : 5}
+            height="1"
+            x={100 - (i / 25) - (ship.distanceFromTarget / 3000)}
+            y={49 + (i % 2 ? (i % 50) + 1 : -i % 50)}
+          />
         )) : null
       }
       { props.blue && props.blue.ships ?
         props.blue.ships.map((ship: Ship, i, fleet) => (
-          <rect key={'blue' + i.toString()} fill={ship.iconColor} width={fleet.length > 50 ? 1 : 5} height="1"
-                x={100 + i / 25 + (ship.distanceFromTarget / 3000)} y={49 + (i % 2 ? i % 50 + 1 : -i % 50)}/>
+          <rect
+            key={`blue${i.toString()}`}
+            fill={ship.iconColor}
+            width={fleet.length > 50 ? 1 : 5}
+            height="1"
+            x={100 + (i / 25) + (ship.distanceFromTarget / 3000)}
+            y={49 + (i % 2 ? (i % 50) + 1 : -i % 50)}
+          />
         )) : null
       }
     </svg>
   );
 }
 
-class FleetAndCombatSimulator extends React.Component<{ initalDistance: number },
-{ reportStrings: string[] }> {
+type FleetAndCombatSimulatorState = {
+  reportStrings: string[], initalDistance: number, simulationSpeed: number,
+  red: Side, blue: Side, simulationState: SimulationState,
+};
+class FleetAndCombatSimulator extends React.Component<
+{ initalDistance: number }, FleetAndCombatSimulatorState
+> {
   constructor(props: { initalDistance: number }) {
     super(props);
-    this.state = { reportStrings: [], initalDistance: props.initalDistance,
-                   simulationSpeed: 10, red: new Side('red'), blue: new Side('blue'),
-                   simulationState: 'finished' };
+    this.state = {
+      reportStrings: [],
+      initalDistance: props.initalDistance,
+      simulationSpeed: 10,
+      red: new Side('red'),
+      blue: new Side('blue'),
+      simulationState: 'finished',
+    };
   }
   red: Side = new Side('red');;
   blue: Side = new Side('blue');
@@ -77,27 +103,30 @@ class FleetAndCombatSimulator extends React.Component<{ initalDistance: number }
   logUpdate = (blue: Side, red: Side, recordCount: number) => {
     this.redGraphData.push({ x: recordCount, y: red.ships.length });
     this.blueGraphData.push({ x: recordCount, y: blue.ships.length });
-    //blue.logSide();
-    //red.logSide();
+    // blue.logSide();
+    // red.logSide();
   };
   RunSimulationLoop = (
-    breakClause: number, interval: number, reportInterval: number, simulationSpeed: number,
+    breakClause: number, interval: number,
+    reportInterval: number, simulationSpeed: number,
   ) => {
     if (simulationSpeed !== this.state.simulationSpeed) {
-      simulationSpeed = this.state.simulationSpeed;
-      reportInterval = 100 * this.state.simulationSpeed;
-    }
-    if (this.blue.ships.length > 0 && this.red.ships.length > 0 && breakClause < 500000) {
+      const newReportInterval = 100 * this.state.simulationSpeed;
+      const newSimulationSpeed = this.state.simulationSpeed;
+      this.RunSimulationLoop(breakClause, interval, newReportInterval, newSimulationSpeed);
+    } else if (this.blue.ships.length > 0 && this.red.ships.length > 0 && breakClause < 500000) {
       for (let i = 0; i < reportInterval; i += interval) {
         RunFleetActions(this.blue, interval, this.red);
         RunFleetActions(this.red, interval, this.blue);
       }
-      breakClause += simulationSpeed;
-      this.logUpdate(this.blue, this.red, breakClause);
+      const newBreakClause = breakClause + simulationSpeed;
+      this.logUpdate(this.blue, this.red, newBreakClause);
       this.setState({ red: this.red });
       this.setState({ blue: this.blue });
-      window.setTimeout(this.RunSimulationLoop, reportInterval / simulationSpeed,
-                        breakClause, interval, reportInterval, simulationSpeed);
+      setTimeout(
+        this.RunSimulationLoop, reportInterval / simulationSpeed,
+        newBreakClause, interval, reportInterval, simulationSpeed,
+      );
     } else {
       this.logUpdate(this.blue, this.red, breakClause);
       this.setState({ simulationState: 'finished' });
@@ -105,7 +134,6 @@ class FleetAndCombatSimulator extends React.Component<{ initalDistance: number }
     }
   };
   SimulateBattle = () => {
-    // this.setState({ reportStrings: [] });
     this.state.reportStrings = [];
     this.redGraphData = [];
     this.blueGraphData = [];
@@ -121,9 +149,10 @@ class FleetAndCombatSimulator extends React.Component<{ initalDistance: number }
     const reportInterval = 100 * this.state.simulationSpeed;
     const interval = 50;
     this.logUpdate(this.blue, this.red, 0);
-    //this.RunSimulationLoop(0, interval, reportInterval, this.state.simulationSpeed);
-    window.setTimeout(this.RunSimulationLoop, reportInterval / this.state.simulationSpeed,
-                      0, interval, reportInterval, this.state.simulationSpeed);
+    setTimeout(
+      this.RunSimulationLoop, reportInterval / this.state.simulationSpeed,
+      0, interval, reportInterval, this.state.simulationSpeed,
+    );
   };
   refreshSides = () => {
     if (sideOneShips && sideOneShips.length > 0 &&
@@ -151,9 +180,9 @@ class FleetAndCombatSimulator extends React.Component<{ initalDistance: number }
   };
   updateFleets = (updatedDistance: number = 0) => {
     this.red = new Side('red');
-    this.red.makeFleet(sideOneShips, updatedDistance ? updatedDistance : this.state.initalDistance);
+    this.red.makeFleet(sideOneShips, updatedDistance || this.state.initalDistance);
     this.blue = new Side('blue');
-    this.blue.makeFleet(sideTwoShips, updatedDistance ? updatedDistance : this.state.initalDistance);
+    this.blue.makeFleet(sideTwoShips, updatedDistance || this.state.initalDistance);
   }
   initalDistanceChange = (e: SyntheticInputEvent) => {
     if (this.state.simulationState === 'setup') {
@@ -163,7 +192,7 @@ class FleetAndCombatSimulator extends React.Component<{ initalDistance: number }
       this.updateFleets(Number(e.currentTarget.value));
       this.setState({ initalDistance: Number(e.currentTarget.value), simulationState: 'setup' });
     } else {
-      e.currentTarget.value = this.state.initalDistance;
+      e.currentTarget.value = this.state.initalDistance.toString();
     }
   };
   simulationSpeedChange = (e: SyntheticInputEvent) => {
@@ -177,9 +206,9 @@ class FleetAndCombatSimulator extends React.Component<{ initalDistance: number }
   render() {
     this.refreshSides();
     const reportData = this.state.reportStrings.length < 100 ?
-                       this.state.reportStrings.map((report, i) =>
-                         <p key={report + i.toString()}>{ report }</p>) :
-                       '';
+      this.state.reportStrings.map((report, i) =>
+        <p key={report + i.toString()}>{ report }</p>) :
+      '';
     return (
       <div className="fleetSim" style={{ overflowY: 'auto', maxHeight: '40%' }}>
         <Grid>
@@ -188,7 +217,7 @@ class FleetAndCombatSimulator extends React.Component<{ initalDistance: number }
               <FleetStateTableHeader side="red" />
               { sideOneShips ?
                 <Table.Body>
-                  { sideOneShips.map(FleetStateTable, { parent: this, side: 'red' }) }
+                  { sideOneShips.map(FleetStateTable, ({ parent: this, side: 'red' }: { parent: FleetAndCombatSimulator, side: 'red' | 'blue' })) }
                 </Table.Body> : null
               }
             </Table>
@@ -200,7 +229,13 @@ class FleetAndCombatSimulator extends React.Component<{ initalDistance: number }
                   <Segment className="applicationDisplay" inverted floated="left">
                     {`Red Application: ${((this.red.appliedDamage / this.red.theoreticalDamage) * 100).toPrecision(4)}%`}
                   </Segment>
-                  <XYPlot height={300} width={300} margin={{ left: 10, right: 10, top: 10, bottom: 10 }}>
+                  <XYPlot
+                    height={300}
+                    width={300}
+                    margin={{
+                      left: 10, right: 10, top: 10, bottom: 10,
+                    }}
+                  >
                     <LineSeries color="red" data={this.redGraphData} />
                     <LineSeries color="blue" data={this.blueGraphData} />
                   </XYPlot>
@@ -209,19 +244,31 @@ class FleetAndCombatSimulator extends React.Component<{ initalDistance: number }
                   </Segment>
                 </div>
               </Dimmer>
-              <BattleDisplay red={this.red} blue={this.blue}/>
+              <BattleDisplay red={this.red} blue={this.blue} />
             </Dimmer.Dimmable>
-            <Button.Group attached='bottom' widths="3">
-              <Button color='grey'>
-                Fleet Starting Distance {this.state.initalDistance.toPrecision(6).toString()}m <br />
-                <input className="inlineButtonSlider" type='range' onChange={this.initalDistanceChange}
-                       min={0} max={300000} defaultValue={this.state.initalDistance} />
+            <Button.Group attached="bottom" widths="3">
+              <Button color="grey">
+                Fleet Starting Distance {this.state.initalDistance.toPrecision(6).toString()}m<br />
+                <input
+                  className="inlineButtonSlider"
+                  type="range"
+                  onChange={this.initalDistanceChange}
+                  min={0}
+                  max={300000}
+                  defaultValue={this.state.initalDistance}
+                />
               </Button>
               <Button primary onClick={this.SimulateBattle}>Simulate Battle!</Button>
-              <Button color='grey'>
+              <Button color="grey">
                 Simulation Speed {this.state.simulationSpeed.toPrecision(4).toString()}x
-                <input className="inlineButtonSlider" type='range' onChange={this.simulationSpeedChange}
-                       min={1} max={1000} defaultValue={this.state.simulationSpeed} />
+                <input
+                  className="inlineButtonSlider"
+                  type="range"
+                  onChange={this.simulationSpeedChange}
+                  min={1}
+                  max={1000}
+                  defaultValue={this.state.simulationSpeed}
+                />
               </Button>
             </Button.Group>
           </Grid.Column>
@@ -230,7 +277,7 @@ class FleetAndCombatSimulator extends React.Component<{ initalDistance: number }
               <FleetStateTableHeader side="blue" />
               { sideTwoShips ?
                 <Table.Body>
-                  { sideTwoShips.map(FleetStateTable, { parent: this, side: 'blue' }) }
+                  { sideTwoShips.map(FleetStateTable, ({ parent: this, side: 'blue' }: { parent: FleetAndCombatSimulator, side: 'red' | 'blue' })) }
                 </Table.Body> : null
               }
             </Table>

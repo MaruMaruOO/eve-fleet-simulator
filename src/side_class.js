@@ -54,14 +54,15 @@ class Side {
   makeFleet(sidesShips: {ship: ShipData, n: number}[], initalDistance: number) {
     this.uniqueFitCount = 0;
     this.totalShipCount = 0;
+    const colorChangePerShip: number = 255 / sidesShips.length;
     for (const shipClass of sidesShips) {
       this.uniqueFitCount += 1;
       this.totalShipCount += shipClass.n;
       const alternateColoring = this.uniqueFitCount % 2 === 0;
-      const colorShift = ((this.uniqueFitCount - 1) * (255 / sidesShips.length).toFixed(0)).toString();
+      const colorShift = ((this.uniqueFitCount - 1) * colorChangePerShip).toFixed(0);
       const iconColor = this.color === 'red' ?
-            `rgb(${alternateColoring ? '180' : '255'}, ${colorShift}, ${alternateColoring ? '80' : '0'})` :
-            `rgb(${alternateColoring ? '80' : '0'}, ${colorShift}, ${alternateColoring ? '180' : '255'})`;
+        `rgb(${alternateColoring ? '180' : '255'}, ${colorShift}, ${alternateColoring ? '80' : '0'})` :
+        `rgb(${alternateColoring ? '80' : '0'}, ${colorShift}, ${alternateColoring ? '180' : '255'})`;
       let lastShotCaller: Ship | null = null;
       let lastAnchor: Ship | null = null;
       const shipStats: ShipData = shipClass.ship;

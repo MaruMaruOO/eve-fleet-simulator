@@ -49,8 +49,11 @@ type SyntheticInputEvent = SyntheticEvent<HTMLInputElement>;
 type SyntheticButtonEvent = SyntheticEvent<HTMLButtonElement>;
 type SyntheticDropdownEvent = SyntheticEvent<Dropdown>;
 
+type SimulationState = 'setup' | 'running' | 'finished';
+
 export type {
   Hp, SingleResonance, Resonance, WeaponData, WeaponType,
   WeaponAbility, ShipSize, ModuleQualityValue, VectorMaxLenThree,
   SyntheticInputEvent, SyntheticButtonEvent, SyntheticDropdownEvent,
+  SimulationState,
 };
