@@ -1,7 +1,7 @@
 // @flow
 import React from 'react';
 import { Divider, Table, Grid, Button, Dimmer, Segment } from 'semantic-ui-react';
-import { XYPlot, LineSeries } from 'react-vis';
+import { XYPlot, LineSeries, XAxis, YAxis } from 'react-vis';
 import { sideOneShips, sideTwoShips, UIRefresh } from './../index';
 import RunFleetActions from './../fleet_actions';
 import Side from './../side_class';
@@ -95,21 +95,32 @@ class FleetAndCombatSimulator extends React.Component<
       simulationSpeed: 10,
       red: new Side('red'),
       blue: new Side('blue'),
-      simulationState: 'finished',
+      simulationState: 'setup',
     };
-    const currentFontSize = document.body && document.body.style.fontSize !== '' ?
+    this.currentFontSize = document.body && document.body.style.fontSize !== '' ?
       Number(document.body.style.fontSize.replace('px', '')) :
       14;
-    this.XYPlotSize = currentFontSize * 22;
+    this.XYPlotSize = this.currentFontSize * 22;
+    this.setXYPlotMargin(2);
   }
+  setXYPlotMargin = (charLengthOfMaxShips: number) => {
+    this.XYPlotMargin = {
+      left: this.currentFontSize * charLengthOfMaxShips,
+      right: this.currentFontSize,
+      top: this.currentFontSize,
+      bottom: this.currentFontSize * 2,
+    };
+  };
+  currentFontSize: number;
   XYPlotSize: number;
+  XYPlotMargin: {left: number, right: number, top: number, bottom: number };
   red: Side = new Side('red');
   blue: Side = new Side('blue');
   redGraphData: { x: number, y: number }[];
   blueGraphData: { x: number, y: number }[];
-  logUpdate = (blue: Side, red: Side, recordCount: number) => {
-    this.redGraphData.push({ x: recordCount, y: red.ships.length });
-    this.blueGraphData.push({ x: recordCount, y: blue.ships.length });
+  logUpdate = (blue: Side, red: Side, seconds: number) => {
+    this.redGraphData.push({ x: seconds, y: red.ships.length });
+    this.blueGraphData.push({ x: seconds, y: blue.ships.length });
   };
   RunSimulationLoop = (
     breakClause: number, interval: number,
@@ -125,7 +136,7 @@ class FleetAndCombatSimulator extends React.Component<
         RunFleetActions(this.red, interval, this.blue);
       }
       const newBreakClause = breakClause + simulationSpeed;
-      this.logUpdate(this.blue, this.red, newBreakClause);
+      this.logUpdate(this.blue, this.red, newBreakClause / 10);
       this.setState({ red: this.red });
       this.setState({ blue: this.blue });
       setTimeout(
@@ -133,7 +144,7 @@ class FleetAndCombatSimulator extends React.Component<
         newBreakClause, interval, reportInterval, simulationSpeed,
       );
     } else {
-      this.logUpdate(this.blue, this.red, breakClause);
+      this.logUpdate(this.blue, this.red, breakClause / 10);
       this.setState({ simulationState: 'finished' });
       UIRefresh();
     }
@@ -151,6 +162,9 @@ class FleetAndCombatSimulator extends React.Component<
     this.setState({ red: this.red });
     this.setState({ blue: this.blue });
     this.setState({ simulationState: 'running' });
+    const largestFleet = Math.max(this.blue.ships.length, this.red.ships.length);
+    const charLengthOfMaxShips = largestFleet.toString().length;
+    this.setXYPlotMargin(charLengthOfMaxShips);
     const reportInterval = 100 * this.state.simulationSpeed;
     const interval = 50;
     this.logUpdate(this.blue, this.red, 0);
@@ -237,12 +251,42 @@ class FleetAndCombatSimulator extends React.Component<
                   <XYPlot
                     height={this.XYPlotSize}
                     width={this.XYPlotSize}
-                    margin={{
-                      left: 10, right: 10, top: 10, bottom: 10,
-                    }}
+                    margin={this.XYPlotMargin}
                   >
-                    <LineSeries color="red" data={this.redGraphData} />
-                    <LineSeries color="blue" data={this.blueGraphData} />
+                    <LineSeries
+                      color="red"
+                      data={this.redGraphData}
+                      curve="curveMonotoneX"
+                      strokeWidth="0.2em"
+                      style={{ fill: 'rgba(0, 0 ,0, 0)' }}
+                    />
+                    <LineSeries
+                      color="blue"
+                      data={this.blueGraphData}
+                      curve="curveMonotoneX"
+                      strokeWidth="0.2em"
+                      style={{ fill: 'rgba(0, 0 ,0, 0)' }}
+                    />
+                    <XAxis
+                      title="Time (Seconds)"
+                      style={{
+                        stroke: 'white',
+                        fill: 'white',
+                        line: { stroke: 'grey' },
+                        ticks: { stroke: 'white' },
+                        text: { stroke: 'white', fill: 'white' },
+                      }}
+                    />
+                    <YAxis
+                      title="Ships"
+                      style={{
+                        stroke: 'white',
+                        fill: 'white',
+                        line: { stroke: 'grey' },
+                        ticks: { stroke: 'white' },
+                        text: { stroke: 'white', fill: 'white' },
+                      }}
+                    />
                   </XYPlot>
                   <Segment className="applicationDisplay" inverted floated="right">
                     {`Blue Application: ${((this.blue.appliedDamage / this.blue.theoreticalDamage) * 100).toPrecision(4)}%`}

@@ -6,10 +6,11 @@ import type { VectorMaxLenThree } from './flow_types';
 
 function getTargets(targetCaller: Ship, opposingSide: Side) {
   let newTarget = opposingSide.ships.find(oppShip =>
-    !oppShip.isShotCaller && !targetCaller.targets.some(target => target === oppShip));
+    !oppShip.isShotCaller && oppShip.currentEHP > 0 &&
+    !targetCaller.targets.some(target => target === oppShip));
   if (targetCaller.maxTargets >= opposingSide.ships.length) {
     newTarget = opposingSide.ships.find(oppShip =>
-      !targetCaller.targets.some(target => target === oppShip));
+      !targetCaller.targets.some(target => target === oppShip) && oppShip.currentEHP > 0);
   }
   if (newTarget !== undefined) {
     targetCaller.targets.push(newTarget);
@@ -56,7 +57,7 @@ const HitChanceFunction = (
   const netVector = velocity.map((v, i) => v + oppVelocity[i]);
   const reducedVelocity = netVector.reduce((s, v) => s + (v * v * v), 0);
   const netVelocity = reducedVelocity ** 0.33333333;
-  const angularVelocity = netVelocity / distance;
+  const angularVelocity = netVelocity / distance || 0;
   const trackingComponent = ((angularVelocity * 40000) / (trackingFactor)) ** 2;
   const rangeComponent = (Math.max(0, distance - optimal) / falloff) ** 2;
   const hitChance = (0.5 ** (trackingComponent + rangeComponent));
