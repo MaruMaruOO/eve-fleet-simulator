@@ -24,7 +24,16 @@ import FleetAndCombatSimulator from './react_components/fleet_and_combat_simulat
 
 
 const root: HTMLElement = document.getElementById('root') || document.createElement('div');
-
+// Adjust root and body fontSize when displaying on a small screen. Scales most things.
+if (root.clientWidth < 1920) {
+  const newFontSize = `${Math.max(14 * (root.clientWidth / 1920), 11).toFixed(0)}px`;
+  if (document.documentElement) {
+    document.documentElement.style.fontSize = newFontSize;
+  }
+  if (document.body) {
+    document.body.style.fontSize = newFontSize;
+  }
+}
 const sideOneShips: { ship: ShipData, n: number }[] = [];
 const sideTwoShips: { ship: ShipData, n: number }[] = [];
 let initalDistance = 35000;

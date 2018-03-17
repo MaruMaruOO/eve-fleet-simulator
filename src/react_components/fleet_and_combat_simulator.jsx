@@ -7,7 +7,7 @@ import RunFleetActions from './../fleet_actions';
 import Side from './../side_class';
 import ShipData from './../ship_data_class';
 import Ship from './../ship_class';
-import type { SimulationState, SyntheticInputEvent, FleetStateTableContext } from './../flow_types';
+import type { SimulationState, SyntheticInputEvent } from './../flow_types';
 
 function FleetStateTableHeader(props: { side: 'red' | 'blue' }) {
   return (
@@ -28,6 +28,9 @@ function FleetStateTableHeader(props: { side: 'red' | 'blue' }) {
   );
 }
 
+// disabled for type declaration
+// eslint-disable-next-line no-use-before-define
+type FleetStateTableContext = { parent: FleetAndCombatSimulator, side: 'red' | 'blue' };
 function FleetStateTable(shipInfo: { ship: ShipData, n: number }) {
   const context = (this: FleetStateTableContext);
   const side: Side = context.side === 'red' ? context.parent.red : context.parent.blue;
@@ -94,8 +97,13 @@ class FleetAndCombatSimulator extends React.Component<
       blue: new Side('blue'),
       simulationState: 'finished',
     };
+    const currentFontSize = document.body && document.body.style.fontSize !== '' ?
+      Number(document.body.style.fontSize.replace('px', '')) :
+      14;
+    this.XYPlotSize = currentFontSize * 22;
   }
-  red: Side = new Side('red');;
+  XYPlotSize: number;
+  red: Side = new Side('red');
   blue: Side = new Side('blue');
   redGraphData: { x: number, y: number }[];
   blueGraphData: { x: number, y: number }[];
@@ -207,7 +215,7 @@ class FleetAndCombatSimulator extends React.Component<
         <p key={report + i.toString()}>{ report }</p>) :
       '';
     return (
-      <div className="fleetSim" style={{ overflowY: 'auto', maxHeight: '40%' }}>
+      <div className="fleetSim" style={{ maxHeight: '80%' }}>
         <Grid>
           <Grid.Column width="4">
             <Table celled compact>
@@ -227,8 +235,8 @@ class FleetAndCombatSimulator extends React.Component<
                     {`Red Application: ${((this.red.appliedDamage / this.red.theoreticalDamage) * 100).toPrecision(4)}%`}
                   </Segment>
                   <XYPlot
-                    height={300}
-                    width={300}
+                    height={this.XYPlotSize}
+                    width={this.XYPlotSize}
                     margin={{
                       left: 10, right: 10, top: 10, bottom: 10,
                     }}

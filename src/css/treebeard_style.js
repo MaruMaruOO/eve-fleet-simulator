@@ -10,7 +10,7 @@ export default {
       padding: 0,
       color: '#9DA5AB',
       fontFamily: 'lucida grande ,tahoma,verdana,arial,sans-serif',
-      fontSize: '14px',
+      fontSize: '1em',
     },
     node: {
       base: {
