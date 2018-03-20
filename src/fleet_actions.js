@@ -77,38 +77,60 @@ const DamageRatioFunction = (
   return -1 * (damageApplication / oppApplication);
 };
 
+function getVelocityDelta(ship: Ship, target: Ship, specificWeapon: ?Weapon) {
+  const wep = specificWeapon || ship.weapons.sort((a, b) => b.dps - a.dps)[0];
+  const oppWep = target.weapons.sort((a, b) => b.dps - a.dps)[0];
+  let isEffTrackingBetter;
+  if (!oppWep || oppWep.type !== 'Turret') {
+    isEffTrackingBetter = false;
+  } else if (wep.stats.tracking * target.sigRadius > oppWep.stats.tracking * ship.sigRadius) {
+    isEffTrackingBetter = true;
+  } else {
+    isEffTrackingBetter = false;
+  }
+  let deltaVelocity;
+  if (ship.velocity >= target.velocity && !isEffTrackingBetter) {
+    deltaVelocity = 0;
+  } else if (ship.velocity <= target.velocity && isEffTrackingBetter) {
+    deltaVelocity = 0;
+  } else {
+    deltaVelocity = Math.abs(ship.velocity - target.velocity);
+  }
+  return deltaVelocity;
+}
+
 function getApplicationArgs(ship: Ship, target: Ship): ApplicationArgArray {
   let minRange = (Math.min(1000, ship.sigRadius) * 2) + Math.min(1000, target.sigRadius);
   // min range is a rearange of 2 * v * align / 0.75 == 2 * PI * minRange
   minRange = Math.max(minRange, (ship.velocity * ship.alignTime) / 2.35619);
   let maxRange;
   const wep = ship.weapons.sort((a, b) => b.dps - a.dps)[0];
-  const oppWep = target.weapons.sort((a, b) => b.dps - a.dps)[0];
   if (wep && wep.type === 'Turret') {
     const damageFunction = HitChanceFunction;
     const trackingFactor = wep.stats.tracking * target.sigRadius;
-    const oppTrackingFactor = oppWep ? oppWep.stats.tracking * ship.sigRadius : 0;
     maxRange = Math.min(ship.maxTargetRange, (wep.optimal + wep.stats.falloff) * 3);
     let velocity;
     let oppVelocity = [0];
     if (wep.autonomousMovement) {
       velocity = [wep.stats.travelVelocity];
       oppVelocity = [target.velocity];
-    } else if (ship.velocity > target.velocity && oppTrackingFactor > trackingFactor) {
-      velocity = [0];
     } else {
-      velocity = [Math.abs(ship.velocity - target.velocity)];
+      velocity = [getVelocityDelta(ship, target, wep)];
     }
     const args: DamageApplicationArgs = [velocity, oppVelocity, trackingFactor,
       wep.optimal, wep.stats.falloff];
     return ([damageFunction, args, [minRange, maxRange]]: ApplicationArgArray);
   } else if (wep && wep.type === 'Missile') {
+    let effectiveOptimal =  wep.optimal;
+    if (wep.autonomousMovement) {
+      effectiveOptimal = 300000;
+    }
     const damageFunction = MissleApplication;
     const sigRatio = target.sigRadius / wep.stats.sigRadius;
     const oppVelocity = [target.velocity];
-    const args: DamageApplicationArgs = [sigRatio, oppVelocity, wep.stats.expVelocity, wep.optimal,
+    const args: DamageApplicationArgs = [sigRatio, oppVelocity, wep.stats.expVelocity, effectiveOptimal,
       wep.stats.damageReductionFactor];
-    maxRange = Math.min(ship.maxTargetRange, wep.optimal);
+    maxRange = Math.min(ship.maxTargetRange, effectiveOptimal);
     return ([damageFunction, args, [minRange, maxRange]]: ApplicationArgArray);
   }
   const damageFunction = MissleApplication;
@@ -265,30 +287,29 @@ function calculateDamage(ship: Ship, target: Ship, wep: Weapon, side: Side): num
     return 0;
   }
   if (wep.type === 'Missile') {
+    let effectiveOptimal =  wep.optimal;
+    // Even relative to drones this is an iffy work around given fighter travel times.
+    if (wep.autonomousMovement) {
+      effectiveOptimal = 300000;
+    }
     return wep.damage * MissleApplication(ship.distanceFromTarget, [
       target.sigRadius / wep.stats.sigRadius,
       [target.velocity], wep.stats.expVelocity,
-      wep.optimal, wep.stats.damageReductionFactor]);
+      effectiveOptimal, wep.stats.damageReductionFactor]);
   } else if (wep.type === 'Turret') {
-    let deltaVelocity;
-    if (ship.velocity > target.velocity &&
-        (target.weapons.length > 0 ? target.weapons[0].stats.tracking * ship.sigRadius : 0)
-        > wep.stats.tracking * target.sigRadius) {
-      deltaVelocity = 0;
-    } else {
-      deltaVelocity = Math.abs(ship.velocity - target.velocity);
-    }
+    let velocity;
+    let oppVelocity = [0];
     if (wep.autonomousMovement) {
       if (ship.distanceFromTarget > ship.droneControlRange ? ship.droneControlRange : 84000) {
         return 0;
       }
-      return wep.damage * HitChanceFunction(ship.distanceFromTarget, [
-        [wep.stats.travelVelocity], [target.velocity],
-        wep.stats.tracking * target.sigRadius,
-        wep.optimal, wep.stats.falloff]);
+      velocity = [wep.stats.travelVelocity];
+      oppVelocity = [target.velocity];
+    } else {
+      velocity = [getVelocityDelta(ship, target, wep)];
     }
     return wep.damage * HitChanceFunction(ship.distanceFromTarget, [
-      [deltaVelocity], [0],
+      velocity, oppVelocity,
       wep.stats.tracking * target.sigRadius,
       wep.optimal, wep.stats.falloff]);
   }
@@ -339,8 +360,11 @@ function RunFleetActions(side: Side, t: number, opposingSide: Side) {
     moveShip(ship, t);
   }
   if (initalDamage !== side.appliedDamage) {
-    side.deadShips = [...side.deadShips, ...side.ships.filter(ship => ship.currentEHP <= 0)];
-    side.ships = side.ships.filter(ship => ship.currentEHP > 0);
+    opposingSide.deadShips = [
+      ...opposingSide.deadShips,
+      ...opposingSide.ships.filter(ship => ship.currentEHP <= 0),
+    ];
+    opposingSide.ships = opposingSide.ships.filter(ship => ship.currentEHP > 0);
   }
 }
 

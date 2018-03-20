@@ -3,7 +3,7 @@
 import * as React from 'react';
 import { Treebeard, decorators } from 'react-treebeard';
 import 'semantic-ui-css/semantic.min.css';
-import { Image, Checkbox } from 'semantic-ui-react';
+import { Image, Checkbox, Header } from 'semantic-ui-react';
 import type { SyntheticButtonEvent } from './../flow_types';
 import treebeardStyle from './../css/treebeard_style';
 import { UIRefresh } from './../index';
@@ -322,7 +322,7 @@ const headerFunction: headType = ({ style, node }: {style: Node, node: SidebarSh
   const header = (
     <div style={baseStyle} width="100%">
       <div style={style.title ? style.title : ''}>
-        <div style={{ margin: '0em 1.5em 0em 0.25em' }}>
+        <div style={{ margin: '0em 2.5em 0em 0.25em' }}>
           {node.typeID ? (<Image
             style={shipImageStyle}
             inline
@@ -377,22 +377,35 @@ class ShipTree extends React.Component<Props, State> {
 function SidebarShipDisplay() {
   return (
     <React.Fragment>
-      <h2 style={{
- width: '100%', maxHeight: '10%', display: 'block', position: 'relative',
-}}
+      <Header
+        style={{
+          backgroundColor: 'rgb(180, 180, 180)',
+          paddingBottom: '0.75rem',
+          paddingTop: '1.25rem',
+          marginBottom: '0.5em',
+          marginTop: '0em',
+          display: 'block',
+          width: '100%',
+        }}
+        textAlign="center"
+        attached="top"
+        block
+        size="huge"
       >
-          Ships:
-      </h2>
+        Ship Display Selector
+      </Header>
       <div style={{
- width: '100%',
-display: 'block',
-position: 'relative',
-minHeight: '90%', // height:'90%',
-                     alignSelf: 'top',
-overflowY: 'auto', // marginTop: '50px', marginBottom: '250px',//maxHeight:'50%',
-                     verticalAlign: 'top',
-                     paddingRight: '20%',
-             }}
+        width: 'auto',
+        display: 'block',
+        position: 'relative',
+        minHeight: '90%',
+        alignSelf: 'top',
+        overflowY: 'auto',
+        verticalAlign: 'top',
+        paddingRight: '1em',
+        paddingLeft: '1em',
+        textAlign: 'left',
+      }}
       >
         <ShipTree />
       </div>

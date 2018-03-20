@@ -128,6 +128,13 @@ class ShipDataDisplayManager {
       },
       'optimal', true, false, optimalRangeIcon, 'teal', 'm', 'Weapon Optimal Ranges',
     ),
+    new ShipTypeDataType(
+      (s: ShipData) => {
+        if (s.isFit) return s.signatureRadius;
+        return 0;
+      },
+      'signatureRadius', true, false, sigRadiusIcon, 'purple', 'm', 'Signature Radius',
+    ),
   ];
 
   static ReduceNodeChildren = (t: SidebarShipNode[], c: SidebarShipNode) =>

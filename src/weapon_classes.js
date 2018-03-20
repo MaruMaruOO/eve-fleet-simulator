@@ -46,7 +46,7 @@ class SmartBombStats {
   tracking: number;
   falloff: number;
   constructor() {
-    this.tracking = 1000;
+    this.tracking = 10000;
     this.falloff = 0;
   }
 }
@@ -88,13 +88,11 @@ class Weapon {
       this.type = 'Turret';
       this.stats = new SmartBombStats();
     } else if (this.type === 'Fighter') {
-      wep.maxVelocity = 10000; // wep.explosionDelay * 1000 / wep.optimal;
-      wep.damageReductionFactor = 1;
+      wep.maxVelocity = 7000;
       this.type = 'Missile';
       this.reload = wep.rof;
       this.stats = new MissileStats(wep);
       this.autonomousMovement = true;
-      this.stats.travelVelocity = wep.maxSpeed;
     } else {
       console.error('UNKNOWN WEAPON TYPING', wep.type, wep);
     }

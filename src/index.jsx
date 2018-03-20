@@ -13,7 +13,6 @@ import './css/fit_list.css';
 import './css/full_ui.css';
 
 import ShipData from './ship_data_class';
-import type { SyntheticInputEvent } from './flow_types';
 
 import mainRifterIcon from './eve_icons/tabFittingsHorizontal.png';
 
@@ -36,7 +35,6 @@ if (root.clientWidth < 1920) {
 }
 const sideOneShips: { ship: ShipData, n: number }[] = [];
 const sideTwoShips: { ship: ShipData, n: number }[] = [];
-let initalDistance = 35000;
 
 const UIRefresh = () => {
   ReactDOM.render(
@@ -72,42 +70,27 @@ function TopMenu() {
     </Menu>);
 }
 
-function SidebarSimulationSettings() {
-  const initalDistanceChange = (e: SyntheticInputEvent) => {
-    initalDistance = Number(e.currentTarget.value);
-    UIRefresh();
-  };
-  return (
-    <Grid.Row>
-      <h4>Inital Fleet Distance :
-        <input
-          onChange={initalDistanceChange}
-          defaultValue={initalDistance.toString()}
-          type="number"
-          min="0"
-          max="400000"
-        />
-      </h4>
-    </Grid.Row>
-  );
-}
-
 function SidebarContent() {
   return (
     <Grid
       columns="1"
       stretched
       centered
-      style={{ backgroundColor: 'rgb(83, 87, 123)', overflowY: 'auto' }}
+      style={{
+        backgroundColor: 'rgb(83, 87, 123)',
+        overflowY: 'auto',
+        marginTop: '-2em',
+      }}
     >
-      <SidebarSimulationSettings />
       <Grid.Row style={{
-                  width: '100%',
-                  display: 'flex',
-                  position: 'relative',
-                  flexWrap: 'wrap',
-                  backgroundColor: 'rgb(33, 37, 43)',
-                }}
+        width: '100%',
+        display: 'flex',
+        position: 'relative',
+        flexWrap: 'wrap',
+        backgroundColor: 'rgb(33, 37, 43)',
+        paddingTop: '0em',
+        boxShadow: '0em 0.2em rgba(0, 0, 0, 0.2)',
+      }}
       >
         <SidebarShipDisplay />
       </Grid.Row>
@@ -165,9 +148,7 @@ class FullUI extends React.Component<{ }, { showSidebar: boolean }> {
                   onClick={this.toggleSidebar}
                 />
               </div>
-              <FleetAndCombatSimulator
-                initalDistance={initalDistance}
-              />
+              <FleetAndCombatSimulator />
               <ShipAndFitDisplay />
             </Grid.Column>
           </Grid>

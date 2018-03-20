@@ -85,13 +85,13 @@ type FleetAndCombatSimulatorState = {
   red: Side, blue: Side, simulationState: SimulationState,
 };
 class FleetAndCombatSimulator extends React.Component<
-{ initalDistance: number }, FleetAndCombatSimulatorState
+{ initalDistance?: number }, FleetAndCombatSimulatorState
 > {
-  constructor(props: { initalDistance: number }) {
+  constructor(props: { initalDistance?: number }) {
     super(props);
     this.state = {
       reportStrings: [],
-      initalDistance: props.initalDistance,
+      initalDistance: props.initalDistance || 35000,
       simulationSpeed: 10,
       red: new Side('red'),
       blue: new Side('blue'),
