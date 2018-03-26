@@ -19,7 +19,8 @@ import turretIcon from './eve_icons/13_64_7.png';
 import sigRadiusIcon from './eve_icons/22_32_14.png';
 import optimalRangeIcon from './eve_icons/74_64_10.png';
 
-import velocityIcon from './eve_icons/3_64_2.png';
+import velocityIconAB from './eve_icons/3_64_2.png';
+import velocityIconMWD from './eve_icons/79_64_9.png';
 import droneIcon from './eve_icons/drones.png';
 
 import ShipData from './ship_data_class';
@@ -69,15 +70,16 @@ class ShipFitDataType extends ShipTypeDataType {
 class ShipDataDisplayManager {
   static shipTypeDataTypes = [
     new ShipTypeDataType(() => 0, 'default', false, false, '', '', '', '', false),
-    new ShipTypeDataType(ShipData.getMaxSpeed, 'maxSpeed', true, false, velocityIcon, 'blue', 'm/s', 'Max Velocity'),
+    new ShipTypeDataType(ShipData.getMaxSpeed, 'maxSpeed', true, false, velocityIconAB, 'blue', 'm/s', 'Max Velocity'),
+    new ShipTypeDataType((s: ShipData) => s.mwdPropSpeed, 'mwdPropSpeed', true, false, velocityIconMWD, 'purple', 'm/s', 'MWD Max Velocity'),
     new ShipTypeDataType(ShipData.getEffectiveLaunchers, 'effectiveLaunchers', true, false, launcherIcon, 'orange', '', 'Effective Launchers'),
     new ShipTypeDataType(ShipData.getEffectiveTurrets, 'effectiveTurrets', true, false, turretIcon, 'red', '', 'Effective Turrets'),
-    new ShipTypeDataType(ShipData.getEffectiveDroneBandwidth, 'effectiveDroneBandwidth', true, false, droneIcon, 'violet', 'mbit/s', 'Effective Drone Bandwidth'),
+    new ShipTypeDataType(ShipData.getEffectiveDroneBandwidth, 'effectiveDroneBandwidth', true, false, droneIcon, 'yellow', 'mbit/s', 'Effective Drone Bandwidth'),
     new ShipTypeDataType(ShipData.getMaxShieldEHP, 'maxShieldEHP', true, false, shieldIcon, 'teal', 'EHP', 'Max Shield EHP'),
     new ShipTypeDataType(ShipData.getMaxArmorEHP, 'maxArmorEHP', true, false, armorIcon, 'green', 'EHP', 'Max Armor EHP'),
     new ShipTypeDataType(ShipData.getMaxHullEHP, 'maxHullEHP', true, false, hullIcon, 'brown', 'EHP', 'Max Hull EHP'),
     new ShipTypeDataType(ShipData.getPowerOutput, 'powerOutput', true, false, powerIcon, 'olive', 'MW', 'Power Grid'),
-    new ShipTypeDataType(ShipData.getSignatureRadius, 'signatureRadius', true, false, sigRadiusIcon, 'purple', 'm', 'Signature Radius'),
+    new ShipTypeDataType(ShipData.getSignatureRadius, 'signatureRadius', true, false, sigRadiusIcon, 'violet', 'm', 'Signature Radius'),
     new ShipTypeDataType(ShipData.getHighSlots, 'highSlots', false, true, highSlotIcon, 'grey', '', 'High Slots'),
     new ShipTypeDataType(ShipData.getMidSlots, 'midSlots', false, true, midSlotIcon, 'grey', '', 'Mid Slots'),
     new ShipTypeDataType(ShipData.getLowSlots, 'lowSlots', false, true, lowSlotIcon, 'grey', '', 'Low Slots'),
@@ -114,9 +116,16 @@ class ShipDataDisplayManager {
     new ShipFitDataType(
       (s: ShipData) => {
         if (s.isFit) return s.maxSpeed;
-        return s.maxSpeed * 7;
+        return s.mwdPropSpeed;
       },
-      'maxSpeed', true, false, velocityIcon, 'blue', 'm/s', 'Velocity',
+      'maxSpeed', true, false, velocityIconMWD, 'blue', 'm/s', 'Max Velocity',
+    ),
+    new ShipFitDataType(
+      (s: ShipData) => {
+        if (s.isFit) return s.unpropedSpeed;
+        return s.maxSpeed * 3;
+      },
+      'unpropedSpeed', true, false, velocityIconAB, 'purple', 'm/s', 'Max Velocity without MWD',
     ),
     new ShipFitDataType(
       (s: ShipData) => {
@@ -133,7 +142,7 @@ class ShipDataDisplayManager {
         if (s.isFit) return s.signatureRadius;
         return 0;
       },
-      'signatureRadius', true, false, sigRadiusIcon, 'purple', 'm', 'Signature Radius',
+      'signatureRadius', true, false, sigRadiusIcon, 'violet', 'm', 'Signature Radius',
     ),
   ];
 
