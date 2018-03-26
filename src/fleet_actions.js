@@ -5,12 +5,23 @@ import Side from './side_class';
 import type { VectorMaxLenThree } from './flow_types';
 
 function getTargets(targetCaller: Ship, opposingSide: Side) {
-  let newTarget = opposingSide.ships.find(oppShip =>
-    !oppShip.isShotCaller && oppShip.currentEHP > 0 &&
-    !targetCaller.targets.some(target => target === oppShip));
+  const oppShips = opposingSide.ships;
+  let newTarget;
   if (targetCaller.maxTargets >= opposingSide.ships.length) {
     newTarget = opposingSide.ships.find(oppShip =>
       !targetCaller.targets.some(target => target === oppShip) && oppShip.currentEHP > 0);
+  } else {
+    const targetOppFc = s => s.isShotCaller && !targetCaller.targets.some(target => target === s);
+    const oppFcIndex = oppShips.slice(0, targetCaller.maxTargets - 1).findIndex(targetOppFc);
+    const tarLen = targetCaller.targets.length;
+    if (oppFcIndex >= 0 && oppShips.length > tarLen + 1 && tarLen > 0 &&
+        oppShips[oppFcIndex].id !== oppShips[tarLen + 1].id) {
+      newTarget = oppShips[oppFcIndex];
+    } else {
+      newTarget = opposingSide.ships.find(oppShip =>
+        !oppShip.isShotCaller && oppShip.currentEHP > 0 &&
+        !targetCaller.targets.some(target => target === oppShip));
+    }
   }
   if (newTarget !== undefined) {
     targetCaller.targets.push(newTarget);
@@ -121,15 +132,15 @@ function getApplicationArgs(ship: Ship, target: Ship): ApplicationArgArray {
       wep.optimal, wep.stats.falloff];
     return ([damageFunction, args, [minRange, maxRange]]: ApplicationArgArray);
   } else if (wep && wep.type === 'Missile') {
-    let effectiveOptimal =  wep.optimal;
+    let effectiveOptimal = wep.optimal;
     if (wep.autonomousMovement) {
       effectiveOptimal = 300000;
     }
     const damageFunction = MissleApplication;
     const sigRatio = target.sigRadius / wep.stats.sigRadius;
     const oppVelocity = [target.velocity];
-    const args: DamageApplicationArgs = [sigRatio, oppVelocity, wep.stats.expVelocity, effectiveOptimal,
-      wep.stats.damageReductionFactor];
+    const args: DamageApplicationArgs = [sigRatio, oppVelocity, wep.stats.expVelocity,
+      effectiveOptimal, wep.stats.damageReductionFactor];
     maxRange = Math.min(ship.maxTargetRange, effectiveOptimal);
     return ([damageFunction, args, [minRange, maxRange]]: ApplicationArgArray);
   }
@@ -287,7 +298,7 @@ function calculateDamage(ship: Ship, target: Ship, wep: Weapon, side: Side): num
     return 0;
   }
   if (wep.type === 'Missile') {
-    let effectiveOptimal =  wep.optimal;
+    let effectiveOptimal = wep.optimal;
     // Even relative to drones this is an iffy work around given fighter travel times.
     if (wep.autonomousMovement) {
       effectiveOptimal = 300000;
@@ -346,7 +357,231 @@ function dealDamage(ship: Ship, t: number, wep: Weapon, side: Side) {
   }
 }
 
+function NetValue(effects: [number, number][], baseValue: number) {
+  const stackingPenelties = [1, 0.869, 0.571, 0.283, 0.106, 0.03, 0];
+  const effLen = Math.min(6, effects.length);
+  let value = baseValue;
+  for (let i = 0; i < effLen; i += 1) {
+    value += (value * effects[i][0] * stackingPenelties[i]);
+  }
+  return value;
+}
+
+function ewarFalloffCalc(baseMulti: number, ewar, distance: number) {
+  if (ewar.falloff) {
+    return baseMulti * (0.5 ** ((Math.max(0, distance - ewar.optimal) / ewar.falloff) ** 2));
+  } else if (distance <= ewar.optimal) {
+    return baseMulti;
+  }
+  return 0;
+}
+
+function getFocusedEwarTarget(targets: Ship[], type: 'tps' | 'webs', multi: number) {
+  for (let i = 0; i < targets.length; i += 1) {
+    const t = targets[i];
+    t.appliedEwar[type].sort((a, b) => b[0] - a[0]);
+    if (t.appliedEwar[type].length <= 6 || t.appliedEwar[type][5][0] > multi) {
+      i = targets.length;
+      return t;
+    }
+  }
+  return targets[0];
+}
+
+
+type attrString = 'trackingSpeedBonus' | 'maxRangeBonus' | 'falloffBonus' |
+  'aoeCloudSizeBonus' | 'aoeVelocityBonus' | 'missileVelocityBonus' | 'explosionDelayBonus';
+function setProjections(
+  ewar, distance: number, attrs: attrString[],
+  targetVals: ((s: Ship, attr: attrString) => void)[],
+  target: Ship,
+) {
+  // const baseTargetVals =
+  // targetVals.map(val => 'base' + val.charAt(0).toUpperCase() + val.substr(1));
+  for (let i = 0; i < attrs.length; i += 1) {
+    const attr = attrs[i];
+    const baseMulti = ewar[attr] / 100;
+    const multi = ewarFalloffCalc(baseMulti, ewar, distance);
+    target.appliedEwar[attr].push([multi, baseMulti]);
+    target.appliedEwar[attr].sort((a, b) => b[0] - a[0]);
+    // target[targetVals[i]] = NetValue(target.appliedEwar[attr], target[baseTargetVals[i]]);
+    targetVals[i](target, attr);
+    const oldTarget = ewar.currentTarget;
+    if (oldTarget) {
+      const pullIndex = oldTarget.appliedEwar[attr].findIndex(e => e[1] === baseMulti);
+      oldTarget.appliedEwar[attr].splice(pullIndex, 1);
+      targetVals[i](oldTarget, attr);
+    }
+  }
+}
+
+function ApplyEwar(ewar, targets, distance, scatterTarget) {
+  let target = targets[0];
+  if (ewar.type === 'Stasis Web') {
+    const baseMulti = ewar.speedFactor / 100;
+    const multi = ewarFalloffCalc(baseMulti, ewar, distance);
+    target = getFocusedEwarTarget(targets, 'webs', multi);
+    target.appliedEwar.webs.push([multi, baseMulti]);
+    target.velocity = NetValue(target.appliedEwar.webs, target.baseVelocity);
+    const oldTarget = ewar.currentTarget;
+    if (oldTarget) {
+      const pullIndex = oldTarget.appliedEwar.webs.findIndex(e => e[1] === baseMulti);
+      oldTarget.appliedEwar.webs.splice(pullIndex, 1);
+      oldTarget.velocity = NetValue(oldTarget.appliedEwar.webs, oldTarget.baseVelocity);
+    }
+  } else if (ewar.type === 'Target Painter') {
+    const baseMulti = ewar.signatureRadiusBonus / 100;
+    const multi = ewarFalloffCalc(baseMulti, ewar, distance);
+    target = getFocusedEwarTarget(targets, 'tps', multi);
+    target.appliedEwar.tps.push([multi, baseMulti]);
+    target.sigRadius = NetValue(target.appliedEwar.tps, target.baseSigRadius);
+    const oldTarget = ewar.currentTarget;
+    if (oldTarget) {
+      const pullIndex = oldTarget.appliedEwar.tps.findIndex(e => e[1] === baseMulti);
+      oldTarget.appliedEwar.tps.splice(pullIndex, 1);
+      oldTarget.sigRadius = NetValue(oldTarget.appliedEwar.tps, oldTarget.baseSigRadius);
+    }
+  } else if (ewar.type === 'Sensor Dampener') {
+    target = scatterTarget;
+    for (const attr of ['maxTargetRangeBonus', 'scanResolutionBonus']) {
+      const baseMulti = ewar[attr] / 100;
+      const multi = ewarFalloffCalc(baseMulti, ewar, distance);
+      target.appliedEwar[attr].push([multi, baseMulti]);
+      target.appliedEwar[attr].sort((a, b) => b[0] - a[0]);
+      if (attr === 'maxTargetRangeBonus') {
+        target.maxTargetRange = NetValue(target.appliedEwar[attr], target.baseMaxTargetRange);
+      } else {
+        target.scanRes = NetValue(target.appliedEwar[attr], target.baseScanRes);
+      }
+      const oldTarget = ewar.currentTarget;
+      if (oldTarget) {
+        const pullIndex = oldTarget.appliedEwar[attr].findIndex(e => e[1] === baseMulti);
+        oldTarget.appliedEwar[attr].splice(pullIndex, 1);
+        if (attr === 'maxTargetRangeBonus') {
+          oldTarget.maxTargetRange =
+            NetValue(oldTarget.appliedEwar[attr], oldTarget.baseMaxTargetRange);
+        } else {
+          oldTarget.scanRes = NetValue(oldTarget.appliedEwar[attr], oldTarget.baseScanRes);
+        }
+      }
+    }
+  } else if (ewar.type === 'Weapon Disruptor') {
+    const attrs = [
+      'trackingSpeedBonus', 'maxRangeBonus', 'falloffBonus', 'aoeCloudSizeBonus',
+      'aoeVelocityBonus', 'missileVelocityBonus', 'explosionDelayBonus',
+    ];
+    const targetVals = [
+      (s: Ship, attr: attrString): void => {
+        s.weapons.forEach((w: Weapon) => {
+          w.stats.tracking = NetValue(s.appliedEwar[attr], w.stats.baseTracking);
+        });
+      },
+      (s: Ship, attr: attrString): void => {
+        s.weapons.forEach((w: Weapon) => {
+          w.optimal = NetValue(s.appliedEwar[attr], w.baseOptimal);
+        });
+      },
+      (s: Ship, attr: attrString): void => {
+        s.weapons.forEach((w: Weapon) => {
+          w.stats.falloff = NetValue(s.appliedEwar[attr], w.stats.baseFalloff);
+        });
+      },
+      (s: Ship, attr: attrString): void => {
+        s.weapons.forEach((w: Weapon) => {
+          w.stats.sigRadius = NetValue(s.appliedEwar[attr], w.stats.baseSigRadius);
+        });
+      },
+      (s: Ship, attr: attrString): void => {
+        s.weapons.forEach((w: Weapon) => {
+          w.stats.expVelocity = NetValue(s.appliedEwar[attr], w.stats.baseExpVelocity);
+        });
+      },
+      (s: Ship, attr: attrString): void => {
+        s.weapons.forEach((w: Weapon) => {
+          w.stats.travelVelocity = NetValue(s.appliedEwar[attr], w.stats.baseTravelVelocity);
+        });
+      },
+      (s: Ship, attr: attrString): void => {
+        s.weapons.forEach((w: Weapon) => {
+          w.optimal = NetValue(s.appliedEwar[attr], w.baseOptimal);
+        });
+      },
+    ];
+    target = scatterTarget;
+    setProjections(ewar, distance, attrs, targetVals, target);
+  } else if (ewar.type === 'Warp Scrambler') {
+    target = scatterTarget;
+    target.appliedEwar.scrams.push([0, 0]);
+    target.velocity *= target.unpropedVelocity / target.baseVelocity;
+    target.sigRadius *= target.unpropedSigRadius / target.baseSigRadius;
+    const oldTarget = ewar.currentTarget;
+    if (oldTarget) {
+      oldTarget.appliedEwar.scrams.pop();
+      oldTarget.velocity *= oldTarget.baseVelocity / oldTarget.unpropedVelocity;
+      oldTarget.sigRadius *= oldTarget.baseSigRadius / oldTarget.unpropedSigRadius;
+    }
+  }
+  ewar.currentTarget = target;
+  ewar.currentDuration = ewar.duration;
+}
+
 function RunFleetActions(side: Side, t: number, opposingSide: Side) {
+  let logiLockedShips;
+  for (const subfleet of side.subFleets) {
+    const oppShipLen = opposingSide.ships.length;
+    if (subfleet.fc.targets.length > 0) {
+      let i = 0;
+      for (const ewar of subfleet.ewar) {
+        i += 1;
+        if (ewar.currentDuration <= 0) {
+          if (ewar.attachedShip.currentEHP <= 0) {
+            ewar.currentDuration = 100000000;
+            ewar.type = 'Dead Host';
+          }
+          ApplyEwar(
+            ewar, subfleet.fc.targets, subfleet.fc.distanceFromTarget,
+            opposingSide.ships[i % oppShipLen],
+          );
+        }
+        ewar.currentDuration -= t;
+      }
+    }
+    if (subfleet.remoteRepair.length > 0) {
+      if (!logiLockedShips) {
+        logiLockedShips = side.ships.filter(s => s.rrDelayTimer > 0);
+      }
+      for (const rr of subfleet.remoteRepair) {
+        if (rr.currentDuration <= 0) {
+          if (rr.attachedShip.currentEHP <= 0) {
+            rr.currentDuration = 100000000;
+            rr.type = 'Dead Host';
+          }
+          if (rr.type === 'Remote Shield Booster') {
+            const target = logiLockedShips.find(s => s.currentEHP > 0 && s.tankType === 'shield'
+              && s.rrDelayTimer > s.lockTimeConstant / rr.scanRes);
+            if (target) {
+              const postRepEhp = target.currentEHP + (rr.shieldBonus / target.meanResonance);
+              target.currentEHP = Math.min(postRepEhp, target.EHP);
+              rr.currentDuration = rr.duration;
+            }
+          } else if (rr.type === 'Remote Armor Repairer') {
+            const target = rr.currentTarget;
+            if (target && target.currentEHP > 0) {
+              const postRepEhp = target.currentEHP + (rr.armorDamageAmount / target.meanResonance);
+              target.currentEHP = Math.min(postRepEhp, target.EHP);
+            }
+            const newTarget = logiLockedShips.find(s => s.currentEHP > 0 && s.tankType === 'armor'
+                && s.rrDelayTimer > s.lockTimeConstant / rr.scanRes);
+            if (newTarget) {
+              rr.currentTarget = newTarget;
+              rr.currentDuration = rr.duration;
+            }
+          }
+        }
+        rr.currentDuration -= t;
+      }
+    }
+  }
   const initalDamage = side.appliedDamage;
   for (const ship of side.ships) {
     for (const wep of ship.weapons) {
@@ -358,14 +593,11 @@ function RunFleetActions(side: Side, t: number, opposingSide: Side) {
       getTargets(ship, opposingSide);
     }
     moveShip(ship, t);
+    if (ship.currentEHP < ship.EHP && ship.velocity > 0) {
+      ship.rrDelayTimer += t;
+    }
   }
-  if (initalDamage !== side.appliedDamage) {
-    opposingSide.deadShips = [
-      ...opposingSide.deadShips,
-      ...opposingSide.ships.filter(ship => ship.currentEHP <= 0),
-    ];
-    opposingSide.ships = opposingSide.ships.filter(ship => ship.currentEHP > 0);
-  }
+  return initalDamage !== side.appliedDamage;
 }
 
 export default RunFleetActions;

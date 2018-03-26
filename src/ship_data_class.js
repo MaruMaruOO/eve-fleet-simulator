@@ -104,6 +104,8 @@ class ShipData {
   alignTime: number;
   midSlots: number;
   turretSlots: number;
+  moduleNames: string[];
+  projections: { type: string, [string]: number }[];
   projectedModules: { string: number | string }[];
   rigSize: number;
   effectiveDroneBandwidth: number;
@@ -132,8 +134,12 @@ class ShipData {
   powerOutput: number;
   droneDPS: number;
   droneControlRange: number;
+  mass: number;
   totalVolley: number;
   weaponVolley: number;
+  unpropedSpeed: number;
+  mwdPropSpeed: number;
+  unpropedSig: number;
   isFit: boolean = false;
 
   static processing(shipStats: ShipData) {

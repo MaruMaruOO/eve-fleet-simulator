@@ -34,6 +34,39 @@ class Ship {
   droneControlRange: number;
   preferedDistance: number = -1;
   pendingDamage: PendingAttack[];
+  appliedEwar: {
+    webs: [number, number][], tps: [number, number][],
+    scrams: [number, number][],
+    maxTargetRangeBonus: [number, number][], scanResolutionBonus: [number, number][],
+    trackingSpeedBonus: [number, number][], maxRangeBonus: [number, number][],
+    falloffBonus: [number, number][], aoeCloudSizeBonus: [number, number][],
+    aoeVelocityBonus: [number, number][], missileVelocityBonus: [number, number][],
+    explosionDelayBonus: [number, number][],
+  } = {
+    webs: [],
+    tps: [],
+    scrams: [],
+    maxTargetRangeBonus: [],
+    scanResolutionBonus: [],
+    trackingSpeedBonus: [],
+    maxRangeBonus: [],
+    falloffBonus: [],
+    aoeCloudSizeBonus: [],
+    aoeVelocityBonus: [],
+    missileVelocityBonus: [],
+    explosionDelayBonus: [],
+  };
+  appliedRR: { armor: [number, number][], shield: [number, number][] } = { armor: [], shield: [] };
+  tankType: 'armor' | 'shield';
+  meanResonance: number;
+  rrDelayTimer: number = 0;
+  lockTimeConstant: number;
+  baseVelocity: number;
+  unpropedSigRadius: number;
+  baseSigRadius: number;
+  unpropedVelocity: number;
+  baseMaxTargetRange: number;
+  baseScanRes: number;
   constructor(
     currentShotCaller: Ship | null, currentAnchor: Ship | null,
     shipStats: ShipData, initalDistance: number,
@@ -45,14 +78,30 @@ class Ship {
       this.name = shipStats.name;
       this.id = shipStats.id;
       this.EHP = shipStats.ehp.shield + shipStats.ehp.armor + shipStats.ehp.hull;
+      if (shipStats.ehp.armor > shipStats.ehp.shield) {
+        this.tankType = 'armor';
+        const res = shipStats.resonance.armor;
+        this.meanResonance = (res.em + res.therm + res.kin + res.exp) / 4;
+      } else {
+        this.tankType = 'shield';
+        const res = shipStats.resonance.shield;
+        this.meanResonance = (res.em + res.therm + res.kin + res.exp) / 4;
+      }
       this.damage = shipStats.weaponVolley;
       this.reload = 1000 * (shipStats.weaponVolley / shipStats.weaponDPS);
       this.scanRes = shipStats.scanRes;
+      this.baseScanRes = shipStats.scanRes;
       this.velocity = shipStats.maxSpeed;
+      this.baseVelocity = shipStats.maxSpeed;
+      this.unpropedVelocity = shipStats.unpropedSpeed;
       this.alignTime = shipStats.alignTime;
       this.sigRadius = shipStats.signatureRadius;
+      this.baseSigRadius = shipStats.signatureRadius;
+      this.lockTimeConstant = (40000 / (Math.asinh(shipStats.signatureRadius) ** 2)) * 1000;
+      this.unpropedSigRadius = shipStats.unpropedSig;
       this.maxTargets = shipStats.maxTargets;
       this.maxTargetRange = shipStats.maxTargetRange;
+      this.baseMaxTargetRange = shipStats.maxTargetRange;
       this.droneControlRange = shipStats.droneControlRange;
       this.weapons = [];
       for (const wep of shipStats.weapons) {

@@ -59,3 +59,7 @@
 .battleDisplayResults {
   display: inline-flex;
 }
+.fitInfoPopupTrigger {
+  #float: right;
+  display: inline-flex;
+}

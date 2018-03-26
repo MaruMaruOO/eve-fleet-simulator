@@ -1,6 +1,6 @@
 // @flow
 import React from 'react';
-import { Card, Image, Input } from 'semantic-ui-react';
+import { Card, Image, Input, Popup, Label } from 'semantic-ui-react';
 import { SidebarShipNode, data, ships, baseShips } from './sidebar_ship_display';
 import { sideOneShips, sideTwoShips, UIRefresh } from './../index';
 import ShipDataDisplayManager from './../ship_data_display_manager';
@@ -52,12 +52,22 @@ function ShipAndFitCards() {
     const aVal = a.typeData ? ShipDataDisplayManager.shipDisplaySort(a.typeData) : 0;
     return bVal - aVal;
   };
+  const FitInfoPopup = (props: { fitData: ShipData }) => (
+    <Popup
+      wide
+      flowing
+      position="right center"
+      trigger={<Label as="a" corner="right" icon="help circle" />}
+      content={props.fitData.moduleNames.map((s, i) => (s === '' ? <br key={i.toString()} /> : <div key={i.toString() + s}>{s}</div>))}
+    />
+  );
   const getFitNode = (fit) => {
     const fitData = ships.filter(f => f.typeID === fit.typeID && f.name === fit.name)[0];
     return (
       <Card key={fit.nodeId}>
         <Card.Content>
           <Card.Header textAlign="center" className="shipCardHeader">
+            <FitInfoPopup fitData={fitData} />
             <Image
               centered
               rounded

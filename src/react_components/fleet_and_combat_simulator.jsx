@@ -122,6 +122,13 @@ class FleetAndCombatSimulator extends React.Component<
     this.redGraphData.push({ x: seconds, y: red.ships.length });
     this.blueGraphData.push({ x: seconds, y: blue.ships.length });
   };
+  removeDeadShips = (side: Side) => {
+    side.deadShips = [
+      ...side.deadShips,
+      ...side.ships.filter(ship => ship.currentEHP <= 0),
+    ];
+    side.ships = side.ships.filter(ship => ship.currentEHP > 0);
+  };
   RunSimulationLoop = (
     breakClause: number, interval: number,
     reportInterval: number, simulationSpeed: number,
@@ -130,10 +137,16 @@ class FleetAndCombatSimulator extends React.Component<
       const newReportInterval = 100 * this.state.simulationSpeed;
       const newSimulationSpeed = this.state.simulationSpeed;
       this.RunSimulationLoop(breakClause, interval, newReportInterval, newSimulationSpeed);
-    } else if (this.blue.ships.length > 0 && this.red.ships.length > 0 && breakClause < 500000) {
+    } else if (this.blue.ships.length > 0 && this.red.ships.length > 0 && breakClause < 72000) {
       for (let i = 0; i < reportInterval; i += interval) {
-        RunFleetActions(this.blue, interval, this.red);
-        RunFleetActions(this.red, interval, this.blue);
+        const isDamageDealtBlue = RunFleetActions(this.blue, interval, this.red);
+        const isDamageDealtRed = RunFleetActions(this.red, interval, this.blue);
+        if (isDamageDealtBlue) {
+          this.removeDeadShips(this.red);
+        }
+        if (isDamageDealtRed) {
+          this.removeDeadShips(this.blue);
+        }
       }
       const newBreakClause = breakClause + simulationSpeed;
       this.logUpdate(this.blue, this.red, newBreakClause / 10);
@@ -177,6 +190,10 @@ class FleetAndCombatSimulator extends React.Component<
     if (sideOneShips && sideOneShips.length > 0 &&
         (this.red.uniqueFitCount !== sideOneShips.length ||
          sideOneShips.reduce((t, c) => t + c.n, 0) !== this.red.totalShipCount)) {
+      const emptyInd = sideOneShips.findIndex(s => s.n === 0);
+      if (emptyInd >= 0) {
+        sideOneShips.splice(emptyInd, 1);
+      }
       if (this.state.simulationState === 'finished') {
         this.updateFleets();
         this.setState({ simulationState: 'setup' });
@@ -188,6 +205,10 @@ class FleetAndCombatSimulator extends React.Component<
     if (sideTwoShips && sideTwoShips.length > 0 &&
         (this.blue.uniqueFitCount !== sideTwoShips.length ||
          sideTwoShips.reduce((t, c) => t + c.n, 0) !== this.blue.totalShipCount)) {
+      const emptyInd = sideTwoShips.findIndex(s => s.n === 0);
+      if (emptyInd >= 0) {
+        sideTwoShips.splice(emptyInd, 1);
+      }
       if (this.state.simulationState === 'finished') {
         this.updateFleets();
         this.setState({ simulationState: 'setup' });
