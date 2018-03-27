@@ -1,6 +1,7 @@
 // @flow
 import { Weapon, PendingAttack } from './weapon_classes';
 import Ship from './ship_class';
+import type { Ewar } from './ship_class';
 import Side from './side_class';
 import type { VectorMaxLenThree } from './flow_types';
 
@@ -155,8 +156,8 @@ function sign(x) {
 }
 
 function getMin(
-  func: (number, DamageRatioArgs) => number,
-  x1, x2, args: DamageRatioArgs, xatol = 1e-5, maxfun = 500,
+  func: (number, [Ship]) => number,
+  x1, x2, args: [Ship], xatol = 1e-5, maxfun = 500,
 ): number {
   const sqrtEps = Math.sqrt(2.2e-16);
   const goldenMean = 0.5 * (3.0 - Math.sqrt(5.0));
@@ -246,52 +247,6 @@ function getMin(
   return result;
 }
 
-function FindIdealRange(ship: Ship): number {
-  const target = ship.targets[0];
-  const damageFunctionAndArgs = getApplicationArgs(ship, target);
-  const oppDamageFunctionAndArgs = getApplicationArgs(target, ship);
-  if (damageFunctionAndArgs[0] === null || oppDamageFunctionAndArgs[0] === null ||
-      damageFunctionAndArgs[2][0] + damageFunctionAndArgs[2][1] === 0) {
-    return 0;
-  }
-  const combinedArgs = [
-    damageFunctionAndArgs[0], oppDamageFunctionAndArgs[0],
-    damageFunctionAndArgs[1], oppDamageFunctionAndArgs[1],
-  ];
-  const min = damageFunctionAndArgs[2][0];
-  const max = damageFunctionAndArgs[2][1];
-  const idealRange = getMin(DamageRatioFunction, min, max, combinedArgs);
-
-  const chance = damageFunctionAndArgs[0](idealRange, damageFunctionAndArgs[1]);
-  console.log('application at selected range for', ship.name, chance, 'argSet:', damageFunctionAndArgs[1]);
-  return idealRange;
-}
-
-function moveShip(ship: Ship, t: number) {
-  if (ship.targets.length <= 0) {
-    return;
-  }
-  if (!ship.isAnchor && ship.anchor) {
-    ship.distanceFromTarget = ship.anchor.distanceFromTarget;
-    ship.preferedDistance = ship.anchor.preferedDistance;
-    return;
-  }
-  if (ship.preferedDistance !== -1) {
-    ship.distanceFromTarget = ship.targets[0].distanceFromTarget;
-    const travelDistance = (ship.velocity * t) / 1000;
-    if (Math.abs(ship.distanceFromTarget - ship.preferedDistance) < travelDistance) {
-      ship.distanceFromTarget = ship.preferedDistance;
-    } else {
-      ship.distanceFromTarget += ship.preferedDistance > ship.distanceFromTarget ?
-        travelDistance : -travelDistance;
-    }
-    return;
-  }
-  ship.preferedDistance = FindIdealRange(ship);
-
-  console.log(ship.name, ' Best Ratio: ', ship.preferedDistance);
-}
-
 function calculateDamage(ship: Ship, target: Ship, wep: Weapon, side: Side): number {
   side.theoreticalDamage += wep.damage;
   if (ship.distanceFromTarget > ship.maxTargetRange) {
@@ -357,7 +312,7 @@ function dealDamage(ship: Ship, t: number, wep: Weapon, side: Side) {
   }
 }
 
-function NetValue(effects: [number, number][], baseValue: number) {
+function NetValue(effects: [number, number, Ewar][], baseValue: number) {
   const stackingPenelties = [1, 0.869, 0.571, 0.283, 0.106, 0.03, 0];
   const effLen = Math.min(6, effects.length);
   let value = baseValue;
@@ -402,7 +357,7 @@ function setProjections(
     const attr = attrs[i];
     const baseMulti = ewar[attr] / 100;
     const multi = ewarFalloffCalc(baseMulti, ewar, distance);
-    target.appliedEwar[attr].push([multi, baseMulti]);
+    target.appliedEwar[attr].push([multi, baseMulti, ewar]);
     target.appliedEwar[attr].sort((a, b) => b[0] - a[0]);
     // target[targetVals[i]] = NetValue(target.appliedEwar[attr], target[baseTargetVals[i]]);
     targetVals[i](target, attr);
@@ -421,7 +376,7 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
     const baseMulti = ewar.speedFactor / 100;
     const multi = ewarFalloffCalc(baseMulti, ewar, distance);
     target = getFocusedEwarTarget(targets, 'webs', multi);
-    target.appliedEwar.webs.push([multi, baseMulti]);
+    target.appliedEwar.webs.push([multi, baseMulti, ewar]);
     target.velocity = NetValue(target.appliedEwar.webs, target.baseVelocity);
     const oldTarget = ewar.currentTarget;
     if (oldTarget) {
@@ -433,7 +388,7 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
     const baseMulti = ewar.signatureRadiusBonus / 100;
     const multi = ewarFalloffCalc(baseMulti, ewar, distance);
     target = getFocusedEwarTarget(targets, 'tps', multi);
-    target.appliedEwar.tps.push([multi, baseMulti]);
+    target.appliedEwar.tps.push([multi, baseMulti, ewar]);
     target.sigRadius = NetValue(target.appliedEwar.tps, target.baseSigRadius);
     const oldTarget = ewar.currentTarget;
     if (oldTarget) {
@@ -446,7 +401,7 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
     for (const attr of ['maxTargetRangeBonus', 'scanResolutionBonus']) {
       const baseMulti = ewar[attr] / 100;
       const multi = ewarFalloffCalc(baseMulti, ewar, distance);
-      target.appliedEwar[attr].push([multi, baseMulti]);
+      target.appliedEwar[attr].push([multi, baseMulti, ewar]);
       target.appliedEwar[attr].sort((a, b) => b[0] - a[0]);
       if (attr === 'maxTargetRangeBonus') {
         target.maxTargetRange = NetValue(target.appliedEwar[attr], target.baseMaxTargetRange);
@@ -511,7 +466,7 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
     setProjections(ewar, distance, attrs, targetVals, target);
   } else if (ewar.type === 'Warp Scrambler') {
     target = scatterTarget;
-    target.appliedEwar.scrams.push([0, 0]);
+    target.appliedEwar.scrams.push([0, 0, ewar]);
     target.velocity *= target.unpropedVelocity / target.baseVelocity;
     target.sigRadius *= target.unpropedSigRadius / target.baseSigRadius;
     const oldTarget = ewar.currentTarget;
@@ -523,6 +478,78 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
   }
   ewar.currentTarget = target;
   ewar.currentDuration = ewar.duration;
+}
+
+const SetArgsFunction = (distance: number, [ship]: [Ship]): number => {
+  const attrs = [
+    'webs', 'tps', 'scrams', 'maxTargetRangeBonus', 'scanResolutionBonus',
+    'trackingSpeedBonus', 'maxRangeBonus', 'falloffBonus', 'aoeCloudSizeBonus',
+    'aoeVelocityBonus', 'missileVelocityBonus', 'explosionDelayBonus',
+  ];
+  const impactedAttrs = attrs.filter(at => ship.appliedEwar[at].length > 0);
+  for (const att of impactedAttrs) {
+    const ewarApp = (ship.appliedEwar[att].pop());
+    const ewar = ewarApp[2];
+    ApplyEwar(ewar, [ship], distance, ship);
+  }
+  const target = ship.targets[0];
+  const damageFunctionAndArgs = getApplicationArgs(ship, target);
+  const oppDamageFunctionAndArgs = getApplicationArgs(target, ship);
+  if (damageFunctionAndArgs[0] === null || oppDamageFunctionAndArgs[0] === null ||
+      damageFunctionAndArgs[2][0] + damageFunctionAndArgs[2][1] === 0) {
+    return 0;
+  }
+  const combinedArgs = [
+    damageFunctionAndArgs[0], oppDamageFunctionAndArgs[0],
+    damageFunctionAndArgs[1], oppDamageFunctionAndArgs[1],
+  ];
+  const min = damageFunctionAndArgs[2][0];
+  const max = damageFunctionAndArgs[2][1];
+  if (distance < min || distance > max) {
+    return -1 * (-2 / 1);
+  }
+  return DamageRatioFunction(distance, combinedArgs);
+};
+
+function FindIdealRange(ship: Ship): number {
+  const target = ship.targets[0];
+  const damageFunctionAndArgs = getApplicationArgs(ship, target);
+  const min = damageFunctionAndArgs[2][0];
+  const max = damageFunctionAndArgs[2][1];
+  const idealRange = getMin(SetArgsFunction, min, max, [ship]);
+  return idealRange;
+}
+
+function moveShip(ship: Ship, t: number, side: Side) {
+  if (ship.targets.length <= 0) {
+    return;
+  }
+  if (!ship.isAnchor && ship.anchor) {
+    ship.distanceFromTarget = ship.anchor.distanceFromTarget;
+    ship.preferedDistance = ship.anchor.preferedDistance;
+    return;
+  }
+  if (ship.preferedDistance > -1) {
+    ship.distanceFromTarget = ship.targets[0].distanceFromTarget;
+    const travelDistance = (ship.velocity * t) / 1000;
+    if (Math.abs(ship.distanceFromTarget - ship.preferedDistance) < travelDistance) {
+      ship.distanceFromTarget = ship.preferedDistance;
+    } else {
+      ship.distanceFromTarget += ship.preferedDistance > ship.distanceFromTarget ?
+        travelDistance : -travelDistance;
+    }
+    return;
+  }
+  // should avoid setting on the first tick to allow ewar to apply
+  if (ship.preferedDistance === -1 || ship.preferedDistance === -2) {
+    ship.preferedDistance -= 1;
+    return;
+  }
+  const shipsInSubFleet = side.ships.filter(s => s.id === ship.id);
+  const oppCurrentPrimary = shipsInSubFleet.length > 1 ? shipsInSubFleet[1] : shipsInSubFleet[0];
+  ship.preferedDistance = FindIdealRange(oppCurrentPrimary);
+
+  console.log(ship.name, ' Best Ratio: ', ship.preferedDistance);
 }
 
 function RunFleetActions(side: Side, t: number, opposingSide: Side) {
@@ -592,7 +619,7 @@ function RunFleetActions(side: Side, t: number, opposingSide: Side) {
     if (ship.isShotCaller === true && ship.targets.length < ship.maxTargets) {
       getTargets(ship, opposingSide);
     }
-    moveShip(ship, t);
+    moveShip(ship, t, side);
     if (ship.currentEHP < ship.EHP && ship.velocity > 0) {
       ship.rrDelayTimer += t;
     }

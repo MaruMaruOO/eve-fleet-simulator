@@ -35,13 +35,13 @@ class Ship {
   preferedDistance: number = -1;
   pendingDamage: PendingAttack[];
   appliedEwar: {
-    webs: [number, number][], tps: [number, number][],
-    scrams: [number, number][],
-    maxTargetRangeBonus: [number, number][], scanResolutionBonus: [number, number][],
-    trackingSpeedBonus: [number, number][], maxRangeBonus: [number, number][],
-    falloffBonus: [number, number][], aoeCloudSizeBonus: [number, number][],
-    aoeVelocityBonus: [number, number][], missileVelocityBonus: [number, number][],
-    explosionDelayBonus: [number, number][],
+    webs: [number, number, Ewar][], tps: [number, number, Ewar][],
+    scrams: [number, number, Ewar][],
+    maxTargetRangeBonus: [number, number, Ewar][], scanResolutionBonus: [number, number, Ewar][],
+    trackingSpeedBonus: [number, number, Ewar][], maxRangeBonus: [number, number, Ewar][],
+    falloffBonus: [number, number, Ewar][], aoeCloudSizeBonus: [number, number, Ewar][],
+    aoeVelocityBonus: [number, number, Ewar][], missileVelocityBonus: [number, number, Ewar][],
+    explosionDelayBonus: [number, number, Ewar][],
   } = {
     webs: [],
     tps: [],
@@ -138,4 +138,11 @@ class Ship {
     }
   }
 }
+type Ewar = {
+  currentTarget: Ship | null,
+  attachedShip: Ship,
+  type: string,
+  [string]: number
+};
+export type { Ewar };
 export default Ship;
