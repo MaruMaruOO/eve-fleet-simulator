@@ -76,6 +76,15 @@ const HitChanceFunction = (
   return hitChance;
 };
 
+const TurretApplication = (distance: number, hitChanceArgs: DamageApplicationArgs) => {
+  const hitChance = HitChanceFunction(distance, hitChanceArgs);
+  if (hitChance > 0.01) {
+    return ((hitChance ** 2) + hitChance + 0.0499) / 2;
+  }
+  // Only wrecking hits
+  return hitChance * 3;
+};
+
 const DamageRatioFunction = (
   distance: number,
   [damageFunction, oppDamageFunction, args, oppArgs]: DamageRatioArgs,
@@ -118,7 +127,7 @@ function getApplicationArgs(ship: Ship, target: Ship): ApplicationArgArray {
   let maxRange;
   const wep = ship.weapons.sort((a, b) => b.dps - a.dps)[0];
   if (wep && wep.type === 'Turret') {
-    const damageFunction = HitChanceFunction;
+    const damageFunction = TurretApplication;
     const trackingFactor = wep.stats.tracking * target.sigRadius;
     maxRange = Math.min(ship.maxTargetRange, (wep.optimal + wep.stats.falloff) * 3);
     let velocity;
@@ -274,7 +283,7 @@ function calculateDamage(ship: Ship, target: Ship, wep: Weapon, side: Side): num
     } else {
       velocity = [getVelocityDelta(ship, target, wep)];
     }
-    return wep.damage * HitChanceFunction(ship.distanceFromTarget, [
+    return wep.damage * TurretApplication(ship.distanceFromTarget, [
       velocity, oppVelocity,
       wep.stats.tracking * target.sigRadius,
       wep.optimal, wep.stats.falloff]);
