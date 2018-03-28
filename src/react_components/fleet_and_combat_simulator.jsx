@@ -103,6 +103,9 @@ class FleetAndCombatSimulator extends React.Component<
     this.XYPlotSize = this.currentFontSize * 22;
     this.setXYPlotMargin(2);
   }
+  componentWillUpdate() {
+    this.refreshSides();
+  }
   setXYPlotMargin = (charLengthOfMaxShips: number) => {
     this.XYPlotMargin = {
       left: this.currentFontSize * charLengthOfMaxShips,
@@ -244,7 +247,6 @@ class FleetAndCombatSimulator extends React.Component<
     }
   };
   render() {
-    this.refreshSides();
     const reportData = this.state.reportStrings.length < 100 ?
       this.state.reportStrings.map((report, i) =>
         <p key={report + i.toString()}>{ report }</p>) :
@@ -317,7 +319,7 @@ class FleetAndCombatSimulator extends React.Component<
               <BattleDisplay red={this.red} blue={this.blue} />
             </Dimmer.Dimmable>
             <Button.Group attached="bottom" widths="3">
-              <Button color="grey">
+              <Button color="grey" as="div">
                 Fleet Starting Distance {this.state.initalDistance.toPrecision(6).toString()}m<br />
                 <input
                   className="inlineButtonSlider"
@@ -329,7 +331,7 @@ class FleetAndCombatSimulator extends React.Component<
                 />
               </Button>
               <Button primary onClick={this.SimulateBattle}>Simulate Battle!</Button>
-              <Button color="grey">
+              <Button color="grey" as="div">
                 Simulation Speed {this.state.simulationSpeed.toPrecision(4).toString()}x
                 <input
                   className="inlineButtonSlider"

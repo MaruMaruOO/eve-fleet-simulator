@@ -1,6 +1,7 @@
 .ui.grid>.column.combatAndShipDisplay {
   padding-top: 6em;
   padding-left: 0em;
+  max-height: 100%;
 }
 .sidebarToggleDiv {
   #padding-top: 6em;

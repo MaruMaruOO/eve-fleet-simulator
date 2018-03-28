@@ -71,7 +71,7 @@ function SidebarShipDisplaySettings() {
           <Button.Group color={ShipDataDisplayManager.activeTank ? 'olive' : 'grey'}>
             <Button className="formattingButton">Active Tank
             </Button>
-            <Button className="contentButton">
+            <Button as="div" className="contentButton">
               <Checkbox
                 onClick={activeTankToggle}
                 checked={ShipDataDisplayManager.activeTank}

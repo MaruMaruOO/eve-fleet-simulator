@@ -381,11 +381,12 @@ function SidebarShipDisplay() {
         style={{
           backgroundColor: 'rgb(180, 180, 180)',
           paddingBottom: '0.75rem',
-          paddingTop: '1.25rem',
-          marginBottom: '0.5em',
+          paddingTop: '0.75rem',
+          marginBottom: '0.75rem',
           marginTop: '0em',
           display: 'block',
           width: '100%',
+          maxHeight: '10%',
         }}
         textAlign="center"
         attached="top"
@@ -396,11 +397,10 @@ function SidebarShipDisplay() {
       </Header>
       <div style={{
         width: 'auto',
-        display: 'block',
+        display: 'inline-block',
         position: 'relative',
         minHeight: '90%',
         alignSelf: 'top',
-        overflowY: 'auto',
         verticalAlign: 'top',
         paddingRight: '1em',
         paddingLeft: '1em',

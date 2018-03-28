@@ -79,12 +79,12 @@ function SidebarContent() {
       style={{
         backgroundColor: 'rgb(83, 87, 123)',
         overflowY: 'auto',
-        marginTop: '-2em',
+        marginTop: '-1.5em',
       }}
     >
       <Grid.Row style={{
         width: '100%',
-        display: 'flex',
+        display: 'block',
         position: 'relative',
         flexWrap: 'wrap',
         backgroundColor: 'rgb(33, 37, 43)',
@@ -117,7 +117,7 @@ class FullUI extends React.Component<{ }, { showSidebar: boolean }> {
   }
   render() {
     const sideBarIfAny = this.state.showSidebar ? (
-      <Grid.Column style={{ paddingTop: '6em', backgroundColor: 'rgb(83, 87, 123)' }} key={0} width={3}>
+      <Grid.Column style={{ paddingTop: '6em', backgroundColor: 'rgb(83, 87, 123)', maxHeight: '100%' }} key={0} width={3}>
         <SidebarContent />
       </Grid.Column>
     ) : '';
