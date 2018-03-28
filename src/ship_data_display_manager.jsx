@@ -160,10 +160,10 @@ class ShipDataDisplayManager {
         shipData.maxShieldEHP = GetMaxEHP(shipData, 1, 'shield', ...maxEhpSettings);
         shipData.maxArmorEHP = GetMaxEHP(shipData, 1, 'armor', ...maxEhpSettings);
         shipData.maxHullEHP = GetMaxEHP(shipData, 1, 'hull', ...maxEhpSettings);
-        this.prevModuleQuality = this.moduleQuality;
-        this.prevActiveTank = this.activeTank;
       }
     }
+    this.prevModuleQuality = this.moduleQuality;
+    this.prevActiveTank = this.activeTank;
     for (const dataType of this.shipTypeDataTypes.filter(d => d.isBar)) {
       dataType.max = 0;
       for (const data of shipDataSet) {
@@ -188,10 +188,10 @@ class ShipDataDisplayManager {
         shipData.maxShieldEHP = GetMaxEHP(shipData, 1, 'shield', ...maxEhpSettings);
         shipData.maxArmorEHP = GetMaxEHP(shipData, 1, 'armor', ...maxEhpSettings);
         shipData.maxHullEHP = GetMaxEHP(shipData, 1, 'hull', ...maxEhpSettings);
-        this.prevModuleQuality = this.moduleQuality;
-        this.prevActiveTank = this.activeTank;
       }
     }
+    this.prevModuleQuality = this.moduleQuality;
+    this.prevActiveTank = this.activeTank;
     const fitDataSet = shipFitDataSetFull.filter(s => shipTypeSet.some(n => n.typeID === s.typeID));
     shipDataSet = [...shipDataSet, ...fitDataSet];
     for (const dataType of this.shipFitDataTypes.filter(d => d.isBar)) {
