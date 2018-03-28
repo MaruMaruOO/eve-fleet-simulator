@@ -17,34 +17,35 @@
   #max-width: 70%;
   #display: flex;
 }
-.shipCardHeader{
-  #float: right !important;
-  display: inline-block !important;
-  clear: none !important;
+.ui.cards>.card>.content>.header.center.aligned.shipCardHeader{
+  display: inline-block;
+  clear: none;
 }
-.shipCardBody{
-  float: right !important;
-  #display: inline-block !important;
-  clear: none !important;
+.ui.cards>.card>.content>.description.shipCardBody{
+  float: right;
+  clear: none;
   left: 0px;
-  #direction: rtl;
-  #display: flex;
-  #flex-direction: column;
   width: 60%;
-  #align-self: stretch !important;
 }
-.shipCardMeta{
+.ui.cards>.card .meta.shipCardMeta{
   #float: right;
+  font-size: .85714286rem;
   bottom: 0em;
   text-align: center;
-  max-width: 40%;
+  #max-width: 40%;
+  width: 80px;
   padding-top: .75em;
-  padding-right: 1em;
+  font-weight: 600;
+  #padding-right: 1em;
+  #padding-left: 1em;
 }
 .shipCardSecondary{
   max-width: 40%;
 }
-.shipCardSecondary>div>.image{
-  display: inline-block !important;
+.ui.cards>.card .content .shipCardSecondary>div>.image{
+  display: inline-block;
   max-width: 50%;
+}
+.ui.cards {
+  margin-top: -0.4375em;
 }
