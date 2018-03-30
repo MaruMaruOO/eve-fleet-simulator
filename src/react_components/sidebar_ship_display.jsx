@@ -386,7 +386,7 @@ function SidebarShipDisplay() {
           marginTop: '0em',
           display: 'block',
           width: '100%',
-          maxHeight: '10%',
+          //maxHeight: '10%',
         }}
         textAlign="center"
         attached="top"

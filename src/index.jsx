@@ -24,7 +24,7 @@ import FleetAndCombatSimulator from './react_components/fleet_and_combat_simulat
 
 const root: HTMLElement = document.getElementById('root') || document.createElement('div');
 // Adjust root and body fontSize when displaying on a small screen. Scales most things.
-if (root.clientWidth < 1920) {
+if (root.clientWidth < 1920 && root.clientWidth > 1200) {
   const newFontSize = `${Math.max(14 * (root.clientWidth / 1920), 11).toFixed(0)}px`;
   if (document.documentElement) {
     document.documentElement.style.fontSize = newFontSize;
@@ -99,9 +99,9 @@ function SidebarContent() {
   );
 }
 
-function ShipAndFitDisplay() {
+function ShipAndFitDisplay(props: { noTopMargin: boolean }) {
   return (
-    <div className="shipDisplay" style={{ overflowY: 'auto', overflowX: 'hidden' }}>
+    <div className={ props.noTopMargin ? "shipDisplay shipDisplayNoTopMargin" : "shipDisplay" }>
       <ShipAndFitCards />
     </div>
   );
@@ -110,14 +110,17 @@ function ShipAndFitDisplay() {
 class FullUI extends React.Component<{ }, { showSidebar: boolean }> {
   constructor(props: { }) {
     super(props);
-    this.state = { showSidebar: true };
+    this.state = { showSidebar: true, narrowScreen: root.clientWidth < 1200 };
   }
   toggleSidebar = () => {
     this.setState(prevState => ({ showSidebar: !prevState.showSidebar }));
   }
   render() {
     const sideBarIfAny = this.state.showSidebar ? (
-      <Grid.Column style={{ paddingTop: '6em', backgroundColor: 'rgb(83, 87, 123)', maxHeight: '100%' }} key={0} width={3}>
+      <Grid.Column className="sidebarColumn"
+                   key={0}
+                   width={this.state.narrowScreen ? 6 : 3}
+      >
         <SidebarContent />
       </Grid.Column>
     ) : '';
@@ -139,7 +142,10 @@ class FullUI extends React.Component<{ }, { showSidebar: boolean }> {
             stretched
           >
             { sideBarIfAny }
-            <Grid.Column className="combatAndShipDisplay" key={1} width={this.state.showSidebar ? 13 : 16}>
+            <Grid.Column className="combatAndShipDisplay"
+                         key={1}
+                         width={this.state.showSidebar ? (this.state.narrowScreen ? 10 : 13) : 16}
+            >
               <div className="sidebarToggleDiv">
                 <Icon
                   name={this.state.showSidebar ? 'chevron left' : 'chevron right'}
@@ -148,8 +154,9 @@ class FullUI extends React.Component<{ }, { showSidebar: boolean }> {
                   onClick={this.toggleSidebar}
                 />
               </div>
-              <FleetAndCombatSimulator />
-              <ShipAndFitDisplay />
+              { !this.state.showSidebar || !this.state.narrowScreen ?
+                <FleetAndCombatSimulator narrowScreen={ this.state.narrowScreen } /> : '' }
+              <ShipAndFitDisplay noTopMargin={ this.state.narrowScreen && this.state.showSidebar } />
             </Grid.Column>
           </Grid>
         </div>
