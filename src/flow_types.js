@@ -51,9 +51,11 @@ type SyntheticDropdownEvent = SyntheticEvent<Dropdown>;
 
 type SimulationState = 'setup' | 'running' | 'finished';
 
+type ButtonColors = [boolean, string, string, string, string, string];
+
 export type {
   Hp, SingleResonance, Resonance, WeaponData, WeaponType,
   WeaponAbility, ShipSize, ModuleQualityValue, VectorMaxLenThree,
   SyntheticInputEvent, SyntheticButtonEvent, SyntheticDropdownEvent,
-  SimulationState,
+  SimulationState, ButtonColors,
 };

@@ -21,13 +21,17 @@ import { SidebarShipDisplay } from './react_components/sidebar_ship_display';
 import SidebarShipDisplaySettings from './react_components/sidebar_ship_display_settings';
 import FleetAndCombatSimulator from './react_components/fleet_and_combat_simulator';
 
+import type { ButtonColors, SyntheticDropdownEvent } from './flow_types';
 
+
+const documentElement: HTMLElement = document.documentElement || document.createElement('div');
+documentElement.className = 'darkTheme';
 const root: HTMLElement = document.getElementById('root') || document.createElement('div');
 // Adjust root and body fontSize when displaying on a small screen. Scales most things.
 if (root.clientWidth < 1920 && root.clientWidth > 1200) {
   const newFontSize = `${Math.max(14 * (root.clientWidth / 1920), 11).toFixed(0)}px`;
-  if (document.documentElement) {
-    document.documentElement.style.fontSize = newFontSize;
+  if (documentElement) {
+    documentElement.style.fontSize = newFontSize;
   }
   if (document.body) {
     document.body.style.fontSize = newFontSize;
@@ -44,6 +48,36 @@ const UIRefresh = () => {
 };
 
 function TopMenu() {
+  const themes = [
+    {
+      key: '1',
+      text: (<div><Icon name="square" bordered style={{ color: 'rgba(17,19,21,1)' }} /> Dark</div>),
+      value: 'darkTheme',
+    },
+    {
+      key: '2',
+      text: (<div><Icon name="square" bordered style={{ color: 'rgba(252, 252, 252, 1)' }} /> Light</div>),
+      value: 'lightTheme',
+    },
+    {
+      key: '3',
+      text: (<div><Icon name="square" bordered style={{ color: 'rgb(5, 55, 55)' }} /> Shipwrecked</div>),
+      value: 'shipwreckedTheme',
+    },
+    {
+      key: '4',
+      text: (<div><Icon name="square" bordered style={{ color: 'rgb(180, 180, 180)' }} /> Default</div>),
+      value: 'defaultTheme',
+    },
+  ];
+  const themeChange = (
+    e: SyntheticDropdownEvent,
+    objData: { value: 'darkTheme' | 'lightTheme' | 'shipwreckedTheme' | 'defaultTheme' },
+  ) => {
+    const newTheme = objData.value;
+    documentElement.className = newTheme;
+    UIRefresh();
+  };
   return (
     <Menu
       inverted
@@ -65,65 +99,75 @@ function TopMenu() {
             </Dropdown.Menu>
           </Dropdown>
           <Menu.Item as="a">Login</Menu.Item>
+          <Dropdown
+            className="link item"
+            onChange={themeChange}
+            options={themes}
+            pointing
+            defaultValue="darkTheme"
+          />
         </Menu.Menu>
       </Container>
     </Menu>);
 }
 
-function SidebarContent() {
+function SidebarContent(props: { buttonColors: ButtonColors }) {
   return (
-    <Grid
-      columns="1"
-      stretched
-      centered
-      style={{
-        backgroundColor: 'rgb(83, 87, 123)',
-        overflowY: 'auto',
-        marginTop: '-1.5em',
-      }}
-    >
-      <Grid.Row style={{
-        width: '100%',
-        display: 'block',
-        position: 'relative',
-        flexWrap: 'wrap',
-        backgroundColor: 'rgb(33, 37, 43)',
-        paddingTop: '0em',
-        boxShadow: '0em 0.2em rgba(0, 0, 0, 0.2)',
-      }}
-      >
+    <Grid columns="1" stretched centered>
+      <Grid.Row className="sidebarShipDisplayRow">
         <SidebarShipDisplay />
       </Grid.Row>
-      <SidebarShipDisplaySettings />
+      <SidebarShipDisplaySettings buttonColors={props.buttonColors} />
     </Grid>
   );
 }
 
 function ShipAndFitDisplay(props: { noTopMargin: boolean }) {
   return (
-    <div className={ props.noTopMargin ? "shipDisplay shipDisplayNoTopMargin" : "shipDisplay" }>
+    <div className={props.noTopMargin ? 'shipDisplay shipDisplayNoTopMargin' : 'shipDisplay'}>
       <ShipAndFitCards />
     </div>
   );
 }
 
-class FullUI extends React.Component<{ }, { showSidebar: boolean }> {
+class FullUI extends React.Component<{ },
+  { showSidebar: boolean, narrowScreen: boolean, buttonColors: ButtonColors }> {
   constructor(props: { }) {
     super(props);
-    this.state = { showSidebar: true, narrowScreen: root.clientWidth < 1200 };
+    const currentStyle: CSSStyleDeclaration = getComputedStyle(documentElement);
+    const buttonColorOne = currentStyle.getPropertyValue('--semantic-button-color-one');
+    const buttonColorTwo = currentStyle.getPropertyValue('--semantic-button-color-two');
+    const buttonColorThree = currentStyle.getPropertyValue('--semantic-button-color-three');
+    const buttonColorFour = currentStyle.getPropertyValue('--semantic-button-color-four');
+    const buttonColorFiveNoGroups = currentStyle
+      .getPropertyValue('--semantic-button-color-five-no-button-groups');
+    const invertButtonsStr = currentStyle.getPropertyValue('--semantic-invert-buttons');
+    const invertButtons = invertButtonsStr === 'true';
+    const initalButtonColors: ButtonColors = [
+      invertButtons, buttonColorOne, buttonColorTwo,
+      buttonColorThree, buttonColorFour, buttonColorFiveNoGroups,
+    ];
+    this.state = {
+      showSidebar: true, narrowScreen: root.clientWidth < 1200, buttonColors: initalButtonColors,
+    };
   }
   toggleSidebar = () => {
     this.setState(prevState => ({ showSidebar: !prevState.showSidebar }));
   }
   render() {
     const sideBarIfAny = this.state.showSidebar ? (
-      <Grid.Column className="sidebarColumn"
-                   key={0}
-                   width={this.state.narrowScreen ? 6 : 3}
+      <Grid.Column
+        className="sidebarColumn"
+        key={0}
+        width={this.state.narrowScreen ? 6 : 3}
       >
-        <SidebarContent />
+        <SidebarContent buttonColors={this.state.buttonColors} />
       </Grid.Column>
     ) : '';
+    let combatAndShipDisplayWidth = 16;
+    if (this.state.showSidebar) {
+      combatAndShipDisplayWidth = this.state.narrowScreen ? 10 : 13;
+    }
     return (
       <div style={{ height: '100%', position: 'fixed', display: 'block' }}>
         <TopMenu />
@@ -142,9 +186,10 @@ class FullUI extends React.Component<{ }, { showSidebar: boolean }> {
             stretched
           >
             { sideBarIfAny }
-            <Grid.Column className="combatAndShipDisplay"
-                         key={1}
-                         width={this.state.showSidebar ? (this.state.narrowScreen ? 10 : 13) : 16}
+            <Grid.Column
+              className="combatAndShipDisplay"
+              key={1}
+              width={combatAndShipDisplayWidth}
             >
               <div className="sidebarToggleDiv">
                 <Icon
@@ -155,8 +200,12 @@ class FullUI extends React.Component<{ }, { showSidebar: boolean }> {
                 />
               </div>
               { !this.state.showSidebar || !this.state.narrowScreen ?
-                <FleetAndCombatSimulator narrowScreen={ this.state.narrowScreen } /> : '' }
-              <ShipAndFitDisplay noTopMargin={ this.state.narrowScreen && this.state.showSidebar } />
+                <FleetAndCombatSimulator
+                  narrowScreen={this.state.narrowScreen}
+                  buttonColors={this.state.buttonColors}
+                /> : ''
+              }
+              <ShipAndFitDisplay noTopMargin={this.state.narrowScreen && this.state.showSidebar} />
             </Grid.Column>
           </Grid>
         </div>

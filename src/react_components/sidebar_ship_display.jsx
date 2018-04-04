@@ -322,19 +322,22 @@ const headerFunction: headType = ({ style, node }: {style: Node, node: SidebarSh
   const header = (
     <div style={baseStyle} width="100%">
       <div style={style.title ? style.title : ''}>
-        <div style={{ margin: '0em 2.5em 0em 0.25em' }}>
-          {node.typeID ? (<Image
-            style={shipImageStyle}
-            inline
-            centered={false}
-            circular
-            size="mini"
-            src={`./../../February2018Release_1.0_Renders/Renders/${node.typeID.toString()}.png`}
-          />) : ''}
+        <div style={{ margin: node.typeID ? '0em 5em 0em 0.25em' : '0.25em 5em 0.25em 0.25em' }}>
+          {node.typeID ?
+           (
+             <Image
+               style={shipImageStyle}
+               inline
+               centered={false}
+               circular
+               size="mini"
+               src={`./../../February2018Release_1.0_Renders/Renders/${node.typeID.toString()}.png`}
+             />
+           ) : ''}
           {node.name}
         </div>
         <Checkbox
-          label=""
+          toggle
           checked={node.checked}
           indeterminate={node.indeterminate}
           style={checkBoxStyle}
@@ -378,20 +381,11 @@ function SidebarShipDisplay() {
   return (
     <React.Fragment>
       <Header
-        style={{
-          backgroundColor: 'rgb(180, 180, 180)',
-          paddingBottom: '0.75rem',
-          paddingTop: '0.75rem',
-          marginBottom: '0.75rem',
-          marginTop: '0em',
-          display: 'block',
-          width: '100%',
-          //maxHeight: '10%',
-        }}
         textAlign="center"
         attached="top"
         block
         size="huge"
+        className="sidebarHeader"
       >
         Ship Display Selector
       </Header>

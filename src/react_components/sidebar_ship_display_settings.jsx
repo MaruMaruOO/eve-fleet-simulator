@@ -9,13 +9,13 @@ import {
 
 import ShipDataDisplayManager from './../ship_data_display_manager';
 import { UIRefresh } from './../index';
-import type { SyntheticDropdownEvent } from './../flow_types';
+import type { SyntheticDropdownEvent, ButtonColors } from './../flow_types';
 
 import techTwoIcon from './../eve_icons/73_16_242.png';
 import factionIcon from './../eve_icons/73_16_246.png';
 import deadspaceIcon from './../eve_icons/73_16_247.png';
 
-function SidebarShipDisplaySettings() {
+function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
   const moduleQualityChange = (e: SyntheticDropdownEvent, objData: { value: '1' | '2' | '3' | '4' }) => {
     const num = Number(objData.value);
     if (num === 1 || num === 2 || num === 3 || num === 4) {
@@ -68,7 +68,11 @@ function SidebarShipDisplaySettings() {
       <Container className="shipDisplaySettings">
         {ShipDataDisplayManager.StatDisplayIconToggles(ShipDataDisplayManager.isDisplayModeFit)}
         <div className="ui">
-          <Button.Group color={ShipDataDisplayManager.activeTank ? 'olive' : 'grey'}>
+          <Button.Group
+            color={ShipDataDisplayManager.activeTank ?
+                   props.buttonColors[1] : props.buttonColors[4]}
+            inverted={props.buttonColors[0]}
+          >
             <Button className="formattingButton">Active Tank
             </Button>
             <Button as="div" className="contentButton">
@@ -81,7 +85,7 @@ function SidebarShipDisplaySettings() {
           </Button.Group>
         </div>
         <div className="ui">
-          <Button.Group color="blue">
+          <Button.Group color={props.buttonColors[3]} inverted={props.buttonColors[0]}>
             <Button className="formattingButton">Ship type module quality</Button>
             <Dropdown
               className="contentButton"
@@ -95,7 +99,7 @@ function SidebarShipDisplaySettings() {
           </Button.Group>
         </div>
         <div className="ui">
-          <Button.Group color="teal">
+          <Button.Group color={props.buttonColors[2]} inverted={props.buttonColors[0]}>
             <Button className="formattingButton">Sort ship types by</Button>
             <Dropdown
               className="contentButton"

@@ -7,7 +7,7 @@ import RunFleetActions from './../fleet_actions';
 import Side from './../side_class';
 import ShipData from './../ship_data_class';
 import Ship from './../ship_class';
-import type { SimulationState, SyntheticInputEvent } from './../flow_types';
+import type { SimulationState, SyntheticInputEvent, ButtonColors } from './../flow_types';
 
 function FleetStateTableHeader(props: { side: 'red' | 'blue' }) {
   return (
@@ -85,9 +85,12 @@ type FleetAndCombatSimulatorState = {
   red: Side, blue: Side, simulationState: SimulationState,
 };
 class FleetAndCombatSimulator extends React.Component<
-{ initalDistance?: number, narrowScreen: boolean }, FleetAndCombatSimulatorState
+{ initalDistance?: number, narrowScreen: boolean, buttonColors: ButtonColors },
+FleetAndCombatSimulatorState
 > {
-  constructor(props: { initalDistance?: number }) {
+  constructor(props: {
+    initalDistance?: number, narrowScreen: boolean, buttonColors: ButtonColors,
+  }) {
     super(props);
     this.state = {
       reportStrings: [],
@@ -108,16 +111,11 @@ class FleetAndCombatSimulator extends React.Component<
       this.XYPlotSize = this.currentFontSize * 22;
       this.setXYPlotMargin(2);
     }
-    //this.totalHeight = (10.66 + (this.props.narrowScreen ? 10 : 22)).toString() + 'em';
     this.totalHeight = this.props.narrowScreen ? '20.66em' : '23.81458vw';
-    //this.totalHeight = (this.XYPlotSize + this.currentFontSize * 10.66).toString() + 'px';
-    //padding: .78571429em 1.5em .78571429em;
-    //margin-top: 0.58928571em;2.16
   }
   componentWillUpdate() {
     this.refreshSides();
     this.totalHeight = this.props.narrowScreen ? '20.66em' : '23.81458vw';
-    //this.totalHeight = (10.66 + (this.props.narrowScreen ? 10 : 22)).toString() + 'em';
   }
   setXYPlotMargin = (charLengthOfMaxShips: number) => {
     this.XYPlotMargin = {
@@ -127,6 +125,7 @@ class FleetAndCombatSimulator extends React.Component<
       bottom: this.currentFontSize * 2,
     };
   };
+  totalHeight: string;
   currentFontSize: number;
   XYPlotSize: number;
   XYPlotMargin: {left: number, right: number, top: number, bottom: number };
@@ -261,18 +260,18 @@ class FleetAndCombatSimulator extends React.Component<
   };
   render() {
     const reportData = this.state.reportStrings.length < 100 ?
-                       this.state.reportStrings.map((report, i) =>
-                         <p key={report + i.toString()}>{ report }</p>) :
-                       '';
+      this.state.reportStrings.map((report, i) =>
+        <p key={report + i.toString()}>{ report }</p>) :
+      '';
     return (
-      <div className="fleetSim" style={{height: this.totalHeight, maxHeight: this.totalHeight}}>
+      <div className="fleetSim" style={{ height: this.totalHeight, maxHeight: this.totalHeight }}>
         <Grid>
-          <Grid.Column width={ this.props.narrowScreen ? 5 : 4 }>
+          <Grid.Column width={this.props.narrowScreen ? 5 : 4}>
             <Table
               celled
               className="fleetStateTable"
-              compact={ this.props.narrowScreen ? "very" : true }
-              size={ this.props.narrowScreen ? 'small' : null }
+              compact={this.props.narrowScreen ? 'very' : true}
+              size={this.props.narrowScreen ? 'small' : null}
             >
               <Table>
                 <FleetStateTableHeader side="red" />
@@ -284,13 +283,13 @@ class FleetAndCombatSimulator extends React.Component<
               </Table>
             </Table>
           </Grid.Column>
-          <Grid.Column width={ this.props.narrowScreen ? 6 : 8 } className={ this.props.narrowScreen ? "battleDisplay battleDisplayNarrow" : "battleDisplay" }>
+          <Grid.Column width={this.props.narrowScreen ? 6 : 8} className={this.props.narrowScreen ? 'battleDisplay battleDisplayNarrow' : 'battleDisplay'}>
             <Dimmer.Dimmable className="battleDisplayDimmer" dimmed={this.state.simulationState === 'finished'}>
               <Dimmer active={this.state.simulationState === 'finished'}>
                 <div className="battleDisplayResults">
                   <Segment
-                    className={ this.props.narrowScreen ?
-                               "applicationDisplay applicationDisplayNarrow" : "applicationDisplay" }
+                    className={this.props.narrowScreen ?
+                               'applicationDisplay applicationDisplayNarrow' : 'applicationDisplay'}
                     inverted
                     floated="left"
                   >
@@ -317,7 +316,7 @@ class FleetAndCombatSimulator extends React.Component<
                     />
                     <XAxis
                       title="Time (Seconds)"
-                      tickTotal={ this.props.narrowScreen ? 3 : 5 }
+                      tickTotal={this.props.narrowScreen ? 3 : 5}
                       style={{
                         stroke: 'white',
                         fill: 'white',
@@ -338,8 +337,8 @@ class FleetAndCombatSimulator extends React.Component<
                     />
                   </XYPlot>
                   <Segment
-                    className={ this.props.narrowScreen ?
-                               "applicationDisplay applicationDisplayNarrow" : "applicationDisplay" }
+                    className={this.props.narrowScreen ?
+                               'applicationDisplay applicationDisplayNarrow' : 'applicationDisplay'}
                     inverted
                     floated="right"
                   >
@@ -350,7 +349,7 @@ class FleetAndCombatSimulator extends React.Component<
               <BattleDisplay red={this.red} blue={this.blue} />
             </Dimmer.Dimmable>
             <Button.Group attached="bottom" widths="3">
-              <Button color="grey" as="div">
+              <Button as="div" color={this.props.buttonColors[5]} inverted={this.props.buttonColors[0]}>
                 Fleet Starting Distance {this.state.initalDistance.toPrecision(6).toString()}m
                 <br />
                 <input
@@ -362,8 +361,14 @@ class FleetAndCombatSimulator extends React.Component<
                   defaultValue={this.state.initalDistance}
                 />
               </Button>
-              <Button primary onClick={this.SimulateBattle}>Simulate Battle!</Button>
-              <Button color="grey" as="div">
+              <Button
+                onClick={this.SimulateBattle}
+                color={this.props.buttonColors[2]}
+                inverted={this.props.buttonColors[0]}
+              >
+                Simulate Battle!
+              </Button>
+              <Button as="div" color={this.props.buttonColors[5]} inverted={this.props.buttonColors[0]}>
                 Simulation Speed {this.state.simulationSpeed.toPrecision(4).toString()}x
                 <br />
                 <input
@@ -377,12 +382,12 @@ class FleetAndCombatSimulator extends React.Component<
               </Button>
             </Button.Group>
           </Grid.Column>
-          <Grid.Column width={ this.props.narrowScreen ? 5 : 4 }>
+          <Grid.Column width={this.props.narrowScreen ? 5 : 4}>
             <Table
               celled
               className="fleetStateTable"
-              compact={ this.props.narrowScreen ? "very" : true }
-              size={ this.props.narrowScreen ? 'small' : null }
+              compact={this.props.narrowScreen ? 'very' : true}
+              size={this.props.narrowScreen ? 'small' : null}
             >
               <Table>
                 <FleetStateTableHeader side="blue" />
