@@ -260,14 +260,14 @@ function updateIsDisplayModeFit() {
   const shipTypeSet = groupLevelNodes.filter(s => s.checked || s.indeterminate)
     .reduce((t, c) => (c.children ? [...t, ...c.children] : t), []);
   if (shipTypeSet.filter(s => s.checked).length > 1) {
-    ShipDataDisplayManager.isDisplayModeFit = false;
+    // ShipDataDisplayManager.isDisplayModeFit = false;
   } else {
     const shipFitSet = shipTypeSet.filter(s => s.checked || s.indeterminate)
       .reduce((t, c) => (c.children ? [...t, ...c.children] : t), []);
     if (shipFitSet.filter(s => s.checked).length > 0) {
-      ShipDataDisplayManager.isDisplayModeFit = true;
+      // ShipDataDisplayManager.isDisplayModeFit = true;
     } else {
-      ShipDataDisplayManager.isDisplayModeFit = false;
+      // ShipDataDisplayManager.isDisplayModeFit = false;
     }
   }
 }

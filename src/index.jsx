@@ -20,6 +20,7 @@ import ShipAndFitCards from './react_components/ship_and_fit_cards';
 import { SidebarShipDisplay, ships } from './react_components/sidebar_ship_display';
 import SidebarShipDisplaySettings from './react_components/sidebar_ship_display_settings';
 import FleetAndCombatSimulator from './react_components/fleet_and_combat_simulator';
+import ShipDataDisplayManager from './ship_data_display_manager';
 
 import type {
   ButtonColors, SyntheticDropdownEvent, SyntheticButtonEvent,
@@ -276,8 +277,11 @@ function TopMenu(props: { fullui: FullUI }) {
   };
   const pageChange = (
     e: SyntheticButtonEvent,
-    data: { fullui: FullUI, page: '<FleetAndFits />' | '<UploadFits />' },
+    data: { fullui: FullUI, page: '<FleetAndFits />' | '<UploadFits />', fitmode: ?('true' | 'false') },
   ) => {
+    if (data.fitmode !== undefined) {
+      ShipDataDisplayManager.isDisplayModeFit = data.fitmode === 'true';
+    }
     data.fullui.setState({ page: data.page });
     UIRefresh();
   };
@@ -293,8 +297,9 @@ function TopMenu(props: { fullui: FullUI }) {
           <Image src={mainRifterIcon} size="mini" />
         </Menu.Item>
         <Menu.Item header>Eve Fleet Fight Simulator</Menu.Item>
-        <Menu.Item as="a" fullui={props.fullui} page={'<FleetAndFits />'} onClick={pageChange}>Fleets & Fits</Menu.Item>
-        <Menu.Item as="a" fullui={props.fullui} page={'<UploadFits />'} onClick={pageChange}>Upload Fits</Menu.Item>
+        <Menu.Item as="a" fullui={props.fullui} fitmode="false" page="<FleetAndFits />" onClick={pageChange}>Ships</Menu.Item>
+        <Menu.Item as="a" fullui={props.fullui} fitmode="true" page="<FleetAndFits />" onClick={pageChange}>Fleet Simulator</Menu.Item>
+        <Menu.Item as="a" fullui={props.fullui} page="<UploadFits />" onClick={pageChange}>Upload Fits</Menu.Item>
         <Menu.Menu position="right">
           <Dropdown text="Other" pointing className="link item">
             <Dropdown.Menu>
@@ -413,11 +418,12 @@ class FleetAndFits extends React.Component<{ },
                 onClick={this.toggleSidebar}
               />
             </div>
-            { !this.state.showSidebar || !this.state.narrowScreen ?
-              <FleetAndCombatSimulator
-                narrowScreen={this.state.narrowScreen}
-                buttonColors={this.state.buttonColors}
-              /> : ''
+            { (!this.state.showSidebar || !this.state.narrowScreen)
+                && ShipDataDisplayManager.isDisplayModeFit ?
+                  <FleetAndCombatSimulator
+                    narrowScreen={this.state.narrowScreen}
+                    buttonColors={this.state.buttonColors}
+                  /> : ''
             }
             <ShipAndFitDisplay noTopMargin={this.state.narrowScreen && this.state.showSidebar} />
           </Grid.Column>
