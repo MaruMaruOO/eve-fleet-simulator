@@ -14,9 +14,19 @@ import { shipJSON } from './../shipJSON';
 import { shipBaseJSON } from './../base_derived_stats';
 import ShipDataDisplayManager from './../ship_data_display_manager';
 
-const ships: ShipData[] = JSON.parse(shipJSON);
+const defaultFits: ShipData[] = JSON.parse(shipJSON);
+defaultFits.forEach(s => ShipData.processing(s));
+let localFits: ShipData[] = [];
+try {
+  localFits = (JSON.parse(localStorage.getItem('effsLocalShipData') || '[]'): ShipData[]);
+  localFits = localFits.filter(f => f);
+  localFits.forEach(s => ShipData.processing(s));
+} catch (e) {
+  localFits = [];
+  localStorage.setItem('effsLocalShipData', JSON.stringify(localFits));
+}
+const ships: ShipData[] = localFits.length > 0 ? [...defaultFits, ...localFits] : defaultFits;
 const baseShips: ShipData[] = JSON.parse(shipBaseJSON);
-ships.forEach(s => ShipData.processing(s));
 baseShips.forEach(s => ShipData.processing(s));
 
 const ShipSizes = ['Frigate', 'Destroyer', 'Cruiser', 'Battlecruiser', 'Battleship', 'Capital', 'Industrial', 'Misc'];
@@ -184,7 +194,8 @@ function getHullSizeData() {
   return shipDataSet;
 }
 
-const data = getHullSizeData();
+const dataConst = [getHullSizeData()];
+let data = dataConst[0];
 
 function getNodeByIdChain(id: number[]) {
   let currentNode = data.filter(n => n.nodeId === id[0])[0];
@@ -358,6 +369,9 @@ class ShipTree extends React.Component<Props, State> {
   constructor(props: {}) {
     super(props);
     this.state = { cursor: null };
+    dataConst.pop();
+    dataConst.push(getHullSizeData());
+    [data] = dataConst;
   }
   onToggle = (node: SidebarShipNode, toggled: boolean) => {
     if (this.state.cursor) { this.state.cursor.active = false; }
@@ -407,4 +421,4 @@ function SidebarShipDisplay() {
   );
 }
 
-export { SidebarShipDisplay, ShipSizes, SidebarShipNode, data, ships, baseShips };
+export { SidebarShipDisplay, ShipSizes, SidebarShipNode, dataConst, ships, baseShips };

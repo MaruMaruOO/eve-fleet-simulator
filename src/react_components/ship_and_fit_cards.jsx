@@ -1,7 +1,7 @@
 // @flow
 import React from 'react';
 import { Card, Image, Input, Popup, Label } from 'semantic-ui-react';
-import { SidebarShipNode, data, ships, baseShips } from './sidebar_ship_display';
+import { SidebarShipNode, dataConst, ships, baseShips } from './sidebar_ship_display';
 import { sideOneShips, sideTwoShips, UIRefresh } from './../index';
 import ShipDataDisplayManager from './../ship_data_display_manager';
 
@@ -128,7 +128,7 @@ function ShipAndFitCards() {
         </Card.Content>
       </Card>);
   };
-  const sizeSelected: SidebarShipNode[] = data.filter(s =>
+  const sizeSelected: SidebarShipNode[] = dataConst[0].filter(s =>
     s.checked === true || s.indeterminate === true);
   const commonSetBarMaximumArgs = [baseShips, sizeSelected];
   let groupsSelected: SidebarShipNode[] = [];

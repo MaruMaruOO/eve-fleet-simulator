@@ -4,8 +4,8 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 import 'semantic-ui-css/semantic.min.css';
 import {
-  Menu, Image, Icon,
-  Container, Grid, Dropdown,
+  Menu, Image, Icon, Form, Message, Divider, Dimmer,
+  Container, Grid, Dropdown, Segment, Header, Button,
 } from 'semantic-ui-react';
 
 import './css/progress_overides.css';
@@ -17,15 +17,22 @@ import ShipData from './ship_data_class';
 import mainRifterIcon from './eve_icons/tabFittingsHorizontal.png';
 
 import ShipAndFitCards from './react_components/ship_and_fit_cards';
-import { SidebarShipDisplay } from './react_components/sidebar_ship_display';
+import { SidebarShipDisplay, ships } from './react_components/sidebar_ship_display';
 import SidebarShipDisplaySettings from './react_components/sidebar_ship_display_settings';
 import FleetAndCombatSimulator from './react_components/fleet_and_combat_simulator';
 
-import type { ButtonColors, SyntheticDropdownEvent } from './flow_types';
-
+import type {
+  ButtonColors, SyntheticDropdownEvent, SyntheticButtonEvent,
+  SyntheticInputEvent,
+} from './flow_types';
 
 const documentElement: HTMLElement = document.documentElement || document.createElement('div');
-documentElement.className = 'darkTheme';
+const savedTheme = localStorage.getItem('effsTheme');
+if (savedTheme && savedTheme.endsWith('Theme')) {
+  documentElement.className = savedTheme;
+} else {
+  documentElement.className = 'darkTheme';
+}
 const root: HTMLElement = document.getElementById('root') || document.createElement('div');
 // Adjust root and body fontSize when displaying on a small screen. Scales most things.
 if (root.clientWidth < 1920 && root.clientWidth > 1200) {
@@ -47,26 +54,215 @@ const UIRefresh = () => {
   );
 };
 
-function TopMenu() {
+type UploadFitsState = {
+  fitData: string, addedFits: string, parseFailure: boolean,
+  localShipData: { key: number, text: string, value: string }[], deleteSelection: string,
+  deleteAllCheck: boolean,
+};
+class UploadFits extends React.Component<{ }, UploadFitsState> {
+  constructor(props: { }) {
+    super(props);
+    this.updateLocalShipDropdown = () => {
+      const localFits: ShipData[] = JSON.parse(localStorage.getItem('effsLocalShipData') || '[]');
+      return localFits.map((s, i) => ({ key: i, text: s.name, value: i.toString() }));
+    };
+    this.state = {
+      fitData: '',
+      addedFits: '',
+      parseFailure: false,
+      localShipData: this.updateLocalShipDropdown(),
+      deleteSelection: '',
+      deleteAllCheck: false,
+    };
+  }
+  updateLocalShipDropdown;
+  handleChange = (e: SyntheticInputEvent, { value }: { value: string }) => {
+    this.setState({ fitData: value });
+  };
+  deleteFit = (e: SyntheticButtonEvent, { value }: { value: ?string }) => {
+    const localFits: ShipData[] = JSON.parse(localStorage.getItem('effsLocalShipData') || '[]');
+    const ind: number = Number(value !== '' ? value : NaN);
+    if (!Number.isNaN(ind)) {
+      const [{ name }] = localFits.splice(ind, 1);
+      localStorage.setItem('effsLocalShipData', JSON.stringify(localFits));
+      this.setState({
+        localShipData: this.updateLocalShipDropdown(),
+        deleteSelection: `Successfully deleted ${name}`,
+      });
+    }
+  };
+  deleteDropdownChange = (e: SyntheticDropdownEvent, { value }: { value: string }) => {
+    this.setState({ deleteSelection: value });
+  };
+  checkDeleteAll = () => this.setState({ deleteAllCheck: true });
+  cancelDeleteAll = () => this.setState({ deleteAllCheck: false });
+  wipeLocalFits = () => {
+    localStorage.setItem('effsLocalShipData', JSON.stringify([]));
+    this.setState({
+      localShipData: this.updateLocalShipDropdown(),
+      deleteSelection: 'All local fits have been successfully deleted',
+      deleteAllCheck: false,
+    });
+  };
+  addShipFitData = (e: SyntheticButtonEvent, data: { value: string }) => {
+    let submittedShipData = data.value.trim();
+    if (!submittedShipData.endsWith(']')) {
+      submittedShipData += ']';
+    }
+    if (!submittedShipData.startsWith('[')) {
+      submittedShipData = `[${submittedShipData}`;
+    }
+    if (submittedShipData.endsWith('},]')) {
+      submittedShipData = submittedShipData.replace('},]', '}]');
+    }
+    const previousShipData: ShipData[] =
+      JSON.parse(localStorage.getItem('effsLocalShipData') || '[]');
+    try {
+      const submittedArray: ShipData[] = JSON.parse(submittedShipData);
+      const newShipData = previousShipData.length > 0 ?
+        [...previousShipData, ...submittedArray] : [...submittedArray];
+      const newShipDataStr = JSON.stringify(newShipData);
+      submittedArray.forEach(shipData => ShipData.processing(shipData));
+      submittedArray.forEach(shipData => ships.push(shipData));
+      const newShipNum = submittedArray.length;
+      let addedFitsStr: string = '';
+      if (newShipNum > 1) {
+        addedFitsStr = `${newShipNum.toString()} fits`;
+      } else {
+        addedFitsStr = ` ${submittedArray[0].shipType || 'unknown'} fit`;
+      }
+      localStorage.setItem('effsLocalShipData', newShipDataStr);
+      this.setState({
+        fitData: '',
+        addedFits: addedFitsStr,
+        parseFailure: false,
+        localShipData: this.updateLocalShipDropdown(),
+      });
+    } catch (err) {
+      this.setState({ fitData: '', addedFits: '', parseFailure: true });
+    }
+  };
+  render() {
+    const {
+      fitData, addedFits, parseFailure, localShipData, deleteSelection, deleteAllCheck,
+    } = this.state;
+    return (
+      <div style={{
+        height: '100%',
+        width: '100%',
+        top: '0%',
+        position: 'fixed',
+        paddingTop: 'calc(0.92857143em * 1.14285714 * 2 + 1.6em + 32.2344px)',
+        overflowY: 'auto',
+      }}
+      >
+        <Container className="pageContainer">
+          <Header as="h5" attached="top">
+            Add Fits
+          </Header>
+          <Segment attached>
+            <Form success={addedFits.length > 0} error={parseFailure}>
+              <Form.TextArea
+                value={fitData}
+                onChange={this.handleChange}
+                label="Fit Data"
+                placeholder="Paste Fit Data"
+              />
+              <Message
+                success
+                header={`Successfully added ${addedFits}`}
+              />
+              <Message
+                error
+                header="Unable to parse fit information"
+                content="Make sure to use the data exactly as provided by pyfa's effs format."
+              />
+              <Form.Button value={fitData} onClick={this.addShipFitData}>
+                Submit
+              </Form.Button>
+            </Form>
+          </Segment>
+          <Header as="h5" attached="top">
+            Delete Fits
+          </Header>
+          <Segment attached>
+            <Form success={deleteSelection.startsWith('Successfully deleted')}>
+              <Form.Dropdown
+                onChange={this.deleteDropdownChange}
+                options={localShipData}
+                placeholder="Select fit"
+                label="Delete a single fit"
+                inline
+              />
+              <Message
+                success
+                header={deleteSelection}
+              />
+              <Form.Button value={deleteSelection} onClick={this.deleteFit}>
+                Delete fit
+              </Form.Button>
+            </Form>
+            <Divider />
+            <Form success={deleteSelection.startsWith('All local fits')}>
+              <Message
+                success
+                header={deleteSelection}
+              />
+              <Form.Button
+                negative
+                content="Delete all"
+                onClick={this.checkDeleteAll}
+                label="Delete all local fits"
+              />
+              <Dimmer
+                active={deleteAllCheck}
+                onClickOutside={this.cancelDeleteAll}
+                page
+              >
+                <Header as="h3" icon inverted>
+                  This will permenently delete all locally stored ship fits
+                </Header>
+                <br />
+                <Button.Group>
+                  <Button
+                    content="Cancel"
+                    onClick={this.cancelDeleteAll}
+                  />
+                  <Button
+                    negative
+                    content="Confirm delete all"
+                    onClick={this.wipeLocalFits}
+                  />
+                </Button.Group>
+              </Dimmer>
+            </Form>
+          </Segment>
+        </Container>
+      </div>
+    );
+  }
+}
+
+function TopMenu(props: { fullui: FullUI }) {
   const themes = [
     {
       key: '1',
-      text: (<div><Icon name="square" bordered style={{ color: 'rgba(17,19,21,1)' }} /> Dark</div>),
+      text: (<div><Icon name="square" style={{ color: 'rgba(17,19,21,1)' }} /> Dark</div>),
       value: 'darkTheme',
     },
     {
       key: '2',
-      text: (<div><Icon name="square" bordered style={{ color: 'rgba(252, 252, 252, 1)' }} /> Light</div>),
+      text: (<div><Icon name="square" style={{ color: 'rgba(252, 252, 252, 1)' }} /> Light</div>),
       value: 'lightTheme',
     },
     {
       key: '3',
-      text: (<div><Icon name="square" bordered style={{ color: 'rgb(5, 55, 55)' }} /> Shipwrecked</div>),
+      text: (<div><Icon name="square" style={{ color: 'rgb(5, 55, 55)' }} /> Shipwrecked</div>),
       value: 'shipwreckedTheme',
     },
     {
       key: '4',
-      text: (<div><Icon name="square" bordered style={{ color: 'rgb(180, 180, 180)' }} /> Default</div>),
+      text: (<div><Icon name="square" style={{ color: 'rgb(180, 180, 180)' }} /> Default</div>),
       value: 'defaultTheme',
     },
   ];
@@ -76,6 +272,13 @@ function TopMenu() {
   ) => {
     const newTheme = objData.value;
     documentElement.className = newTheme;
+    localStorage.setItem('effsTheme', newTheme);
+  };
+  const pageChange = (
+    e: SyntheticButtonEvent,
+    data: { fullui: FullUI, page: '<FleetAndFits />' | '<UploadFits />' },
+  ) => {
+    data.fullui.setState({ page: data.page });
     UIRefresh();
   };
   return (
@@ -90,8 +293,8 @@ function TopMenu() {
           <Image src={mainRifterIcon} size="mini" />
         </Menu.Item>
         <Menu.Item header>Eve Fleet Fight Simulator</Menu.Item>
-        <Menu.Item as="a">Fleets & Fits</Menu.Item>
-        <Menu.Item as="a">Upload Fits</Menu.Item>
+        <Menu.Item as="a" fullui={props.fullui} page={'<FleetAndFits />'} onClick={pageChange}>Fleets & Fits</Menu.Item>
+        <Menu.Item as="a" fullui={props.fullui} page={'<UploadFits />'} onClick={pageChange}>Upload Fits</Menu.Item>
         <Menu.Menu position="right">
           <Dropdown text="Other" pointing className="link item">
             <Dropdown.Menu>
@@ -104,7 +307,7 @@ function TopMenu() {
             onChange={themeChange}
             options={themes}
             pointing
-            defaultValue="darkTheme"
+            defaultValue={documentElement.className}
           />
         </Menu.Menu>
       </Container>
@@ -129,8 +332,21 @@ function ShipAndFitDisplay(props: { noTopMargin: boolean }) {
     </div>
   );
 }
-
-class FullUI extends React.Component<{ },
+class FullUI extends React.Component<{ }, { page: '<FleetAndFits />' | '<UploadFits />' }> {
+  constructor(props: { }) {
+    super(props);
+    this.state = { page: '<FleetAndFits />' };
+  }
+  render() {
+    return (
+      <div style={{ height: '100%', position: 'fixed', display: 'block' }}>
+        <TopMenu fullui={this} />
+        {this.state.page === '<FleetAndFits />' ? <FleetAndFits /> : <UploadFits />}
+      </div>
+    );
+  }
+}
+class FleetAndFits extends React.Component<{ },
   { showSidebar: boolean, narrowScreen: boolean, buttonColors: ButtonColors }> {
   constructor(props: { }) {
     super(props);
@@ -169,46 +385,43 @@ class FullUI extends React.Component<{ },
       combatAndShipDisplayWidth = this.state.narrowScreen ? 10 : 13;
     }
     return (
-      <div style={{ height: '100%', position: 'fixed', display: 'block' }}>
-        <TopMenu />
-        <div style={{
-          height: '100%', width: '100%', top: '0%', position: 'fixed', display: 'inlineFlex',
-        }}
+      <div style={{
+        height: '100%', width: '100%', top: '0%', position: 'fixed', display: 'inlineFlex',
+      }}
+      >
+        <Grid
+          style={{
+            height: '100%',
+            width: '100%',
+            margin: '0%',
+            position: 'static',
+            display: 'flex',
+          }}
+          stretched
         >
-          <Grid
-            style={{
-              height: '100%',
-              width: '100%',
-              margin: '0%',
-              position: 'static',
-              display: 'flex',
-            }}
-            stretched
+          { sideBarIfAny }
+          <Grid.Column
+            className="combatAndShipDisplay"
+            key={1}
+            width={combatAndShipDisplayWidth}
           >
-            { sideBarIfAny }
-            <Grid.Column
-              className="combatAndShipDisplay"
-              key={1}
-              width={combatAndShipDisplayWidth}
-            >
-              <div className="sidebarToggleDiv">
-                <Icon
-                  name={this.state.showSidebar ? 'chevron left' : 'chevron right'}
-                  size="big"
-                  link
-                  onClick={this.toggleSidebar}
-                />
-              </div>
-              { !this.state.showSidebar || !this.state.narrowScreen ?
-                <FleetAndCombatSimulator
-                  narrowScreen={this.state.narrowScreen}
-                  buttonColors={this.state.buttonColors}
-                /> : ''
-              }
-              <ShipAndFitDisplay noTopMargin={this.state.narrowScreen && this.state.showSidebar} />
-            </Grid.Column>
-          </Grid>
-        </div>
+            <div className="sidebarToggleDiv">
+              <Icon
+                name={this.state.showSidebar ? 'chevron left' : 'chevron right'}
+                size="big"
+                link
+                onClick={this.toggleSidebar}
+              />
+            </div>
+            { !this.state.showSidebar || !this.state.narrowScreen ?
+              <FleetAndCombatSimulator
+                narrowScreen={this.state.narrowScreen}
+                buttonColors={this.state.buttonColors}
+              /> : ''
+            }
+            <ShipAndFitDisplay noTopMargin={this.state.narrowScreen && this.state.showSidebar} />
+          </Grid.Column>
+        </Grid>
       </div>
     );
   }

@@ -23,7 +23,7 @@
   --semantic-button-color-five-no-button-groups:grey;
   --semantic-invert-buttons:false;
   --stock-font-color: rgba(0, 0, 0, 0.87);
-  --high-contrast-font-color: rgba(0, 0, 0, 0.87);
+  --high-contrast-font-color: rgba(0, 0, 0, 0.95);
   --button-opacity:1;
 }
 :root.shipwreckedTheme {
@@ -60,6 +60,8 @@
   --color6: rgba(24,29,32,1);
   --stock-font-color: rgba(143, 161, 178, 1);
   --high-contrast-font-color: rgba(169, 186, 203, 1);
+  --input-text-color: var(--stock-font-color);
+  --input-text-color-focused: rgba(143,161,178,0.93);
 
   --color3: var(--color6);
   --color4: rgba(0,0,0,1);
@@ -87,6 +89,8 @@
   --color6: rgba(247, 247, 247, 1);
   --stock-font-color: rgba(24, 25, 26, 1);
   --high-contrast-font-color: rgba(41, 46, 51, 1);
+  --input-text-color: var(--stock-font-color);
+  --input-text-color-focused: rgba(24,25,26,0.93);
 
   --color3: var(--color6);
   --color4: rgba(170, 170, 170, 1);
@@ -116,6 +120,73 @@
 .ui.checkbox input:not([type=radio])~label:before {
   box-shadow: 0 1px 1px 0 rgba(34,36,38,.15);
 }
+.ui.segment {
+  background-color: var(--color9);
+}
+.ui.form .inline.field>label, .ui.form .field>label {
+  color: var(--stock-font-color);
+}
+.ui.form textarea {
+  color: var(--stock-font-color);
+  background-color: var(--color9);
+  border-color: var(--stock-table-border-color);
+}
+.ui.form textarea:focus {
+  color: var(--high-contrast-font-color);
+  background-color: var(--color9);
+}
+.ui.attached.header {
+  background-color: var(--color9);
+}
+.ui.header {
+  color: var(--stock-font-color);
+}
+.ui.active.button {
+  opacity: 1;
+}
+.shipDisplaySettings .ui.dropdown .menu {
+  padding-right: 2em;
+}
+.ui.dropdown .menu {
+  background: var(--color9);
+}
+.ui.dropdown .menu>.item {
+  color: var(--stock-font-color);
+}
+.ui.dropdown .menu .selected.item, .ui.dropdown.selected,
+.ui.dropdown .menu>.item:hover, .ui.dropdown .menu .active.item {
+  color: var(--high-contrast-font-color);
+}
+.ui.menu .dropdown.item .menu {
+  background: var(--color2);
+  color: var(--stock-font-color);
+}
+.ui.menu .ui.dropdown .menu .active.item {
+  color: var(--high-contrast-font-color) !important;
+}
+.ui.menu .ui.dropdown .menu>.item {
+  color: var(--stock-font-color) !important;
+}
+.ui.menu .square.icon {
+  background-color: currentColor;
+  box-shadow: 0em 0em 0em 1px var(--stock-font-color);
+}
+/* these message colors are identical to the defaults on a white background */
+.ui.error.message {
+  background-color: rgba(255, 128, 128, 0.07);
+  color: rgba(145, 65, 63, 1);
+}
+.ui.success.message {
+  background-color: rgba(220, 255, 154, 0.1);
+  color: rgba(46, 93, 47, 1);
+}
+.ui.success.message .header {
+  color: rgba(46, 93, 47, 1);
+}
+.ui.error.message .header {
+  color: rgba(145, 65, 63, 1);
+}
+
 .ui.button {
   opacity: var(--button-opacity);
 }
@@ -130,6 +201,7 @@
 }
 body {
   color: var(--stock-font-color);
+  background: var(--color9);
 }
 .ui.progress>.label {
   color: var(--stock-font-color);
@@ -198,6 +270,9 @@ body {
 }
 .shipCardHeader >.image >.label.ui {
   background-color: var(--color11);
+}
+.pageContainer {
+  padding-bottom: 1em;
 }
 .ui.grid>.column.combatAndShipDisplay {
   /* padding-top: 6em; */
