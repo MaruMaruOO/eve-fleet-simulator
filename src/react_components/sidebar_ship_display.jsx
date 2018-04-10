@@ -254,24 +254,6 @@ function setDataCheckedSource(node: SidebarShipNode, checkBoxAdditionalToggle: b
   }
 }
 
-function updateIsDisplayModeFit() {
-  const groupLevelNodes = data.filter(s => s.checked || s.indeterminate)
-    .reduce((t: SidebarShipNode[], c) => (c.children ? [...t, ...c.children] : t), []);
-  const shipTypeSet = groupLevelNodes.filter(s => s.checked || s.indeterminate)
-    .reduce((t, c) => (c.children ? [...t, ...c.children] : t), []);
-  if (shipTypeSet.filter(s => s.checked).length > 1) {
-    // ShipDataDisplayManager.isDisplayModeFit = false;
-  } else {
-    const shipFitSet = shipTypeSet.filter(s => s.checked || s.indeterminate)
-      .reduce((t, c) => (c.children ? [...t, ...c.children] : t), []);
-    if (shipFitSet.filter(s => s.checked).length > 0) {
-      // ShipDataDisplayManager.isDisplayModeFit = true;
-    } else {
-      // ShipDataDisplayManager.isDisplayModeFit = false;
-    }
-  }
-}
-
 function checkboxClickEvent(
   event: SyntheticButtonEvent,
   props: {checked: boolean, node: SidebarShipNode},
@@ -283,7 +265,6 @@ function checkboxClickEvent(
     // Note this is used to force childless nodes to update the checkbox visually
     props.node.name = props.node.name.endsWith(' ') ? props.node.name.trim() : `${props.node.name} `;
     setDataCheckedSource(props.node, true);
-    updateIsDisplayModeFit();
     UIRefresh();
     return;
   } else if (props.node.children) {
@@ -296,7 +277,6 @@ function checkboxClickEvent(
       }
     }
   }
-  updateIsDisplayModeFit();
   UIRefresh();
 }
 

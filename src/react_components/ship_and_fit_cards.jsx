@@ -145,14 +145,9 @@ function ShipAndFitCards() {
       typesSelected = [...typesSelected, ...temp];
     }
   }
-  // if (typesSelected.filter(s => s.checked === true).length > 1) {
   if (!ShipDataDisplayManager.isDisplayModeFit) {
     ShipDataDisplayManager.SetTypeBarMaximums(...commonSetBarMaximumArgs);
     addMissingTypeData(typesSelected);
-    if (ShipDataDisplayManager.isDisplayModeFit) {
-      // ShipDataDisplayManager.isDisplayModeFit = false;
-      // UIRefresh();
-    }
     return (
       <Card.Group centered >
         { typesSelected.sort(sortDisplay).map(getTypeNode) }
@@ -165,22 +160,7 @@ function ShipAndFitCards() {
       fitsSelected = [...fitsSelected, ...temp];
     }
   }
-  /* if (fitsSelected.length < 1) {
-    ShipDataDisplayManager.SetTypeBarMaximums(...commonSetBarMaximumArgs);
-    if (ShipDataDisplayManager.isDisplayModeFit) {
-      // ShipDataDisplayManager.isDisplayModeFit = false;
-      // UIRefresh();
-    }
-    return (
-      <Card.Group centered >
-        { typesSelected.sort(sortDisplay).map(getTypeNode) }
-      </Card.Group>);
-  } */
   ShipDataDisplayManager.SetFitBarMaximums(...commonSetBarMaximumArgs, ships);
-  if (!ShipDataDisplayManager.isDisplayModeFit) {
-    // ShipDataDisplayManager.isDisplayModeFit = true;
-    // UIRefresh();
-  }
   return (
     <Card.Group centered>
       { fitsSelected.sort(sortDisplay).map(getFitNode) }
