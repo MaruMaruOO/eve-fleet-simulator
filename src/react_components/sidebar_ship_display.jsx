@@ -120,12 +120,33 @@ class SidebarShipNode {
   }
 }
 
+function getNestedCount(data: ?SidebarShipNode[]) {
+  let dataLength = 0;
+  if (!Array.isArray(data)) {
+    return 0;
+  }
+  if (data.some(d => d.children && d.children.length > 0)) {
+    for (const d of data) {
+      dataLength += getNestedCount(d.children);
+    }
+    return dataLength;
+  } else if (data.length > 0) {
+    const idLen = data[0].parentNodeIdChain.length;
+    const isFit = ShipDataDisplayManager.isDisplayModeFit;
+    // Should only return non-zero for the final node layer
+    if ((idLen === 3 && isFit) || (idLen === 2 && !isFit)) {
+      return data.length;
+    }
+  }
+  return 0;
+}
+function appendChildrenCount(name: string, data: ?SidebarShipNode[]) {
+  const dataLength = getNestedCount(data);
+  return dataLength > 0 ? `${name} (${dataLength})` : name;
+}
 function getShipFitData(shipTypeId: number, parentNodeIdChain: number[]) {
   const shipFits = ships.filter(ship => ship.typeID === shipTypeId);
   const fitDataSet = [];
-  const blankFit = new SidebarShipNode('blank', Math.random(), parentNodeIdChain);
-  blankFit.invisible = true;
-  fitDataSet.push(blankFit);
   for (const shipFit of shipFits) {
     const fitData = new SidebarShipNode(
       shipFit.name, Math.random(),
@@ -144,8 +165,11 @@ function getShipTypeData(shipClass: string, parentNodeIdChain: number[]) {
   for (const shipType of shipsOfType) {
     shipType.shipGroup = shipClass.replace(/_/g, ' ');
     const id = Math.random();
-    const fitData = getShipFitData(shipType.typeID, [...parentNodeIdChain, id]);
-    const nameInput = fitData.length > 1 ? `${shipType.name} (${fitData.length - 1})` : shipType.name;
+    let fitData = [];
+    if (ShipDataDisplayManager.isDisplayModeFit) {
+      fitData = getShipFitData(shipType.typeID, [...parentNodeIdChain, id]);
+    }
+    const nameInput = appendChildrenCount(shipType.name, fitData);
     const typeData = new SidebarShipNode(
       nameInput, id,
       parentNodeIdChain, shipType.typeID, undefined,
@@ -168,8 +192,9 @@ function getShipClassData(size: string, parentNodeIdChain: number[]) {
   for (const shipClass of classes) {
     const id = Math.random();
     const typeData = getShipTypeData(shipClass, [...parentNodeIdChain, id]);
+    const nameInput = appendChildrenCount(shipClass.replace(/_/g, ' '), typeData);
     const classData = new SidebarShipNode(
-      shipClass.replace(/_/g, ' '), id,
+      nameInput, id,
       parentNodeIdChain, undefined, undefined,
     );
     if (typeData.length > 0) {
@@ -185,7 +210,8 @@ function getHullSizeData() {
   for (const size of ShipSizes) {
     const id = Math.random();
     const classData = getShipClassData(size, [id]);
-    const sizeData = new SidebarShipNode(size, id, [], undefined, undefined);
+    const nameInput = appendChildrenCount(size, classData);
+    const sizeData = new SidebarShipNode(nameInput, id, [], undefined, undefined);
     if (classData.length > 0) {
       sizeData.children = classData;
     }
@@ -295,11 +321,23 @@ const headerFunction: headType = ({ style, node }: {style: Node, node: SidebarSh
     setDataCheckedSource(node, false);
     setParentsIndeterminate(node.parentNodeIdChain);
   }
-  const shipImageStyle = { marginRight: '5px', marginTop: '4px', marginBottom: '4px' };
+  const shipImageStyle = {
+    cssFloat: 'left',
+    margin: '0px',
+    position: 'absolute',
+    top: '50%',
+    transform: 'translate(calc(-8px + -100%), -50%)',
+  };
   const baseStyle = {
     display: 'inline-block',
     color: '#9DA5AB',
     margin: '0em 0em 0em 0em',
+    // Always make sure arrow has room and doesn't wrap
+    maxWidth: 'calc(100% - 19px)', // Arrow is 24px with a -5px margin
+    // Nodes with typeID have icons thus need padding to maintain vertical alignment.
+    paddingTop: node.typeID ? '8px' : null,
+    paddingBottom: node.typeID ? '8px' : null,
+    marginLeft: !node.children ? '19px' : null,
   };
   const checkBoxStyle = {
     display: 'flex',
@@ -310,22 +348,25 @@ const headerFunction: headType = ({ style, node }: {style: Node, node: SidebarSh
     top: '50%',
     transform: 'translate(-115%, -50%)',
   };
+  const textAndIconStyle = {
+    margin: node.typeID ? '0em 5em 0em calc(0.25em + 43px)' : '0.25em 5em 0.25em 0.25em',
+  };
+  const typeImage = node.typeID ? (
+    <Image
+      style={shipImageStyle}
+      inline
+      centered={false}
+      circular
+      size="mini"
+      src={`./../../February2018Release_1.0_Renders/Renders/${node.typeID.toString()}.png`}
+    />
+  ) : null;
   const header = (
-    <div style={baseStyle} width="100%">
-      <div style={style.title ? style.title : ''}>
-        <div style={{ margin: node.typeID ? '0em 5em 0em 0.25em' : '0.25em 5em 0.25em 0.25em' }}>
-          {node.typeID ?
-           (
-             <Image
-               style={shipImageStyle}
-               inline
-               centered={false}
-               circular
-               size="mini"
-               src={`./../../February2018Release_1.0_Renders/Renders/${node.typeID.toString()}.png`}
-             />
-           ) : ''}
-          {node.name}
+    <div style={baseStyle}>
+      <div style={style.title || ''}>
+        <div style={textAndIconStyle}>
+          {typeImage}
+          <div>{node.name}</div>
         </div>
         <Checkbox
           toggle
@@ -344,21 +385,33 @@ decorators.Header = headerFunction;
 
 
 type Props = {};
-type State = {cursor: ?SidebarShipNode};
+type State = { cursor: ?SidebarShipNode, isfit: boolean };
 class ShipTree extends React.Component<Props, State> {
-  constructor(props: {}) {
+  constructor(props: { }) {
     super(props);
-    this.state = { cursor: null };
+    this.state = { cursor: null, isfit: ShipDataDisplayManager.isDisplayModeFit };
     dataConst.pop();
     dataConst.push(getHullSizeData());
     [data] = dataConst;
+    this.dataRefresh = () => {
+      dataConst.pop();
+      dataConst.push(getHullSizeData());
+      [data] = dataConst;
+      this.setState(() => ({ cursor: null, isfit: ShipDataDisplayManager.isDisplayModeFit }));
+    };
+  }
+  componentDidUpdate() {
+    if (this.state.isfit !== ShipDataDisplayManager.isDisplayModeFit) {
+      this.dataRefresh();
+    }
   }
   onToggle = (node: SidebarShipNode, toggled: boolean) => {
     if (this.state.cursor) { this.state.cursor.active = false; }
     node.active = true;
     if (node.children) { node.toggled = toggled; }
     this.setState({ cursor: node });
-  }
+  };
+  dataRefresh;
   render() {
     return (
       <Treebeard
