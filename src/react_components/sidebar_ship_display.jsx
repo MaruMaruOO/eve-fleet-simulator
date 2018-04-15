@@ -14,6 +14,16 @@ import { shipJSON } from './../shipJSON';
 import { shipBaseJSON } from './../base_derived_stats';
 import ShipDataDisplayManager from './../ship_data_display_manager';
 
+// uncomment line to include all ship render icons in webpack (roughly 2.5MB for W35).
+import renderIconsW35Imp from '../eve_icons/renders/renderIconsW35';
+
+let renderIconsW35;
+try {
+  renderIconsW35 = renderIconsW35Imp;
+} catch (e) {
+  renderIconsW35 = null;
+}
+
 const defaultFits: ShipData[] = JSON.parse(shipJSON);
 defaultFits.forEach(s => ShipData.processing(s));
 let localFits: ShipData[] = [];
@@ -358,7 +368,9 @@ const headerFunction: headType = ({ style, node }: {style: Node, node: SidebarSh
       centered={false}
       circular
       size="mini"
-      src={`./../../February2018Release_1.0_Renders/Renders/${node.typeID.toString()}.png`}
+      src={renderIconsW35 ?
+           renderIconsW35[`i${node.typeID.toString()}`] :
+      `./Renders/w35/${node.typeID.toString()}.png`}
     />
   ) : null;
   const header = (

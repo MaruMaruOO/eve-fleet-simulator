@@ -73,7 +73,7 @@
   --color11: var(--color2);
   --color7: var(--color6);
 
-  --button-opacity:0.85;
+  --button-opacity:0.82;
   --semantic-invert-buttons:false;
   --semantic-button-color-one:teal;
   --semantic-button-color-two:blue;
@@ -101,7 +101,7 @@
   --color11: var(--color2);
   --color7: var(--color6);
 
-  --button-opacity:0.8;
+  --button-opacity:0.9;
   --semantic-invert-buttons:false;
   --semantic-button-color-one:teal;
   --semantic-button-color-two:blue;
@@ -140,6 +140,11 @@
 }
 .ui.header {
   color: var(--stock-font-color);
+}
+.ui.buttons {
+  /* used over black due to reduce the relative green value as green is very luminous */
+  background-color: rgb(20,0,30);
+  border-radius: .28571429rem;
 }
 .ui.active.button {
   opacity: 1;
@@ -348,13 +353,33 @@ body {
   margin-top: 0.58928571em;
   max-width: 100%
 }
-.ui.grid >.battleDisplay.column {
+.fleetSim >.ui.grid >.battleDisplay.column {
   background-color: var(--color7);
   padding-left: 0;
   padding-right: 0;
   padding-bottom: 0;
   /* #border-top-right-radius: 0.28571429rem; */
   /* #box-shadow: 0 0 0 1px transparent inset, 0 0 0 0 rgba(34,36,38,.15) inset; */
+  margin-top: -2rem; /* negative margin to remove gap from top bar */
+  padding-top: 3rem; /* default padding is 1rem */
+  max-height: calc(100% - 0em); /* adjust max-height to compensate for +2rem of padding */
+  /* for border:
+    border-width: 2px;
+    border-color: var(--stock-font-color);
+    border-style: solid;
+    border-bottom-width: 0px;
+    border-top-width: 0px;
+  On button group:
+    border-width: 1px;
+    border-color: var(--stock-font-color);
+    border-style: solid;
+    border-top-width: 0px;
+    margin-left: -2px;
+    margin-right: -2px;
+  */
+}
+.fleetSim >.ui.grid >.battleDisplay.battleDisplayNarrow.column {
+  max-height: calc(100% - 2em);
 }
 .fleetSim >.ui.grid {
   margin-right: 0.5em;

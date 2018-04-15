@@ -15,6 +15,7 @@ import './css/full_ui.css';
 import ShipData from './ship_data_class';
 
 import mainRifterIcon from './eve_icons/tabFittingsHorizontal.png';
+import pageIcon from './eve_icons/page_icon.ico';
 
 import ShipAndFitCards from './react_components/ship_and_fit_cards';
 import { SidebarShipDisplay, ships } from './react_components/sidebar_ship_display';
@@ -33,6 +34,15 @@ if (savedTheme && savedTheme.endsWith('Theme')) {
   documentElement.className = savedTheme;
 } else {
   documentElement.className = 'darkTheme';
+}
+function PageIcon() {
+  const iconLink: HTMLLinkElement = document.createElement('link');
+  iconLink.href = pageIcon;
+  iconLink.rel = 'icon';
+  return iconLink;
+}
+if (document.head) {
+  document.head.appendChild(PageIcon());
 }
 const root: HTMLElement = document.getElementById('root') || document.createElement('div');
 // Adjust root and body fontSize when displaying on a small screen. Scales most things.

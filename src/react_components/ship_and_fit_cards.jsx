@@ -8,6 +8,16 @@ import ShipDataDisplayManager from './../ship_data_display_manager';
 import ShipData from './../ship_data_class';
 import type { SyntheticInputEvent } from './../flow_types';
 
+// uncomment line to include all ship render icons in webpack (roughly 6.3MB for W80).
+import renderIconsW80Imp from '../eve_icons/renders/renderIconsW80';
+
+let renderIconsW80;
+try {
+  renderIconsW80 = renderIconsW80Imp;
+} catch (e) {
+  renderIconsW80 = null;
+}
+
 function updateSideShips(sideNum: SyntheticInputEvent, sideN: number, fitind: number) {
   const s = sideN;
   let side;
@@ -63,6 +73,9 @@ function ShipAndFitCards() {
   );
   const getFitNode = (fit) => {
     const fitData = ships.filter(f => f.typeID === fit.typeID && f.name === fit.name)[0];
+    const iconSrc = renderIconsW80 ?
+      renderIconsW80[`i${fitData.typeID.toString()}`] :
+      `./Renders/w80/${fitData.typeID.toString()}.png`;
     return (
       <Card key={fit.nodeId}>
         <Card.Content>
@@ -73,7 +86,7 @@ function ShipAndFitCards() {
               rounded
               size="tiny"
               label={{ content: fitData.name, attached: 'bottom' }}
-              src={`./../../February2018Release_1.0_Renders/Renders/${fitData.typeID.toString()}.png`}
+              src={iconSrc}
             />
           </Card.Header>
           <Card.Description className="shipCardBody">
@@ -106,6 +119,9 @@ function ShipAndFitCards() {
   };
   const getTypeNode = (typeNode) => {
     const shipData = baseShips.filter(ship => ship.typeID === typeNode.typeID)[0];
+    const iconSrc = renderIconsW80 ?
+      renderIconsW80[`i${shipData.typeID.toString()}`] :
+      `./Renders/w80/${shipData.typeID.toString()}.png`;
     return (
       <Card key={typeNode.nodeId}>
         <Card.Content>
@@ -115,7 +131,7 @@ function ShipAndFitCards() {
               rounded
               size="tiny"
               label={{ content: shipData.name, attached: 'bottom' }}
-              src={`./../../February2018Release_1.0_Renders/Renders/${shipData.typeID.toString()}.png`}
+              src={iconSrc}
             />
           </Card.Header>
           <Card.Description className="shipCardBody">
