@@ -11,6 +11,6 @@ include_warnings=true
 module.use_strict=true
 # Treat .ico files in eve_icons as .png files
 module.name_mapper='^\./eve_icons/.*\.ico$' -> './eve_icons/stub_picture.png'
-#experimental.const_params=true
+experimental.const_params=true
 
 [strict]

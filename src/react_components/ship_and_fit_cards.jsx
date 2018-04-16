@@ -29,7 +29,7 @@ function updateSideShips(sideNum: SyntheticInputEvent, sideN: number, fitind: nu
   const n = Number(sideNum.currentTarget.value);
   const overallInd = fitind;
   const fit: ShipData = ships[overallInd];
-  const ind = side.findIndex(si => si.ship.name === fit.name);
+  const ind = side.findIndex(si => si.ship.id === fit.id);
   if (ind >= 0) {
     side[ind] = { n, ship: fit };
   } else {
@@ -62,17 +62,28 @@ function ShipAndFitCards() {
     const aVal = a.typeData ? ShipDataDisplayManager.shipDisplaySort(a.typeData) : 0;
     return bVal - aVal;
   };
-  const FitInfoPopup = (props: { fitData: ShipData }) => (
-    <Popup
-      wide
-      flowing
-      position="right center"
-      trigger={<Label as="a" corner="right" icon="help circle" />}
-      content={props.fitData.moduleNames.map((s, i) => (s === '' ? <br key={i.toString()} /> : <div key={i.toString() + s}>{s}</div>))}
-    />
-  );
-  const getFitNode = (fit) => {
-    const fitData = ships.filter(f => f.typeID === fit.typeID && f.name === fit.name)[0];
+  const FitInfoPopup = (props: { fitData: ShipData }) => {
+    const fitInfo = props.fitData.moduleNames.map((s, i) =>
+      (s === '' ? <br key={i.toString()} /> : <div key={i.toString() + s}>{s}</div>));
+    const triggerVal = (<Label as="a" corner="right" icon="help circle" />);
+    return (
+      <Popup
+        wide
+        flowing
+        position="right center"
+        trigger={triggerVal}
+        content={fitInfo}
+      />
+    );
+  };
+  const getFitNode = (fit: SidebarShipNode) => {
+    const fitDataArg = fit.fitData;
+    const fitData = fitDataArg ? ships.find(f => f.id === fitDataArg.id) : null;
+    if (!fitData) {
+      return (<div> Unable to find fit information for {JSON.stringify(fit)} </div>);
+    }
+    const redDefaultVal = (sideOneShips.find(s => s.ship.id === fitData.id) || { n: null }).n;
+    const blueDefaultVal = (sideTwoShips.find(s => s.ship.id === fitData.id) || { n: null }).n;
     const iconSrc = renderIconsW80 ?
       renderIconsW80[`i${fitData.typeID.toString()}`] :
       `./Renders/w80/${fitData.typeID.toString()}.png`;
@@ -102,6 +113,7 @@ function ShipAndFitCards() {
               onChange={(e: SyntheticInputEvent) => updateSideShips(e, 1, ships.indexOf(fitData))}
               label={{ color: 'red' }}
               placeholder="Red"
+              defaultValue={redDefaultVal}
             />
             <Input
               style={{ maxWidth: '40%' }}
@@ -111,6 +123,7 @@ function ShipAndFitCards() {
               onChange={(e: SyntheticInputEvent) => updateSideShips(e, 2, ships.indexOf(fitData))}
               label={{ color: 'blue' }}
               placeholder="Blue"
+              defaultValue={blueDefaultVal}
             />
           </Card.Content>
         </Card.Content>

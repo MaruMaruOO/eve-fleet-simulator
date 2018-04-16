@@ -10,6 +10,8 @@ for (const widthBase of resizedWidths) {
   const width = widthBase === 'src' ? '' : 'w' + widthBase;
   const widthDir = widthBase === 'src' ? '' : 'w' + widthBase + '/';
   fs.open(`./../src/eve_icons/renders/renderIcons${width.toUpperCase()}.js`, 'w', (err, fd) => {
+    fs.writeSync(fd, `// @flow
+`);
     let exportRef = '';
     for (const ship of baseShips) {
       const id = ship.typeID.toString();

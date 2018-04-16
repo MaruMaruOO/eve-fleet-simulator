@@ -84,6 +84,7 @@ var _loop = function _loop(widthBase) {
   var width = widthBase === 'src' ? '' : 'w' + widthBase;
   var widthDir = widthBase === 'src' ? '' : 'w' + widthBase + '/';
   fs.open('./../src/eve_icons/renders/renderIcons' + width.toUpperCase() + '.js', 'w', function (err, fd) {
+    fs.writeSync(fd, '// @flow\n');
     var exportRef = '';
     var _iteratorNormalCompletion3 = true;
     var _didIteratorError3 = false;
