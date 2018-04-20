@@ -1,11 +1,6 @@
 // @flow
 import React from 'react';
-// import ReactDOM from 'react-dom';
-import 'semantic-ui-css/semantic.min.css';
 import { Button, Image, Progress } from 'semantic-ui-react';
-import './css/progress_overides.css';
-import './css/fit_list.css';
-import './css/stat_display_icon.css';
 
 import shieldIcon from './eve_icons/2_64_4.png';
 import armorIcon from './eve_icons/1_64_9.png';

@@ -1,8 +1,6 @@
 // @flow
-// import React from 'react';
 import * as React from 'react';
 import { Treebeard, decorators } from 'react-treebeard';
-import 'semantic-ui-css/semantic.min.css';
 import { Image, Checkbox, Header } from 'semantic-ui-react';
 import type { SyntheticButtonEvent } from './../flow_types';
 import treebeardStyle from './../css/treebeard_style';

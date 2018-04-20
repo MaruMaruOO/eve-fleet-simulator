@@ -1,0 +1,23 @@
+@green : darken(rgb(33, 186, 49), 30%);
+@hasRun : 0;
+@oldBlue : color(@blue);
+& when (@hasRun = 0) {
+  @blue : darken(#80A6CD, 20%);
+  @hasRun : 1;
+}
+@darkenVal : 10%;
+@desaturateVal : 10%;
+@fadeVal: 90%;
+@red : fade(desaturate(darken(#DB2828, @darkenVal, relative), @desaturateVal, relative), @fadeVal);
+@orange : fade(desaturate(darken(#F2711C, @darkenVal, relative), @desaturateVal, relative), @fadeVal);
+@yellow : fade(desaturate(darken(#FBBD08, @darkenVal, relative), @desaturateVal, relative), @fadeVal);
+@olive : fade(desaturate(darken(#B5CC18, @darkenVal, relative), @desaturateVal, relative), @fadeVal);
+@green : fade(desaturate(darken(#21BA45, @darkenVal, relative), @desaturateVal, relative), @fadeVal);
+@teal : fade(desaturate(darken(#00B5AD, @darkenVal, relative), @desaturateVal, relative), @fadeVal);
+@blue : fade(desaturate(darken(#2185D0, @darkenVal, relative), @desaturateVal, relative), @fadeVal);
+@violet : fade(desaturate(darken(#6435C9, @darkenVal, relative), @desaturateVal, relative), @fadeVal);
+@purple : fade(desaturate(darken(#A333C8, @darkenVal, relative), @desaturateVal, relative), @fadeVal);
+@pink : fade(desaturate(darken(#E03997, @darkenVal, relative), @desaturateVal, relative), @fadeVal);
+@brown : fade(desaturate(darken(#A5673F, @darkenVal, relative), @desaturateVal, relative), @fadeVal);
+@grey : fade(desaturate(darken(#767676, @darkenVal, relative), @desaturateVal, relative), @fadeVal);
+@black : fade(desaturate(darken(#1B1C1D, @darkenVal, relative), @desaturateVal, relative), @fadeVal);

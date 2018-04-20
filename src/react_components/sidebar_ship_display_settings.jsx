@@ -1,6 +1,5 @@
 // @flow
 import React from 'react';
-import 'semantic-ui-css/semantic.min.css';
 import {
   Button, Image,
   Container, Grid,

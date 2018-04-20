@@ -1,4 +1,5 @@
 [ignore]
+.*\.less
 
 [include]
 
@@ -11,6 +12,9 @@ include_warnings=true
 module.use_strict=true
 # Treat .ico files in eve_icons as .png files
 module.name_mapper='^\./eve_icons/.*\.ico$' -> './eve_icons/stub_picture.png'
+# Disregard .less files as there's no useful information there for flow.
+# module.name_mapper='^\./\.\./semantic_theming/.*\.less$' -> 'empty/object'
+module.name_mapper='^\./\.\./semantic_theming/semantic\.less$' -> './css/css_stub.css'
 experimental.const_params=true
 
 [strict]

@@ -2,15 +2,13 @@
 /* global */
 import React from 'react';
 import ReactDOM from 'react-dom';
-import 'semantic-ui-css/semantic.min.css';
 import {
   Menu, Image, Icon, Form, Message, Divider, Dimmer,
   Container, Grid, Dropdown, Segment, Header, Button,
 } from 'semantic-ui-react';
+import './../semantic_theming/semantic.less';
 
 import './css/progress_overides.css';
-import './css/fit_list.css';
-import './css/full_ui.css';
 
 import ShipData from './ship_data_class';
 
@@ -27,6 +25,10 @@ import type {
   ButtonColors, SyntheticDropdownEvent, SyntheticButtonEvent,
   SyntheticInputEvent,
 } from './flow_types';
+
+// This is the output from the previous .less file once processed and includes default semantic css
+// Note if the .less file or it's dependencies change webpack will run twice.
+import './css/main.css';
 
 const documentElement: HTMLElement = document.documentElement || document.createElement('div');
 const savedTheme = localStorage.getItem('effsTheme');
@@ -297,26 +299,52 @@ function TopMenu(props: { fullui: FullUI }) {
   };
   return (
     <Menu
+      secondary
+      pointing
       inverted
       style={{
         top: '0%', left: '0%', right: '0%', position: 'fixed', zIndex: '1',
       }}
     >
-      <Container text>
-        <Menu.Item name="Main">
-          <Image src={mainRifterIcon} size="mini" />
-        </Menu.Item>
-        <Menu.Item header>Eve Fleet Fight Simulator</Menu.Item>
-        <Menu.Item as="a" fullui={props.fullui} fitmode="false" page="<FleetAndFits />" onClick={pageChange}>Ships</Menu.Item>
-        <Menu.Item as="a" fullui={props.fullui} fitmode="true" page="<FleetAndFits />" onClick={pageChange}>Fleet Simulator</Menu.Item>
-        <Menu.Item as="a" fullui={props.fullui} page="<UploadFits />" onClick={pageChange}>Upload Fits</Menu.Item>
+      <Container >
+        <Menu.Menu position="left">
+          <Menu.Item fitted style={{ padding: '0px', height: '100%' }}>
+            <Image src={mainRifterIcon} size="mini" />
+          </Menu.Item>
+          <Menu.Item header fitted="vertically" >
+            Eve Fleet Fight Simulator
+          </Menu.Item>
+          <Menu.Item
+            as="a"
+            active={props.fullui.state.page === '<FleetAndFits />' && !ShipDataDisplayManager.isDisplayModeFit}
+            fullui={props.fullui}
+            fitmode="false"
+            page="<FleetAndFits />"
+            onClick={pageChange}
+          >
+            Ships
+          </Menu.Item>
+          <Menu.Item
+            as="a"
+            active={props.fullui.state.page === '<FleetAndFits />' && ShipDataDisplayManager.isDisplayModeFit}
+            fullui={props.fullui}
+            fitmode="true"
+            page="<FleetAndFits />"
+            onClick={pageChange}
+          >
+            Fleet Simulator
+          </Menu.Item>
+          <Menu.Item
+            as="a"
+            active={props.fullui.state.page === '<UploadFits />'}
+            fullui={props.fullui}
+            page="<UploadFits />"
+            onClick={pageChange}
+          >
+            Upload Fits
+          </Menu.Item>
+        </Menu.Menu>
         <Menu.Menu position="right">
-          <Dropdown text="Other" pointing className="link item">
-            <Dropdown.Menu>
-              <Dropdown.Item>Nothing To See Here</Dropdown.Item>
-            </Dropdown.Menu>
-          </Dropdown>
-          <Menu.Item as="a">Login</Menu.Item>
           <Dropdown
             className="link item"
             onChange={themeChange}
@@ -366,13 +394,13 @@ class FleetAndFits extends React.Component<{ },
   constructor(props: { }) {
     super(props);
     const currentStyle: CSSStyleDeclaration = getComputedStyle(documentElement);
-    const buttonColorOne = currentStyle.getPropertyValue('--semantic-button-color-one');
-    const buttonColorTwo = currentStyle.getPropertyValue('--semantic-button-color-two');
-    const buttonColorThree = currentStyle.getPropertyValue('--semantic-button-color-three');
-    const buttonColorFour = currentStyle.getPropertyValue('--semantic-button-color-four');
+    const buttonColorOne = currentStyle.getPropertyValue('--semantic-button-color-one').trim();
+    const buttonColorTwo = currentStyle.getPropertyValue('--semantic-button-color-two').trim();
+    const buttonColorThree = currentStyle.getPropertyValue('--semantic-button-color-three').trim();
+    const buttonColorFour = currentStyle.getPropertyValue('--semantic-button-color-four').trim();
     const buttonColorFiveNoGroups = currentStyle
-      .getPropertyValue('--semantic-button-color-five-no-button-groups');
-    const invertButtonsStr = currentStyle.getPropertyValue('--semantic-invert-buttons');
+      .getPropertyValue('--semantic-button-color-five-no-button-groups').trim();
+    const invertButtonsStr = currentStyle.getPropertyValue('--semantic-invert-buttons').trim();
     const invertButtons = invertButtonsStr === 'true';
     const initalButtonColors: ButtonColors = [
       invertButtons, buttonColorOne, buttonColorTwo,
