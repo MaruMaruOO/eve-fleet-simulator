@@ -71,6 +71,12 @@ const HitChanceFunction = (
   const netVelocity = reducedVelocity ** 0.33333333;
   const angularVelocity = netVelocity / distance || 0;
   const trackingComponent = ((angularVelocity * 40000) / (trackingFactor)) ** 2;
+  if (falloff === 0) {
+    if (Math.max(0, distance - optimal) === 0) {
+      return 0.5 ** trackingComponent;
+    }
+    return 0;
+  }
   const rangeComponent = (Math.max(0, distance - optimal) / falloff) ** 2;
   const hitChance = (0.5 ** (trackingComponent + rangeComponent));
   return hitChance;
@@ -311,6 +317,12 @@ function dealDamage(ship: Ship, t: number, wep: Weapon, side: Side) {
       if (wep.pendingDamage[i].timer <= 0) {
         const initalHP: number = ship.targets[0].currentEHP;
         ship.targets[0].currentEHP -= wep.pendingDamage[i].damage;
+        if (Number.isNaN(initalHP) || Number.isNaN(ship.targets[0].currentEHP)) {
+          console.error(
+            'Applied damage or target EHP is not a number, this is likely a bug.',
+            wep, initalHP, ship.targets[0].currentEHP, ship,
+          );
+        }
         side.appliedDamage += initalHP - ship.targets[0].currentEHP;
         isPendingFinished = true;
       }
@@ -367,7 +379,7 @@ function setProjections(
     const baseMulti = ewar[attr] / 100;
     const multi = ewarFalloffCalc(baseMulti, ewar, distance);
     target.appliedEwar[attr].push([multi, baseMulti, ewar]);
-    target.appliedEwar[attr].sort((a, b) => b[0] - a[0]);
+    target.appliedEwar[attr].sort((a, b) => Math.abs(b[0]) - Math.abs(a[0]));
     // target[targetVals[i]] = NetValue(target.appliedEwar[attr], target[baseTargetVals[i]]);
     targetVals[i](target, attr);
     const oldTarget = ewar.currentTarget;
@@ -386,6 +398,7 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
     const multi = ewarFalloffCalc(baseMulti, ewar, distance);
     target = getFocusedEwarTarget(targets, 'webs', multi);
     target.appliedEwar.webs.push([multi, baseMulti, ewar]);
+    target.appliedEwar.webs.sort((a, b) => Math.abs(b[0]) - Math.abs(a[0]));
     target.velocity = NetValue(target.appliedEwar.webs, target.baseVelocity);
     const oldTarget = ewar.currentTarget;
     if (oldTarget) {
@@ -398,6 +411,7 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
     const multi = ewarFalloffCalc(baseMulti, ewar, distance);
     target = getFocusedEwarTarget(targets, 'tps', multi);
     target.appliedEwar.tps.push([multi, baseMulti, ewar]);
+    target.appliedEwar.tps.sort((a, b) => Math.abs(b[0]) - Math.abs(a[0]));
     target.sigRadius = NetValue(target.appliedEwar.tps, target.baseSigRadius);
     const oldTarget = ewar.currentTarget;
     if (oldTarget) {
@@ -411,7 +425,7 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
       const baseMulti = ewar[attr] / 100;
       const multi = ewarFalloffCalc(baseMulti, ewar, distance);
       target.appliedEwar[attr].push([multi, baseMulti, ewar]);
-      target.appliedEwar[attr].sort((a, b) => b[0] - a[0]);
+      target.appliedEwar[attr].sort((a, b) => Math.abs(b[0]) - Math.abs(a[0]));
       if (attr === 'maxTargetRangeBonus') {
         target.maxTargetRange = NetValue(target.appliedEwar[attr], target.baseMaxTargetRange);
       } else {
