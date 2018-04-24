@@ -151,6 +151,7 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
                 placeholder="Select fit"
                 label="Delete a single fit"
                 inline
+                scrolling
               />
               <Message
                 success
