@@ -16,11 +16,11 @@
   --stock-table-cell-border-color: rgba(34, 36, 38, 0.1);
   --input-text-color: rgba(0,0,0,.87);
   --input-text-color-focused: rgba(0,0,0,.8);
-  --semantic-button-color-one:olive;
-  --semantic-button-color-two:blue;
+  --semantic-button-color-one:teal;
+  --semantic-button-color-two:teal;
   --semantic-button-color-three:teal;
   --semantic-button-color-four:grey;
-  --semantic-button-color-five-no-button-groups:grey;
+  --semantic-button-color-five-no-button-groups:olive;
   --semantic-invert-buttons:false;
   --stock-font-color: rgba(0, 0, 0, 0.87);
   --high-contrast-font-color: rgba(0, 0, 0, 0.95);
@@ -80,11 +80,11 @@
   /*--button-opacity:0.82;*/
   --button-opacity:1;
   --semantic-invert-buttons:false;
-  --semantic-button-color-one:teal;
-  --semantic-button-color-two:blue;
-  --semantic-button-color-three:green;
+  --semantic-button-color-one:pale-blue;
+  --semantic-button-color-two:pale-blue;
+  --semantic-button-color-three:pale-blue;
   --semantic-button-color-four:grey;
-  --semantic-button-color-five-no-button-groups:vk;
+  --semantic-button-color-five-no-button-groups:grey-blue;
 }
 
 /* default firefox light theme */
@@ -110,11 +110,11 @@
   /*--button-opacity:0.9;*/
   --button-opacity:1;
   --semantic-invert-buttons:false;
-  --semantic-button-color-one:teal;
-  --semantic-button-color-two:blue;
-  --semantic-button-color-three:green;
+  --semantic-button-color-one:mid-blue;
+  --semantic-button-color-two:mid-blue;
+  --semantic-button-color-three:mid-blue;
   --semantic-button-color-four:grey;
-  --semantic-button-color-five-no-button-groups:vk;
+  --semantic-button-color-five-no-button-groups:bright-blue;
 }
 .ui.toggle.checkbox .box:before, .ui.toggle.checkbox label:before {
   background: rgba(128,128,128,.15);
@@ -166,8 +166,9 @@
 .ui.active.button {
   opacity: 1;
 }
-.shipDisplaySettings .ui.dropdown .menu {
-  padding-right: 2em;
+.shipDisplaySettings .ui.dropdown .menu > .item {
+  /* 2 rem more than normal to cover the icons */
+  padding-right: 3.14286rem !important;
 }
 .ui.dropdown .menu {
   background: var(--color9);
@@ -262,6 +263,10 @@ body {
 }
 .combatAndShipDisplay {
   background-color: var(--color9);
+  transition: width 0.5s ease, margin-left 0.5s ease;
+}
+.ui.grid > .column.sidebarColumn {
+  height: 100%;
 }
 .ui.table {
   background-color: var(--color9);
@@ -316,6 +321,8 @@ body {
   padding-top: calc((0.92857143em * 1.14285714 * 2 + 1.6em) ~"+ 32.2344px");
   padding-left: 0em;
   max-height: 100%;
+  bottom: 0px;
+  top: 0px;
 }
 .ui.grid>.column.sidebarColumn {
   padding-top: calc((0.92857143em * 1.14285714 * 2 + 1.6em) ~"+ 32.2344px");
@@ -543,7 +550,5 @@ body {
 .ui.shipDisplaySettings {
   position: relative;
   background-color: transparent;
-  align-self: center;
-  top: 50%;
-  transform: translate(0%, -50%);
+  align-self: flex-end;
 }

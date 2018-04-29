@@ -1,0 +1,201 @@
+/* Additional Button colors,
+ * should be refrenced via className="added-color" rather than color="added-color"
+ * These were the default variables during color creation.
+ * No need to overwrite changes by setting them but should they change then changes may be needed.
+  @textShadow: none;
+  @invertedTextShadow: @textShadow;
+  @coloredBackgroundImage: none;
+  @shadowDistance: 0em;
+  @shadowBoxShadow: 0px -@shadowDistance 0px 0px @borderColor inset;
+  @coloredBoxShadow: @shadowBoxShadow;
+ */
+/*--- paleBlue ---*/
+@paleBlue: #5e88b0;
+@paleBlueHover       : saturate(darken(@paleBlue, 5), 10, relative);
+@paleBlueFocus            : saturate(darken(@paleBlue, 8), 20, relative);
+@paleBlueDown            : darken(@paleBlue, 10);
+@paleBlueActive            : saturate(darken(@paleBlue, 5), 15, relative);
+@invertedTextColor: #FFFFFF;
+@paleBlueTextColor   : @invertedTextColor;
+@paleBlueTextShadow: @invertedTextShadow;
+
+.ui.pale-blue.buttons .button,
+.ui.pale-blue.button {
+  background-color: @paleBlue;
+  color: @paleBlueTextColor;
+  text-shadow: @paleBlueTextShadow;
+  background-image: @coloredBackgroundImage;
+}
+.ui.pale-blue.button {
+  box-shadow: @coloredBoxShadow;
+}
+.ui.pale-blue.buttons .button:hover,
+.ui.pale-blue.button:hover {
+  background-color: @paleBlueHover;
+  color: @paleBlueTextColor;
+  text-shadow: @paleBlueTextShadow;
+}
+.ui.pale-blue.buttons .button:focus,
+.ui.pale-blue.button:focus {
+  background-color: @paleBlueFocus;
+  color: @paleBlueTextColor;
+  text-shadow: @paleBlueTextShadow;
+}
+.ui.pale-blue.buttons .button:active,
+.ui.pale-blue.button:active {
+  background-color: @paleBlueDown;
+  color: @paleBlueTextColor;
+  text-shadow: @paleBlueTextShadow;
+}
+.ui.pale-blue.buttons .active.button,
+.ui.pale-blue.buttons .active.button:active,
+.ui.pale-blue.active.button,
+.ui.pale-blue.button .active.button:active {
+  background-color: @paleBlueActive;
+  color: @paleBlueTextColor;
+  text-shadow: @paleBlueTextShadow;
+}
+
+
+/*--- greyBlue ---*/
+@greyBlue: desaturate(#5e88b0, 40%, relative);
+@greyBlueHover       : saturate(darken(@greyBlue, 5), 10, relative);
+@greyBlueFocus            : saturate(darken(@greyBlue, 8), 20, relative);
+@greyBlueDown            : darken(@greyBlue, 10);
+@greyBlueActive            : saturate(darken(@greyBlue, 5), 15, relative);
+@invertedTextColor: #FFFFFF;
+@greyBlueTextColor   : @invertedTextColor;
+@greyBlueTextShadow: @invertedTextShadow;
+
+.ui.grey-blue.buttons .button,
+.ui.grey-blue.button {
+  background-color: @greyBlue;
+  color: @greyBlueTextColor;
+  text-shadow: @greyBlueTextShadow;
+  background-image: @coloredBackgroundImage;
+}
+.ui.grey-blue.button {
+  box-shadow: @coloredBoxShadow;
+}
+.ui.grey-blue.buttons .button:hover,
+.ui.grey-blue.button:hover {
+  background-color: @greyBlueHover;
+  color: @greyBlueTextColor;
+  text-shadow: @greyBlueTextShadow;
+}
+.ui.grey-blue.buttons .button:focus,
+.ui.grey-blue.button:focus {
+  background-color: @greyBlueFocus;
+  color: @greyBlueTextColor;
+  text-shadow: @greyBlueTextShadow;
+}
+.ui.grey-blue.buttons .button:active,
+.ui.grey-blue.button:active {
+  background-color: @greyBlueDown;
+  color: @greyBlueTextColor;
+  text-shadow: @greyBlueTextShadow;
+}
+.ui.grey-blue.buttons .active.button,
+.ui.grey-blue.buttons .active.button:active,
+.ui.grey-blue.active.button,
+.ui.grey-blue.button .active.button:active {
+  background-color: @greyBlueActive;
+  color: @greyBlueTextColor;
+  text-shadow: @greyBlueTextShadow;
+}
+
+
+/*--- midBlue ---*/
+@midBlue: darken(desaturate(#0088cc, 0%, relative), 5%);
+@midBlueHover       : saturate(darken(@midBlue, 5), 10, relative);
+@midBlueFocus            : saturate(darken(@midBlue, 8), 20, relative);
+@midBlueDown            : darken(@midBlue, 10);
+@midBlueActive            : saturate(darken(@midBlue, 5), 15, relative);
+@invertedTextColor: #FFFFFF;
+@midBlueTextColor   : @invertedTextColor;
+@midBlueTextShadow: @invertedTextShadow;
+
+.ui.mid-blue.buttons .button,
+.ui.mid-blue.button {
+  background-color: @midBlue;
+  color: @midBlueTextColor;
+  text-shadow: @midBlueTextShadow;
+  background-image: @coloredBackgroundImage;
+}
+.ui.mid-blue.button {
+  box-shadow: @coloredBoxShadow;
+}
+.ui.mid-blue.buttons .button:hover,
+.ui.mid-blue.button:hover {
+  background-color: @midBlueHover;
+  color: @midBlueTextColor;
+  text-shadow: @midBlueTextShadow;
+}
+.ui.mid-blue.buttons .button:focus,
+.ui.mid-blue.button:focus {
+  background-color: @midBlueFocus;
+  color: @midBlueTextColor;
+  text-shadow: @midBlueTextShadow;
+}
+.ui.mid-blue.buttons .button:active,
+.ui.mid-blue.button:active {
+  background-color: @midBlueDown;
+  color: @midBlueTextColor;
+  text-shadow: @midBlueTextShadow;
+}
+.ui.mid-blue.buttons .active.button,
+.ui.mid-blue.buttons .active.button:active,
+.ui.mid-blue.active.button,
+.ui.mid-blue.button .active.button:active {
+  background-color: @midBlueActive;
+  color: @midBlueTextColor;
+  text-shadow: @midBlueTextShadow;
+}
+
+
+/*--- brightBlue ---*/
+@brightBlue: lighten(desaturate(#0088cc, 50%, relative), 10%);
+@brightBlueHover       : saturate(darken(@brightBlue, 5), 10, relative);
+@brightBlueFocus            : saturate(darken(@brightBlue, 8), 20, relative);
+@brightBlueDown            : darken(@brightBlue, 10);
+@brightBlueActive            : saturate(darken(@brightBlue, 5), 15, relative);
+@invertedTextColor: #FFFFFF;
+@brightBlueTextColor   : @invertedTextColor;
+@brightBlueTextShadow: @invertedTextShadow;
+
+.ui.bright-blue.buttons .button,
+.ui.bright-blue.button {
+  background-color: @brightBlue;
+  color: @brightBlueTextColor;
+  text-shadow: @brightBlueTextShadow;
+  background-image: @coloredBackgroundImage;
+}
+.ui.bright-blue.button {
+  box-shadow: @coloredBoxShadow;
+}
+.ui.bright-blue.buttons .button:hover,
+.ui.bright-blue.button:hover {
+  background-color: @brightBlueHover;
+  color: @brightBlueTextColor;
+  text-shadow: @brightBlueTextShadow;
+}
+.ui.bright-blue.buttons .button:focus,
+.ui.bright-blue.button:focus {
+  background-color: @brightBlueFocus;
+  color: @brightBlueTextColor;
+  text-shadow: @brightBlueTextShadow;
+}
+.ui.bright-blue.buttons .button:active,
+.ui.bright-blue.button:active {
+  background-color: @brightBlueDown;
+  color: @brightBlueTextColor;
+  text-shadow: @brightBlueTextShadow;
+}
+.ui.bright-blue.buttons .active.button,
+.ui.bright-blue.buttons .active.button:active,
+.ui.bright-blue.active.button,
+.ui.bright-blue.button .active.button:active {
+  background-color: @brightBlueActive;
+  color: @brightBlueTextColor;
+  text-shadow: @brightBlueTextShadow;
+}

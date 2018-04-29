@@ -37,46 +37,25 @@ function updateSideShips(sideNum: SyntheticInputEvent, sideN: number, fitind: nu
   }
   UIRefresh();
 }
+const FitInfoPopup = (props: { fitdata: ShipData }) => {
+  const adaw: ShipData = props.fitdata;
+  console.log(adaw);
+  const fitInfo = props.fitdata.moduleNames.map((s, i) =>
+    (s === '' ? <br key={i.toString()} /> : <div key={i.toString() + s}>{s}</div>));
+  const triggerVal = (<Label as="a" corner="right" icon="help circle" />);
+  return (
+    <Popup
+      wide
+      flowing
+      position="right center"
+      trigger={triggerVal}
+      content={fitInfo}
+    />
+  );
+};
 
-function ShipAndFitCards() {
-  const addMissingTypeData = (typeNode: SidebarShipNode | SidebarShipNode[]) => {
-    if (Array.isArray(typeNode)) {
-      typeNode.forEach(addMissingTypeData);
-    } else if (!typeNode.typeData) {
-      const typeNodeRef = typeNode;
-      const [typeData] = baseShips.filter(ship => ship.typeID === typeNodeRef.typeID);
-      typeNodeRef.typeData = typeData;
-    }
-  };
-  const sortDisplay = (a: SidebarShipNode, b: SidebarShipNode) => {
-    if (!ShipDataDisplayManager.shipDisplaySort ||
-        ShipDataDisplayManager.shipDisplaySortName === 'default') {
-      return 0;
-    }
-    if (ShipDataDisplayManager.isDisplayModeFit) {
-      const bVal = b.fitData ? ShipDataDisplayManager.shipDisplaySort(b.fitData) : 0;
-      const aVal = a.fitData ? ShipDataDisplayManager.shipDisplaySort(a.fitData) : 0;
-      return bVal - aVal;
-    }
-    const bVal = b.typeData ? ShipDataDisplayManager.shipDisplaySort(b.typeData) : 0;
-    const aVal = a.typeData ? ShipDataDisplayManager.shipDisplaySort(a.typeData) : 0;
-    return bVal - aVal;
-  };
-  const FitInfoPopup = (props: { fitData: ShipData }) => {
-    const fitInfo = props.fitData.moduleNames.map((s, i) =>
-      (s === '' ? <br key={i.toString()} /> : <div key={i.toString() + s}>{s}</div>));
-    const triggerVal = (<Label as="a" corner="right" icon="help circle" />);
-    return (
-      <Popup
-        wide
-        flowing
-        position="right center"
-        trigger={triggerVal}
-        content={fitInfo}
-      />
-    );
-  };
-  const getFitNode = (fit: SidebarShipNode) => {
+class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}> {
+  getFitNode = (fit: SidebarShipNode) => {
     const fitDataArg = fit.fitData;
     const fitData = fitDataArg ? ships.find(f => f.id === fitDataArg.id) : null;
     if (!fitData) {
@@ -91,7 +70,7 @@ function ShipAndFitCards() {
       <Card key={fit.nodeId}>
         <Card.Content>
           <Card.Header textAlign="center" className="shipCardHeader">
-            <FitInfoPopup fitData={fitData} />
+            <FitInfoPopup fitdata={fitData} />
             <Image
               centered
               rounded
@@ -130,7 +109,10 @@ function ShipAndFitCards() {
       </Card>
     );
   };
-  const getTypeNode = (typeNode) => {
+  getTypeNode = (typeNode: SidebarShipNode) => {
+    if (this.props.transitionPadding) {
+      return '';
+    }
     const shipData = baseShips.filter(ship => ship.typeID === typeNode.typeID)[0];
     const iconSrc = renderIconsW80 ?
       renderIconsW80[`i${shipData.typeID.toString()}`] :
@@ -157,43 +139,97 @@ function ShipAndFitCards() {
         </Card.Content>
       </Card>);
   };
-  const sizeSelected: SidebarShipNode[] = dataConst[0].filter(s =>
-    s.checked === true || s.indeterminate === true);
-  const commonSetBarMaximumArgs = [baseShips, sizeSelected];
-  let groupsSelected: SidebarShipNode[] = [];
-  for (const size of sizeSelected) {
-    if (size.children) {
-      const temp = size.children.filter(s => s.checked === true || s.indeterminate === true);
-      groupsSelected = [...groupsSelected, ...temp];
+  sortDisplay = (a: SidebarShipNode, b: SidebarShipNode) => {
+    if (!ShipDataDisplayManager.shipDisplaySort ||
+        ShipDataDisplayManager.shipDisplaySortName === 'default') {
+      return 0;
     }
-  }
-  let typesSelected: SidebarShipNode[] = [];
-  for (const group of groupsSelected) {
-    if (group.children) {
-      const temp = group.children.filter(s => s.checked === true || s.indeterminate === true);
-      typesSelected = [...typesSelected, ...temp];
+    if (ShipDataDisplayManager.isDisplayModeFit) {
+      const bVal = b.fitData ? ShipDataDisplayManager.shipDisplaySort(b.fitData) : 0;
+      const aVal = a.fitData ? ShipDataDisplayManager.shipDisplaySort(a.fitData) : 0;
+      return bVal - aVal;
     }
-  }
-  if (!ShipDataDisplayManager.isDisplayModeFit) {
-    ShipDataDisplayManager.SetTypeBarMaximums(...commonSetBarMaximumArgs);
-    addMissingTypeData(typesSelected);
-    return (
-      <Card.Group centered >
-        { typesSelected.sort(sortDisplay).map(getTypeNode) }
-      </Card.Group>);
-  }
-  let fitsSelected: SidebarShipNode[] = [];
-  for (const shipType of typesSelected) {
-    if (shipType.children) {
-      const temp = shipType.children.filter(s => s.checked === true && !s.invisible);
-      fitsSelected = [...fitsSelected, ...temp];
+    const bVal = b.typeData ? ShipDataDisplayManager.shipDisplaySort(b.typeData) : 0;
+    const aVal = a.typeData ? ShipDataDisplayManager.shipDisplaySort(a.typeData) : 0;
+    return bVal - aVal;
+  };
+  addMissingTypeData = (typeNode: SidebarShipNode | SidebarShipNode[]) => {
+    if (Array.isArray(typeNode)) {
+      typeNode.forEach(this.addMissingTypeData);
+    } else if (!typeNode.typeData) {
+      const typeNodeRef = typeNode;
+      const [typeData] = baseShips.filter(ship => ship.typeID === typeNodeRef.typeID);
+      typeNodeRef.typeData = typeData;
     }
+  };
+  shipSelection: SidebarShipNode[] = [];
+  displaySettings = [];
+  shipSet: React$Node = (<Card.Group centered />);
+  render() {
+    const sddm = ShipDataDisplayManager;
+    const sizeSelected: SidebarShipNode[] = dataConst[0].filter(s =>
+      s.checked === true || s.indeterminate === true);
+    const commonSetBarMaximumArgs = [baseShips, sizeSelected];
+    let groupsSelected: SidebarShipNode[] = [];
+    for (const size of sizeSelected) {
+      if (size.children) {
+        const temp = size.children.filter(s => s.checked === true || s.indeterminate === true);
+        groupsSelected = [...groupsSelected, ...temp];
+      }
+    }
+    let typesSelected: SidebarShipNode[] = [];
+    for (const group of groupsSelected) {
+      if (group.children) {
+        const temp = group.children.filter(s => s.checked === true || s.indeterminate === true);
+        typesSelected = [...typesSelected, ...temp];
+      }
+    }
+    if (!ShipDataDisplayManager.isDisplayModeFit) {
+      const tankChange = sddm.activeTank !== sddm.prevActiveTank ||
+        sddm.moduleQuality !== sddm.prevModuleQuality;
+      sddm.SetTypeBarMaximums(...commonSetBarMaximumArgs);
+      this.addMissingTypeData(typesSelected);
+      typesSelected.sort(this.sortDisplay);
+      const typeDisplayData = sddm.shipTypeDataTypes.filter(d => d.visable).map(d => d.name);
+      if (this.shipSelection.length !== typesSelected.length ||
+          this.displaySettings.length !== typeDisplayData.length ||
+          tankChange ||
+          this.shipSelection.some((s, i) => s !== typesSelected[i]) ||
+          this.displaySettings.some(((s, i) => s !== typeDisplayData[i]))) {
+        this.shipSelection = typesSelected;
+        this.displaySettings = typeDisplayData;
+        this.shipSet = (
+          <Card.Group centered >
+            { typesSelected.map(this.getTypeNode) }
+          </Card.Group>
+        );
+      }
+      return this.shipSet;
+    }
+    let fitsSelected: SidebarShipNode[] = [];
+    for (const shipType of typesSelected) {
+      if (shipType.children) {
+        const temp = shipType.children.filter(s => s.checked === true && !s.invisible);
+        fitsSelected = [...fitsSelected, ...temp];
+      }
+    }
+    sddm.SetFitBarMaximums(...commonSetBarMaximumArgs, ships);
+    fitsSelected.sort(this.sortDisplay);
+    const fitDisplayData = sddm.shipFitDataTypes.filter(d => d.visable).map(d => d.name);
+    if (this.shipSelection.length !== fitsSelected.length ||
+        this.displaySettings.length !== fitDisplayData.length ||
+        this.shipSelection.some((s, i) => s !== fitsSelected[i]) ||
+        this.displaySettings.some(((s, i) => s !== fitDisplayData[i]))) {
+      this.shipSelection = fitsSelected;
+      this.displaySettings = fitDisplayData;
+      this.shipSet = (
+        <Card.Group centered>
+          { fitsSelected.map(this.getFitNode) }
+        </Card.Group>
+      );
+    }
+    return this.shipSet;
   }
-  ShipDataDisplayManager.SetFitBarMaximums(...commonSetBarMaximumArgs, ships);
-  return (
-    <Card.Group centered>
-      { fitsSelected.sort(sortDisplay).map(getFitNode) }
-    </Card.Group>);
 }
 
 export default ShipAndFitCards;

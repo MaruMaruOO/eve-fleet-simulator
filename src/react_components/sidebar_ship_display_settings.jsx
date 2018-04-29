@@ -68,7 +68,7 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
         {ShipDataDisplayManager.StatDisplayIconToggles(ShipDataDisplayManager.isDisplayModeFit)}
         <div className="ui">
           <Button.Group
-            color={ShipDataDisplayManager.activeTank ?
+            className={ShipDataDisplayManager.activeTank ?
                    props.buttonColors[1] : props.buttonColors[4]}
             inverted={props.buttonColors[0]}
           >
@@ -84,7 +84,7 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
           </Button.Group>
         </div>
         <div className="ui">
-          <Button.Group color={props.buttonColors[3]} inverted={props.buttonColors[0]}>
+          <Button.Group className={props.buttonColors[3]} inverted={props.buttonColors[0]}>
             <Button className="formattingButton">Ship type module quality</Button>
             <Dropdown
               className="contentButton"
@@ -98,7 +98,7 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
           </Button.Group>
         </div>
         <div className="ui">
-          <Button.Group color={props.buttonColors[2]} inverted={props.buttonColors[0]}>
+          <Button.Group className={props.buttonColors[2]} inverted={props.buttonColors[0]}>
             <Button className="formattingButton">Sort ship types by</Button>
             <Dropdown
               className="contentButton"

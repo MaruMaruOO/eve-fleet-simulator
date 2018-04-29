@@ -48,6 +48,7 @@ type VectorMaxLenThree = [number] | [number, number] | [number, number, number];
 type SyntheticInputEvent = SyntheticEvent<HTMLInputElement>;
 type SyntheticButtonEvent = SyntheticEvent<HTMLButtonElement>;
 type SyntheticDropdownEvent = SyntheticEvent<Dropdown>;
+type GenericSyntheticTransitionEvent = SyntheticTransitionEvent<HTMLElement>;
 
 type SimulationState = 'setup' | 'running' | 'finished';
 
@@ -57,5 +58,5 @@ export type {
   Hp, SingleResonance, Resonance, WeaponData, WeaponType,
   WeaponAbility, ShipSize, ModuleQualityValue, VectorMaxLenThree,
   SyntheticInputEvent, SyntheticButtonEvent, SyntheticDropdownEvent,
-  SimulationState, ButtonColors,
+  SimulationState, GenericSyntheticTransitionEvent, ButtonColors,
 };
