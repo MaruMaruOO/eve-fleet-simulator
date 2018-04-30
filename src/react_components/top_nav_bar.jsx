@@ -45,7 +45,12 @@ function TopNavBar(props: { fullui: FullUI }) {
   ) => {
     const newTheme = objData.value;
     documentElement.className = newTheme;
-    localStorage.setItem('effsTheme', newTheme);
+  };
+  const updateUiTheming = (
+    e: SyntheticDropdownEvent,
+    objData: { fullui: FullUI, value: 'darkTheme' | 'lightTheme' | 'shipwreckedTheme' | 'defaultTheme' },
+  ) => {
+    localStorage.setItem('effsTheme', documentElement.className);
     const colors: ButtonColors = objData.fullui.GetButtonColors();
     objData.fullui.setState({ button_colors: colors });
   };
@@ -110,6 +115,7 @@ function TopNavBar(props: { fullui: FullUI }) {
           <Dropdown
             className="link item"
             onChange={themeChange}
+            onClose={updateUiTheming}
             fullui={props.fullui}
             options={themes}
             pointing

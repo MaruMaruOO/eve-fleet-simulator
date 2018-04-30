@@ -20,7 +20,6 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
     if (num === 1 || num === 2 || num === 3 || num === 4) {
       ShipDataDisplayManager.moduleQuality = num;
     }
-    UIRefresh();
   };
   const sortChange = (e: SyntheticDropdownEvent, objData: { value: string }) => {
     ShipDataDisplayManager.shipDisplaySortName = objData.value;
@@ -31,7 +30,6 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
       const typeData = ShipDataDisplayManager.shipTypeDataTypes.find(t => t.name === objData.value);
       ShipDataDisplayManager.shipDisplaySort = typeData ? typeData.getter : () => 0;
     }
-    UIRefresh();
   };
   const activeTankToggle = () => {
     ShipDataDisplayManager.activeTank = !ShipDataDisplayManager.activeTank;
@@ -89,6 +87,7 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
             <Dropdown
               className="contentButton"
               onChange={moduleQualityChange}
+              onClose={UIRefresh}
               options={moduleQualityOptions}
               floating
               button
@@ -103,6 +102,7 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
             <Dropdown
               className="contentButton"
               onChange={sortChange}
+              onClose={UIRefresh}
               options={sortOptions}
               floating
               button
