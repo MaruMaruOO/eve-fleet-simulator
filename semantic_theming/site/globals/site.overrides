@@ -8,6 +8,7 @@
   --color6: rgb(33, 37, 43);
   --color6h: rgb(49, 54, 63);
   --color7: rgb(70, 70, 70);
+  --color7t: rgba(70,70,70,0.85);
   --color8: rgb(118, 118, 118);
   --color9: rgb(255, 255, 255);
   --color10: rgb(249, 250, 251);
@@ -37,6 +38,7 @@
   --color6: rgb(3, 37, 43);
   --color6h: rgb(9, 54, 63);
   --color7: rgb(0, 70, 70);
+  --color7t: rgba(0,70,70,0.85);
   --color8: rgb(8, 118, 118);
   --color9: rgb(5, 55, 55);
   /* --color10: rgb(9, 0, 1); */
@@ -76,6 +78,7 @@
   /*--color11: var(--color9);*/
   --color11: var(--color2);
   --color7: var(--color6);
+  --color7t: rgba(24,29,32,0.85);
 
   /*--button-opacity:0.82;*/
   --button-opacity:1;
@@ -106,6 +109,7 @@
   --color10: var(--color6);
   --color11: var(--color2);
   --color7: var(--color6);
+  --color7t: rgba(247,247,247,0.85);
 
   /*--button-opacity:0.9;*/
   --button-opacity:1;
@@ -115,6 +119,12 @@
   --semantic-button-color-three:mid-blue;
   --semantic-button-color-four:grey;
   --semantic-button-color-five-no-button-groups:bright-blue;
+}
+:root:not(.defaultTheme) {
+  --graph-font-color: var(--high-contrast-font-color);
+}
+:root.defaultTheme {
+  --graph-font-color: white;
 }
 .ui.toggle.checkbox .box:before, .ui.toggle.checkbox label:before {
   background: rgba(128,128,128,.15);
@@ -127,8 +137,13 @@
 .ui.checkbox input:not([type=radio])~label:before {
   box-shadow: 0 1px 1px 0 rgba(34,36,38,.15);
 }
-.ui.segment {
+.ui.segment, .ui.inverted.segment,
+.ui.primary.inverted.segment {
   background-color: var(--color9);
+  color: var(--high-contrast-font-color);
+}
+.battleDisplayDimmer >.ui.dimmer {
+  background-color: var(--color7t);
 }
 .ui.form .inline.field>label, .ui.form .field>label {
   color: var(--stock-font-color);

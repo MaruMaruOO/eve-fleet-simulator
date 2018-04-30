@@ -318,21 +318,21 @@ FleetAndCombatSimulatorState
                       title="Time (Seconds)"
                       tickTotal={this.props.narrowScreen ? 3 : 5}
                       style={{
-                        stroke: 'white',
-                        fill: 'white',
+                        stroke: 'var(--graph-font-color)',
+                        fill: 'var(--graph-font-color)',
                         line: { stroke: 'grey' },
-                        ticks: { stroke: 'white' },
-                        text: { stroke: 'white', fill: 'white' },
+                        ticks: { stroke: 'var(--graph-font-color)' },
+                        text: { stroke: 'var(--graph-font-color)', fill: 'var(--graph-font-color)' },
                       }}
                     />
                     <YAxis
                       title="Ships"
                       style={{
-                        stroke: 'white',
-                        fill: 'white',
+                        stroke: 'var(--graph-font-color)',
+                        fill: 'var(--graph-font-color)',
                         line: { stroke: 'grey' },
-                        ticks: { stroke: 'white' },
-                        text: { stroke: 'white', fill: 'white' },
+                        ticks: { stroke: 'var(--graph-font-color)' },
+                        text: { stroke: 'var(--graph-font-color)', fill: 'var(--graph-font-color)' },
                       }}
                     />
                   </XYPlot>

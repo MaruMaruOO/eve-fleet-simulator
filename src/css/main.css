@@ -59982,6 +59982,7 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
   --color6: #21252b;
   --color6h: #31363f;
   --color7: #464646;
+  --color7t: rgba(70, 70, 70, 0.85);
   --color8: #767676;
   --color9: #ffffff;
   --color10: #f9fafb;
@@ -60011,6 +60012,7 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
   --color6: #03252b;
   --color6h: #09363f;
   --color7: #004646;
+  --color7t: rgba(0, 70, 70, 0.85);
   --color8: #087676;
   --color9: #053737;
   /* --color10: rgb(9, 0, 1); */
@@ -60049,6 +60051,7 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
   /*--color11: var(--color9);*/
   --color11: var(--color2);
   --color7: var(--color6);
+  --color7t: rgba(24, 29, 32, 0.85);
   /*--button-opacity:0.82;*/
   --button-opacity: 1;
   --semantic-invert-buttons: false;
@@ -60076,6 +60079,7 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
   --color10: var(--color6);
   --color11: var(--color2);
   --color7: var(--color6);
+  --color7t: rgba(247, 247, 247, 0.85);
   /*--button-opacity:0.9;*/
   --button-opacity: 1;
   --semantic-invert-buttons: false;
@@ -60084,6 +60088,12 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
   --semantic-button-color-three: mid-blue;
   --semantic-button-color-four: grey;
   --semantic-button-color-five-no-button-groups: bright-blue;
+}
+:root:not(.defaultTheme) {
+  --graph-font-color: var(--high-contrast-font-color);
+}
+:root.defaultTheme {
+  --graph-font-color: white;
 }
 .ui.toggle.checkbox .box:before,
 .ui.toggle.checkbox label:before {
@@ -60097,8 +60107,14 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 .ui.checkbox input:not([type=radio]) ~ label:before {
   box-shadow: 0 1px 1px 0 rgba(34, 36, 38, 0.15);
 }
-.ui.segment {
+.ui.segment,
+.ui.inverted.segment,
+.ui.primary.inverted.segment {
   background-color: var(--color9);
+  color: var(--high-contrast-font-color);
+}
+.battleDisplayDimmer > .ui.dimmer {
+  background-color: var(--color7t);
 }
 .ui.form .inline.field > label,
 .ui.form .field > label {
