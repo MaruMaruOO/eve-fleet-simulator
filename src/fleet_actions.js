@@ -334,6 +334,8 @@ function dealDamage(ship: Ship, t: number, wep: Weapon, side: Side) {
 }
 
 function NetValue(effects: [number, number, Ewar][], baseValue: number) {
+  // These are actually 1 / Math.exp(((-i) / 2.67) ** 2) (where i is the index)
+  // This solution is used instead for speed reasons
   const stackingPenelties = [1, 0.869, 0.571, 0.283, 0.106, 0.03, 0];
   const effLen = Math.min(6, effects.length);
   let value = baseValue;

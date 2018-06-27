@@ -8,6 +8,8 @@ type Resonance = {armor: SingleResonance,
                shield: SingleResonance};
 type ShipSize = 'Frigate' | 'Destroyer' | 'Cruiser' | 'Battlecruiser' | 'Battleship' | 'Capital' | 'Industrial' | 'Misc';
 type WeaponType = 'Turret' | 'Missile' | 'Drone' | 'SmartBomb' | 'Fighter';
+type Subsystem = ?{ 'Defensive': string, 'Offensive': string, 'Propulsion': string, 'Core': string };
+type SubsystemType = 'Defensive' | 'Offensive' | 'Propulsion' | 'Core';
 type WeaponAbility = {
   name: string,
   volley: number,
@@ -59,4 +61,5 @@ export type {
   WeaponAbility, ShipSize, ModuleQualityValue, VectorMaxLenThree,
   SyntheticInputEvent, SyntheticButtonEvent, SyntheticDropdownEvent,
   SimulationState, GenericSyntheticTransitionEvent, ButtonColors,
+  Subsystem, SubsystemType,
 };

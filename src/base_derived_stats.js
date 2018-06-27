@@ -73,31 +73,31 @@ function getMultiMod(type: TankType, quality: number): number {
   return 0;
 }
 
-function getBufferMod(type: TankType, rigSize: number, groupID: number): number {
-  let pendingCapMulti = 0;
+function getBufferMod(type: TankType, rigSize: number, groupID: number): [number, number] {
+  let pendingCapMulti = [0, 0];
   if (type === 'shield') {
     if (rigSize === 1) {
-      return 1100;
+      return [1100, 22.5];
     } else if (rigSize === 2 || rigSize === 3) {
-      return 2600;
+      return [2600, 120];
     } else if (rigSize === 4) {
-      pendingCapMulti = 79200;
+      pendingCapMulti = [79200, 61900];
     }
   } else if (type === 'armor') {
     if (rigSize === 1) {
-      return 1200;
+      return [1200, 35];
     } else if (rigSize === 2 || rigSize === 3) {
-      return 4800;
+      return [4800, 550];
     } else if (rigSize === 4) {
-      pendingCapMulti = 82500;
+      pendingCapMulti = [82500, 110000];
     }
   } else if (type === 'hull') {
-    return 0;
+    return [0, 0];
   }
   if (groupID === 659) {
-    pendingCapMulti *= 5; // Super carriers
+    pendingCapMulti[0] *= 5; // Super carriers
   } else if (groupID === 30) {
-    pendingCapMulti *= 6; // Titans
+    pendingCapMulti[0] *= 6; // Titans
   }
   return pendingCapMulti;
 }
@@ -110,6 +110,8 @@ function multiRes(res: SingleResonance, multi: number): SingleResonance {
 }
 
 function applyEffectSet(base: number, effects: number[]): number {
+  // These are actually 1 / Math.exp(((-i) / 2.67) ** 2) (where i is the index)
+  // This solution is used instead for speed reasons
   const stackingPenelties = [1, 0.869, 0.571, 0.283, 0.106, 0.03, 0];
   let value = base;
   for (let i = 0; i < effects.length; i += 1) {
@@ -176,8 +178,8 @@ function GetMaxEHP(
   if (side !== 1 || fit.resonance === undefined) {
     return 0;
   }
-  let bufferModHP = getBufferMod(tankType, fit.rigSize, fit.groupID);
-
+  const [baseBufferModHP, bufferModPG] = getBufferMod(tankType, fit.rigSize, fit.groupID);
+  let bufferModHP = baseBufferModHP;
   const commandBufferMulti = 1.215625;
   const skillBufferMulti = 1.25; // shield management and hull upgrades
   bufferModHP *= commandBufferMulti * skillBufferMulti;
@@ -213,6 +215,7 @@ function GetMaxEHP(
       em: [], therm: [], kin: [], exp: [],
     };
   }
+  let maxBufferMods = Math.floor(fit.powerOutput / bufferModPG);
   for (; slotsLeft > 0; slotsLeft -= 1) {
     const fullResBase = JSON.stringify(fullResBaseObj);
     const emVal = tryResMod(['em'], singleResMod, fullResBase, tankType, effects, hp);
@@ -221,7 +224,9 @@ function GetMaxEHP(
     const expVal = tryResMod(['exp'], singleResMod, fullResBase, tankType, effects, hp);
     const omniVal = tryResMod(['em', 'therm', 'kin', 'exp'], omniResMod, fullResBase, tankType, effects, hp);
     const hpWithBuffer = { shield: hp.shield, armor: hp.armor, hull: hp.hull };
-    hpWithBuffer[tankType] += bufferModHP;
+    if (maxBufferMods > 0) {
+      hpWithBuffer[tankType] += bufferModHP;
+    }
     const bufferVal = tryResMod([], 0, fullResBase, tankType, effects, hpWithBuffer);
     const hpWithMulti = { shield: hp.shield, armor: hp.armor, hull: hp.hull };
     hpWithMulti[tankType] *= (1 + multiMod);
@@ -263,6 +268,7 @@ function GetMaxEHP(
         break;
       case bufferVal:
         hp = hpWithBuffer;
+        maxBufferMods -= 1;
         break;
       case multiVal:
         hp = hpWithMulti;

@@ -38,10 +38,20 @@ function updateSideShips(sideNum: SyntheticInputEvent, sideN: number, fitind: nu
   UIRefresh();
 }
 const FitInfoPopup = (props: { fitdata: ShipData }) => {
-  const adaw: ShipData = props.fitdata;
-  console.log(adaw);
-  const fitInfo = props.fitdata.moduleNames.map((s, i) =>
-    (s === '' ? <br key={i.toString()} /> : <div key={i.toString() + s}>{s}</div>));
+  const infoTextMap = (s, i) =>
+    (s === '' ? <br key={i.toString()} /> : <div key={i.toString() + s}>{s}</div>);
+  let fitInfo;
+  if (props.fitdata.isFit) {
+    fitInfo = props.fitdata.moduleNames.map(infoTextMap);
+  } else if (props.fitdata.mode) {
+    fitInfo = infoTextMap(props.fitdata.mode, 0);
+  } else {
+    fitInfo = [
+      infoTextMap('Subsystems: ', 0),
+      ...Object.entries(props.fitdata.subsystems).map((pair: [string, mixed], i: number) =>
+        infoTextMap(`${pair[0]} - ${String(pair[1])}`, i + 1)),
+    ];
+  }
   const triggerVal = (<Label as="a" corner="right" icon="help circle" />);
   return (
     <Popup
@@ -55,19 +65,14 @@ const FitInfoPopup = (props: { fitdata: ShipData }) => {
 };
 
 class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}> {
-  getFitNode = (fit: SidebarShipNode) => {
-    const fitDataArg = fit.fitData;
-    const fitData = fitDataArg ? ships.find(f => f.id === fitDataArg.id) : null;
-    if (!fitData) {
-      return (<div> Unable to find fit information for {JSON.stringify(fit)} </div>);
-    }
+  getFitNode = (fitData: ShipData) => {
     const redDefaultVal = (sideOneShips.find(s => s.ship.id === fitData.id) || { n: null }).n;
     const blueDefaultVal = (sideTwoShips.find(s => s.ship.id === fitData.id) || { n: null }).n;
     const iconSrc = renderIconsW80 ?
       renderIconsW80[`i${fitData.typeID.toString()}`] :
       `./Renders/w80/${fitData.typeID.toString()}.png`;
     return (
-      <Card key={fit.nodeId}>
+      <Card key={fitData.id}>
         <Card.Content>
           <Card.Header textAlign="center" className="shipCardHeader">
             <FitInfoPopup fitdata={fitData} />
@@ -109,18 +114,17 @@ class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}
       </Card>
     );
   };
-  getTypeNode = (typeNode: SidebarShipNode) => {
-    if (this.props.transitionPadding) {
-      return '';
-    }
-    const shipData = baseShips.filter(ship => ship.typeID === typeNode.typeID)[0];
+  getTypeNodeInner = (shipData: ShipData) => {
     const iconSrc = renderIconsW80 ?
       renderIconsW80[`i${shipData.typeID.toString()}`] :
       `./Renders/w80/${shipData.typeID.toString()}.png`;
+    const hasPopupInfo = shipData.subsystems || shipData.mode;
+    const extraPopupInfoIfAny = hasPopupInfo ? <FitInfoPopup fitdata={shipData} /> : '';
     return (
-      <Card key={typeNode.nodeId}>
+      <Card key={shipData.id}>
         <Card.Content>
           <Card.Header textAlign="center" className="shipCardHeader">
+            { extraPopupInfoIfAny }
             <Image
               centered
               rounded
@@ -139,19 +143,73 @@ class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}
         </Card.Content>
       </Card>);
   };
-  sortDisplay = (a: SidebarShipNode, b: SidebarShipNode) => {
+  getAllSubsChecked = (ship: ShipData, typeNode: SidebarShipNode) => {
+    const subTypeNodes = typeNode.children;
+    const { subsystems } = ship;
+    if (!subTypeNodes || !subsystems) {
+      return false;
+    }
+    const subs = ['Defensive', 'Offensive', 'Propulsion', 'Core'];
+    for (const sub of subs) {
+      const subTypeNode = subTypeNodes.find(c => c.name === sub) || {};
+      const specificSubs = subTypeNode.children || [];
+      const specificSub = specificSubs.find(c => c.name === subsystems[sub]);
+      if (specificSub && !specificSub.checked) {
+        return false;
+      }
+    }
+    return true;
+  };
+  getSubTypes = (checkedNodes: SidebarShipNode[], typeNode: SidebarShipNode) => {
+    const shipDataSet = baseShips.filter((ship: ShipData) => ship.typeID === typeNode.typeID);
+    // t3 Cruisers
+    if (shipDataSet[0].subsystems && checkedNodes[0].children) {
+      return shipDataSet.filter((s: ShipData) => this.getAllSubsChecked(s, typeNode));
+    }
+    // t3 Destroyers
+    return shipDataSet.filter((s: ShipData) =>
+      checkedNodes.some((n: SidebarShipNode) => n.nodeId === s.id));
+  };
+  getTypeNode = (typeNode: SidebarShipNode) => {
+    if (this.props.transitionPadding) {
+      return null;
+    }
+    const shipDataSet = baseShips.filter((ship: ShipData) => ship.typeID === typeNode.typeID);
+    if (typeNode.children) {
+      const checkedNodes = typeNode.children.filter(s =>
+        (s.checked === true || s.indeterminate === true) && !s.invisible);
+      const selectedSubtypes: ShipData[] = this.getSubTypes(checkedNodes, typeNode);
+      return selectedSubtypes;
+    }
+    return shipDataSet;
+  };
+  getCardTypeData = (typeNodes: SidebarShipNode[]) => {
+    let dataSet = [];
+    for (const node of typeNodes) {
+      const data = this.getTypeNode(node);
+      if (data) {
+        dataSet = [...dataSet, ...data];
+      }
+    }
+    return dataSet;
+  };
+  getCardFitData = (fitNodes: SidebarShipNode[]) => {
+    const dataSet = [];
+    for (const node of fitNodes) {
+      const fitDataArg = node.fitData;
+      const fitData = fitDataArg ? ships.find(f => f.id === fitDataArg.id) : null;
+      if (fitData) {
+        dataSet.push(fitData);
+      }
+    }
+    return dataSet;
+  };
+  sortCardData = (a: ShipData, b: ShipData) => {
     if (!ShipDataDisplayManager.shipDisplaySort ||
         ShipDataDisplayManager.shipDisplaySortName === 'default') {
       return 0;
     }
-    if (ShipDataDisplayManager.isDisplayModeFit) {
-      const bVal = b.fitData ? ShipDataDisplayManager.shipDisplaySort(b.fitData) : 0;
-      const aVal = a.fitData ? ShipDataDisplayManager.shipDisplaySort(a.fitData) : 0;
-      return bVal - aVal;
-    }
-    const bVal = b.typeData ? ShipDataDisplayManager.shipDisplaySort(b.typeData) : 0;
-    const aVal = a.typeData ? ShipDataDisplayManager.shipDisplaySort(a.typeData) : 0;
-    return bVal - aVal;
+    return ShipDataDisplayManager.shipDisplaySort(b) - ShipDataDisplayManager.shipDisplaySort(a);
   };
   addMissingTypeData = (typeNode: SidebarShipNode | SidebarShipNode[]) => {
     if (Array.isArray(typeNode)) {
@@ -162,12 +220,19 @@ class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}
       typeNodeRef.typeData = typeData;
     }
   };
-  shipSelection: SidebarShipNode[] = [];
+  shipSelection: ShipData[] = [];
   displaySettings = [];
   shipSet: React$Node = (<Card.Group centered />);
   render() {
     const sddm = ShipDataDisplayManager;
-    const sizeSelected: SidebarShipNode[] = dataConst[0].filter(s =>
+    const sidebarMatchesMode = dataConst[2].isFitInitalValue === sddm.isDisplayModeFit;
+    let nodeData;
+    if (sidebarMatchesMode) {
+      [nodeData] = dataConst;
+    } else {
+      nodeData = dataConst[1] || [];
+    }
+    const sizeSelected: SidebarShipNode[] = nodeData.filter(s =>
       s.checked === true || s.indeterminate === true);
     const commonSetBarMaximumArgs = [baseShips, sizeSelected];
     let groupsSelected: SidebarShipNode[] = [];
@@ -189,18 +254,19 @@ class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}
         sddm.moduleQuality !== sddm.prevModuleQuality;
       sddm.SetTypeBarMaximums(...commonSetBarMaximumArgs);
       this.addMissingTypeData(typesSelected);
-      typesSelected.sort(this.sortDisplay);
+      const cardTypeData = this.getCardTypeData(typesSelected);
+      cardTypeData.sort(this.sortCardData);
       const typeDisplayData = sddm.shipTypeDataTypes.filter(d => d.visable).map(d => d.name);
-      if (this.shipSelection.length !== typesSelected.length ||
+      if (this.shipSelection.length !== cardTypeData.length ||
           this.displaySettings.length !== typeDisplayData.length ||
           tankChange ||
-          this.shipSelection.some((s, i) => s !== typesSelected[i]) ||
+          this.shipSelection.some((s, i) => s !== cardTypeData[i]) ||
           this.displaySettings.some(((s, i) => s !== typeDisplayData[i]))) {
-        this.shipSelection = typesSelected;
+        this.shipSelection = cardTypeData;
         this.displaySettings = typeDisplayData;
         this.shipSet = (
           <Card.Group centered >
-            { typesSelected.map(this.getTypeNode) }
+            { cardTypeData.map(this.getTypeNodeInner) }
           </Card.Group>
         );
       }
@@ -214,17 +280,17 @@ class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}
       }
     }
     sddm.SetFitBarMaximums(...commonSetBarMaximumArgs, ships);
-    fitsSelected.sort(this.sortDisplay);
+    const cardFitData = this.getCardFitData(fitsSelected).sort(this.sortCardData);
     const fitDisplayData = sddm.shipFitDataTypes.filter(d => d.visable).map(d => d.name);
-    if (this.shipSelection.length !== fitsSelected.length ||
+    if (this.shipSelection.length !== cardFitData.length ||
         this.displaySettings.length !== fitDisplayData.length ||
-        this.shipSelection.some((s, i) => s !== fitsSelected[i]) ||
+        this.shipSelection.some((s, i) => s !== cardFitData[i]) ||
         this.displaySettings.some(((s, i) => s !== fitDisplayData[i]))) {
-      this.shipSelection = fitsSelected;
+      this.shipSelection = cardFitData;
       this.displaySettings = fitDisplayData;
       this.shipSet = (
         <Card.Group centered>
-          { fitsSelected.map(this.getFitNode) }
+          { cardFitData.map(this.getFitNode) }
         </Card.Group>
       );
     }

@@ -13,19 +13,27 @@ for (const widthBase of resizedWidths) {
     fs.writeSync(fd, `// @flow
 `);
     let exportRef = '';
+    let coveredIds = {};
     for (const ship of baseShips) {
-      const id = ship.typeID.toString();
-      const impStr = `import i${id}${width} from './Renders/${widthDir}${id}.png';
+      if (!coveredIds[ship.typeID]) {
+        coveredIds[ship.typeID] = 1;
+        const id = ship.typeID.toString();
+        const impStr = `import i${id}${width} from './Renders/${widthDir}${id}.png';
 `;
-      fs.writeSync(fd, impStr);
+        fs.writeSync(fd, impStr);
+      }
     }
     const objName = `renderIcons${width.toUpperCase()}`;
     exportRef += `${objName}`;
     fs.writeSync(fd, `const ${objName} = { `);
+    coveredIds = {};
     for (const ship of baseShips) {
-      const id = ship.typeID.toString();
-      const impStr = `'i${id}': i${id}${width}, `;
-      fs.writeSync(fd, impStr);
+      if (!coveredIds[ship.typeID]) {
+        coveredIds[ship.typeID] = 1;
+        const id = ship.typeID.toString();
+        const impStr = `'i${id}': i${id}${width}, `;
+        fs.writeSync(fd, impStr);
+      }
     }
     fs.writeSync(fd, `};
 `);

@@ -2,7 +2,7 @@
 import * as React from 'react';
 import { Treebeard, decorators } from 'react-treebeard';
 import { Image, Checkbox, Header } from 'semantic-ui-react';
-import type { SyntheticButtonEvent } from './../flow_types';
+import type { SyntheticButtonEvent, SubsystemType } from './../flow_types';
 import treebeardStyle from './../css/treebeard_style';
 import { UIRefresh } from './../index';
 
@@ -142,7 +142,7 @@ function getNestedCount(data: ?SidebarShipNode[]) {
     const idLen = data[0].parentNodeIdChain.length;
     const isFit = ShipDataDisplayManager.isDisplayModeFit;
     // Should only return non-zero for the final node layer
-    if ((idLen === 3 && isFit) || (idLen === 2 && !isFit)) {
+    if ((idLen >= 3) || (!isFit && idLen === 2)) {
       return data.length;
     }
   }
@@ -165,17 +165,84 @@ function getShipFitData(shipTypeId: number, parentNodeIdChain: number[]) {
   }
   return fitDataSet;
 }
-
+function getSubSystems(
+  shipFits: ShipData[],
+  subCategory: SubsystemType,
+  parentNodeIdChain: number[],
+) {
+  const addedSubs = [];
+  const subNodes = [];
+  for (const t3c of shipFits) {
+    const { subsystems } = t3c;
+    if (subsystems) {
+      const sub: string = subsystems[subCategory];
+      if (!addedSubs.includes(sub)) {
+        addedSubs.push(sub);
+        const subNode = new SidebarShipNode(
+          sub, Math.random(),
+          parentNodeIdChain,
+        );
+        subNodes.push(subNode);
+      }
+    }
+  }
+  return subNodes;
+}
+function getShipSubTypeData(shipTypeId: number, parentNodeIdChain: number[], groupID: number) {
+  const shipFits = baseShips.filter(ship => ship.typeID === shipTypeId);
+  const fitDataSet = [];
+  if (groupID === shipGroupIDNamePair.Strategic_Cruiser) {
+    const subs = ['Defensive', 'Offensive', 'Propulsion', 'Core'];
+    for (const sub of subs) {
+      const id = Math.random();
+      const fitData = new SidebarShipNode(
+        sub, id,
+        parentNodeIdChain,
+      );
+      fitData.children = getSubSystems(shipFits, sub, [...parentNodeIdChain, id]);
+      fitDataSet.push(fitData);
+    }
+  } else {
+    for (const shipFit of shipFits) {
+      const fitData = new SidebarShipNode(
+        `${shipFit.name} ${shipFit.mode}`, shipFit.id,
+        parentNodeIdChain, shipFit.typeID,
+      );
+      fitData.fitData = shipFit;
+      fitDataSet.push(fitData);
+    }
+  }
+  return fitDataSet;
+}
 function getShipTypeData(shipClass: string, parentNodeIdChain: number[]) {
   const groupID = shipGroupIDNamePair[shipClass];
-  const shipsOfType = baseShips.filter(ship => ship.groupID === groupID);
+  let shipsOfType = baseShips.filter(ship => ship.groupID === groupID);
+  let subTypesRequired = false;
+  if (groupID === shipGroupIDNamePair.Strategic_Cruiser ||
+      groupID === shipGroupIDNamePair.Tactical_Destroyer) {
+    const typesInGroup = shipsOfType;
+    subTypesRequired = true;
+    shipsOfType = [];
+    for (const typeInGroup of typesInGroup) {
+      if (!shipsOfType.some(s => s.typeID === typeInGroup.typeID)) {
+        const shipType = {};
+        shipType.shipGroup = typeInGroup.shipGroup;
+        shipType.name = typeInGroup.name;
+        shipType.typeID = typeInGroup.typeID;
+        shipType.id = Math.random();
+        shipsOfType.push(shipType);
+      }
+    }
+  }
   const typeDataSet = [];
   for (const shipType of shipsOfType) {
     shipType.shipGroup = shipClass.replace(/_/g, ' ');
-    const id = Math.random();
+    const { id } = shipType;
     let fitData = [];
     if (ShipDataDisplayManager.isDisplayModeFit) {
       fitData = getShipFitData(shipType.typeID, [...parentNodeIdChain, id]);
+    } else if (subTypesRequired) {
+      fitData = getShipSubTypeData(shipType.typeID, [...parentNodeIdChain, id], groupID);
     }
     const nameInput = appendChildrenCount(shipType.name, fitData);
     const typeData = new SidebarShipNode(
@@ -228,7 +295,11 @@ function getHullSizeData() {
   return shipDataSet;
 }
 
-const dataConst = [getHullSizeData()];
+const dataConst = [
+  getHullSizeData(),
+  null,
+  { isFitInitalValue: ShipDataDisplayManager.isDisplayModeFit },
+];
 let data = dataConst[0];
 
 function getNodeByIdChain(id: number[]) {
@@ -399,13 +470,18 @@ type State = { cursor: ?SidebarShipNode, isfit: boolean };
 class ShipTree extends React.Component<Props, State> {
   constructor(props: { }) {
     super(props);
-    this.state = { cursor: null, isfit: ShipDataDisplayManager.isDisplayModeFit };
+    const sddm = ShipDataDisplayManager;
+    this.state = { cursor: null, isfit: sddm.isDisplayModeFit };
     dataConst.pop();
-    dataConst.push(getHullSizeData());
+    dataConst.pop();
+    dataConst.pop();
+    dataConst.push(getHullSizeData(), null, { isFitInitalValue: sddm.isDisplayModeFit });
     [data] = dataConst;
     this.dataRefresh = () => {
+      const prevData = dataConst.shift() || getHullSizeData();
+      const currentData = dataConst.shift() || getHullSizeData();
       dataConst.pop();
-      dataConst.push(getHullSizeData());
+      dataConst.push(currentData, prevData, { isFitInitalValue: sddm.isDisplayModeFit });
       [data] = dataConst;
       this.setState(() => ({ cursor: null, isfit: ShipDataDisplayManager.isDisplayModeFit }));
     };

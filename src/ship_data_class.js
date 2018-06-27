@@ -1,5 +1,5 @@
 // @flow
-import type { Hp, Resonance, WeaponData, ShipSize } from './flow_types';
+import type { Hp, Resonance, WeaponData, ShipSize, Subsystem } from './flow_types';
 
 class ShipData {
   static getMaxShieldEHP(shipData: ShipData): number {
@@ -132,6 +132,7 @@ class ShipData {
   effectiveLaunchers: number;
   resonance: Resonance;
   powerOutput: number;
+  cpuOutput: number;
   droneDPS: number;
   droneControlRange: number;
   mass: number;
@@ -140,6 +141,8 @@ class ShipData {
   unpropedSpeed: number;
   mwdPropSpeed: number;
   unpropedSig: number;
+  subsystems: Subsystem;
+  mode: '' | 'Defense Mode' | 'Sharpshooter Mode' | 'Propulsion Mode';
   isFit: boolean = false;
 
   static processing(shipStats: ShipData) {
@@ -151,9 +154,31 @@ class ShipData {
       shipStats.shipType = baseName.slice(0, fullNameBreak);
       shipStats.isFit = true;
     } else {
-      shipStats.name = shipStats.name;
       shipStats.shipType = undefined;
       shipStats.isFit = false;
+      // Handle subsystem processing for t3c.
+      if (shipStats.groupID === 963) {
+        const subsystems = {};
+        const subTypes = ['Defensive', 'Offensive', 'Propulsion', 'Core'];
+        for (const sub of subTypes) {
+          const subName = shipStats.moduleNames.find(n => n.includes(sub)) || '';
+          const specificSubName = subName.substring(subName.indexOf(sub) + 2 + sub.length);
+          subsystems[sub] = specificSubName;
+        }
+        shipStats.subsystems = subsystems;
+      }
+      // Handle mode processing for t3d.
+      if (shipStats.groupID === 1305) {
+        const modes = ['Defense Mode', 'Sharpshooter Mode', 'Propulsion Mode'];
+        for (const mode of modes) {
+          const modeInd = shipStats.name.indexOf(mode);
+          const modeStr = shipStats.name.substring(modeInd);
+          if (modeStr === mode) {
+            shipStats.mode = mode;
+            shipStats.name = shipStats.name.substring(0, modeInd - 1);
+          }
+        }
+      }
     }
   }
 }

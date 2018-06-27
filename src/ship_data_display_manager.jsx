@@ -6,6 +6,7 @@ import shieldIcon from './eve_icons/2_64_4.png';
 import armorIcon from './eve_icons/1_64_9.png';
 import hullIcon from './eve_icons/2_64_12.png';
 import powerIcon from './eve_icons/pg_icon.png';
+import cpuIcon from './eve_icons/12_64_7.png';
 import highSlotIcon from './eve_icons/filterIconHighSlot.png';
 import midSlotIcon from './eve_icons/filterIconMediumSlot.png';
 import lowSlotIcon from './eve_icons/filterIconLowSlot.png';
@@ -74,6 +75,7 @@ class ShipDataDisplayManager {
     new ShipTypeDataType(ShipData.getMaxArmorEHP, 'maxArmorEHP', true, false, armorIcon, 'green', 'EHP', 'Max Armor EHP'),
     new ShipTypeDataType(ShipData.getMaxHullEHP, 'maxHullEHP', true, false, hullIcon, 'brown', 'EHP', 'Max Hull EHP'),
     new ShipTypeDataType(ShipData.getPowerOutput, 'powerOutput', true, false, powerIcon, 'olive', 'MW', 'Power Grid'),
+    new ShipTypeDataType((s: ShipData) => s.cpuOutput, 'cpuOutput', true, false, cpuIcon, 'grey', 'tf', 'CPU'),
     new ShipTypeDataType(ShipData.getSignatureRadius, 'signatureRadius', true, false, sigRadiusIcon, 'violet', 'm', 'Signature Radius'),
     new ShipTypeDataType(ShipData.getHighSlots, 'highSlots', false, true, highSlotIcon, 'grey', '', 'High Slots'),
     new ShipTypeDataType(ShipData.getMidSlots, 'midSlots', false, true, midSlotIcon, 'grey', '', 'Mid Slots'),
