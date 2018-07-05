@@ -50,7 +50,7 @@ function TopNavBar(props: { fullui: FullUI }) {
     e: SyntheticDropdownEvent,
     objData: { fullui: FullUI, value: 'darkTheme' | 'lightTheme' | 'shipwreckedTheme' | 'defaultTheme' },
   ) => {
-    localStorage.setItem('effsTheme', documentElement.className);
+    localStorage.setItem('efsTheme', documentElement.className);
     const colors: ButtonColors = objData.fullui.GetButtonColors();
     objData.fullui.setState({ button_colors: colors });
   };
@@ -79,7 +79,7 @@ function TopNavBar(props: { fullui: FullUI }) {
             <Image src={mainRifterIcon} size="mini" />
           </Menu.Item>
           <Menu.Item header fitted="vertically" >
-            Eve Fleet Fight Simulator
+            Eve Fleet Simulator
           </Menu.Item>
           <Menu.Item
             as="a"

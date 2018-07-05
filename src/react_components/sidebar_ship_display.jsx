@@ -26,12 +26,12 @@ const defaultFits: ShipData[] = JSON.parse(shipJSON);
 defaultFits.forEach(s => ShipData.processing(s));
 let localFits: ShipData[] = [];
 try {
-  localFits = (JSON.parse(localStorage.getItem('effsLocalShipData') || '[]'): ShipData[]);
+  localFits = (JSON.parse(localStorage.getItem('efsLocalShipData') || '[]'): ShipData[]);
   localFits = localFits.filter(f => f);
   localFits.forEach(s => ShipData.processing(s));
 } catch (e) {
   localFits = [];
-  localStorage.setItem('effsLocalShipData', JSON.stringify(localFits));
+  localStorage.setItem('efsLocalShipData', JSON.stringify(localFits));
 }
 const ships: ShipData[] = localFits.length > 0 ? [...defaultFits, ...localFits] : defaultFits;
 const baseShips: ShipData[] = JSON.parse(shipBaseJSON);

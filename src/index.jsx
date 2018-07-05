@@ -21,7 +21,7 @@ import type { ButtonColors } from './flow_types';
 import './css/main.css';
 
 const documentElement: HTMLElement = document.documentElement || document.createElement('div');
-const savedTheme = localStorage.getItem('effsTheme');
+const savedTheme = localStorage.getItem('efsTheme');
 if (savedTheme && savedTheme.endsWith('Theme')) {
   documentElement.className = savedTheme;
 } else {

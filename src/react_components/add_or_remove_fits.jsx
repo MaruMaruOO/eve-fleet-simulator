@@ -21,7 +21,7 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
   constructor(props: { }) {
     super(props);
     this.updateLocalShipDropdown = () => {
-      const localFits: ShipData[] = JSON.parse(localStorage.getItem('effsLocalShipData') || '[]');
+      const localFits: ShipData[] = JSON.parse(localStorage.getItem('efsLocalShipData') || '[]');
       return localFits.map((s, i) => ({ key: i, text: s.name, value: i.toString() }));
     };
     this.state = {
@@ -38,11 +38,11 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
     this.setState({ fitData: value });
   };
   deleteFit = (e: SyntheticButtonEvent, { value }: { value: ?string }) => {
-    const localFits: ShipData[] = JSON.parse(localStorage.getItem('effsLocalShipData') || '[]');
+    const localFits: ShipData[] = JSON.parse(localStorage.getItem('efsLocalShipData') || '[]');
     const ind: number = Number(value !== '' ? value : NaN);
     if (!Number.isNaN(ind)) {
       const [{ name }] = localFits.splice(ind, 1);
-      localStorage.setItem('effsLocalShipData', JSON.stringify(localFits));
+      localStorage.setItem('efsLocalShipData', JSON.stringify(localFits));
       this.setState({
         localShipData: this.updateLocalShipDropdown(),
         deleteSelection: `Successfully deleted ${name}`,
@@ -55,7 +55,7 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
   checkDeleteAll = () => this.setState({ deleteAllCheck: true });
   cancelDeleteAll = () => this.setState({ deleteAllCheck: false });
   wipeLocalFits = () => {
-    localStorage.setItem('effsLocalShipData', JSON.stringify([]));
+    localStorage.setItem('efsLocalShipData', JSON.stringify([]));
     this.setState({
       localShipData: this.updateLocalShipDropdown(),
       deleteSelection: 'All local fits have been successfully deleted',
@@ -74,7 +74,7 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
       submittedShipData = submittedShipData.replace('},]', '}]');
     }
     const previousShipData: ShipData[] =
-      JSON.parse(localStorage.getItem('effsLocalShipData') || '[]');
+      JSON.parse(localStorage.getItem('efsLocalShipData') || '[]');
     try {
       const submittedArray: ShipData[] = JSON.parse(submittedShipData);
       const newShipData = previousShipData.length > 0 ?
@@ -89,7 +89,7 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
       } else {
         addedFitsStr = ` ${submittedArray[0].shipType || 'unknown'} fit`;
       }
-      localStorage.setItem('effsLocalShipData', newShipDataStr);
+      localStorage.setItem('efsLocalShipData', newShipDataStr);
       this.setState({
         fitData: '',
         addedFits: addedFitsStr,
@@ -133,7 +133,7 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
               <Message
                 error
                 header="Unable to parse fit information"
-                content="Make sure to use the data exactly as provided by pyfa's effs format."
+                content="Make sure to use the data exactly as provided by pyfa's efs format."
               />
               <Form.Button value={fitData} onClick={this.addShipFitData}>
                 Submit
