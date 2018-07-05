@@ -64,7 +64,7 @@ type FleetTableProps = {|
 type FleetTableState = {|
   parent: FleetAndCombatSimulator,
 |}
-export default class FleetInfoTableWDnD extends React.Component<FleetTableProps, FleetTableState> {
+export default class FleetInfoDnDTable extends React.Component<FleetTableProps, FleetTableState> {
   // eslint-disable-next-line react/sort-comp
   tableRef: ?HTMLElement
 

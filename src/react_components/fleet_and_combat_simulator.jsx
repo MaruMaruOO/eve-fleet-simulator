@@ -8,7 +8,7 @@ import RunFleetActions from './../fleet_actions';
 import Side from './../side_class';
 import Ship from './../ship_class';
 import type { SimulationState, SyntheticInputEvent, ButtonColors } from './../flow_types';
-import FleetInfoTableWDnD from './dnd_table';
+import FleetInfoDnDTable from './fleet_info_dnd_table';
 
 function BattleDisplay(props: { red: Side, blue: Side }) {
   return (
@@ -230,7 +230,7 @@ FleetAndCombatSimulatorState
               compact={this.props.narrowScreen ? 'very' : true}
               size={this.props.narrowScreen ? 'small' : null}
             >
-              {(<FleetInfoTableWDnD
+              {(<FleetInfoDnDTable
                 ships={sideOneShips || []}
                 parent={this}
                 side="red"
@@ -349,7 +349,7 @@ FleetAndCombatSimulatorState
                 compact={this.props.narrowScreen ? 'very' : true}
                 size={this.props.narrowScreen ? 'small' : null}
               >
-                {(<FleetInfoTableWDnD
+                {(<FleetInfoDnDTable
                   ships={sideTwoShips || []}
                   parent={this}
                   side="blue"
