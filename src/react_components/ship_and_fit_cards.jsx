@@ -31,9 +31,12 @@ function updateSideShips(sideNum: SyntheticInputEvent, sideN: number, fitind: nu
   const fit: ShipData = ships[overallInd];
   const ind = side.findIndex(si => si.ship.id === fit.id);
   if (ind >= 0) {
-    side[ind] = { n, ship: fit };
+    side[ind] = { n, ship: fit, iconColor: side[ind].iconColor || undefined };
   } else {
-    side.push({ n, ship: fit });
+    side.forEach((sh) => {
+      sh.iconColor = undefined;
+    });
+    side.push({ n, ship: fit, iconColor: undefined });
   }
   UIRefresh();
 }

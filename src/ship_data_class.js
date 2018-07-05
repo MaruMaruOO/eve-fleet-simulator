@@ -145,7 +145,7 @@ class ShipData {
   mode: '' | 'Defense Mode' | 'Sharpshooter Mode' | 'Propulsion Mode';
   isFit: boolean = false;
 
-  static processing(shipStats: ShipData) {
+  static processing(shipStats: ShipData): void {
     shipStats.id = Math.random();
     const fullNameBreak = shipStats.name.indexOf(':');
     if (fullNameBreak > -1) {

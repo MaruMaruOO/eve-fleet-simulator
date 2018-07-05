@@ -2,52 +2,13 @@
 import React from 'react';
 import { Divider, Table, Grid, Button, Dimmer, Segment } from 'semantic-ui-react';
 import { XYPlot, LineSeries, XAxis, YAxis } from 'react-vis';
+import { DragDropContext } from 'react-beautiful-dnd';
 import { sideOneShips, sideTwoShips, UIRefresh } from './../index';
 import RunFleetActions from './../fleet_actions';
 import Side from './../side_class';
-import ShipData from './../ship_data_class';
 import Ship from './../ship_class';
 import type { SimulationState, SyntheticInputEvent, ButtonColors } from './../flow_types';
-
-function FleetStateTableHeader(props: { side: 'red' | 'blue' }) {
-  return (
-    <Table.Header>
-      <Table.Row>
-        <Table.HeaderCell colSpan="5" textAlign="center">
-          { props.side === 'red' ? 'Red Ships' : 'Blue Ships' }
-        </Table.HeaderCell>
-      </Table.Row>
-      <Table.Row>
-        <Table.HeaderCell>Name</Table.HeaderCell>
-        <Table.HeaderCell>Ship Type</Table.HeaderCell>
-        <Table.HeaderCell>Total</Table.HeaderCell>
-        <Table.HeaderCell positive>Alive</Table.HeaderCell>
-        <Table.HeaderCell negative>Dead</Table.HeaderCell>
-      </Table.Row>
-    </Table.Header>
-  );
-}
-
-// disabled for type declaration
-// eslint-disable-next-line no-use-before-define
-type FleetStateTableContext = { parent: FleetAndCombatSimulator, side: 'red' | 'blue' };
-function FleetStateTable(shipInfo: { ship: ShipData, n: number }) {
-  const context = (this: FleetStateTableContext);
-  const side: Side = context.side === 'red' ? context.parent.red : context.parent.blue;
-  return (
-    <Table.Row key={shipInfo.ship.name}>
-      <Table.Cell>{ shipInfo.ship.name }</Table.Cell>
-      <Table.Cell>{ shipInfo.ship.shipType }</Table.Cell>
-      <Table.Cell>{ shipInfo.n }</Table.Cell>
-      <Table.Cell>
-        { side ? side.ships.filter(s => s.id === shipInfo.ship.id).length : shipInfo.n }
-      </Table.Cell>
-      <Table.Cell>
-        { side ? side.deadShips.filter(s => s.id === shipInfo.ship.id).length : 0}
-      </Table.Cell>
-    </Table.Row>
-  );
-}
+import FleetInfoTableWDnD from './dnd_table';
 
 function BattleDisplay(props: { red: Side, blue: Side }) {
   return (
@@ -81,7 +42,7 @@ function BattleDisplay(props: { red: Side, blue: Side }) {
 }
 
 type FleetAndCombatSimulatorState = {
-  reportStrings: string[], initalDistance: number, simulationSpeed: number,
+  initalDistance: number, simulationSpeed: number,
   red: Side, blue: Side, simulationState: SimulationState,
 };
 class FleetAndCombatSimulator extends React.Component<
@@ -93,7 +54,6 @@ FleetAndCombatSimulatorState
   }) {
     super(props);
     this.state = {
-      reportStrings: [],
       initalDistance: props.initalDistance || 35000,
       simulationSpeed: 10,
       red: new Side('red'),
@@ -162,9 +122,12 @@ FleetAndCombatSimulatorState
         if (isDamageDealtRed) {
           this.removeDeadShips(this.blue);
         }
+        this.logUpdate(this.blue, this.red, (breakClause + (i / 100)) / 10);
+        if (this.blue.ships.length === 0 || this.red.ships.length === 0) {
+          break;
+        }
       }
       const newBreakClause = breakClause + simulationSpeed;
-      this.logUpdate(this.blue, this.red, newBreakClause / 10);
       this.setState({ red: this.red });
       this.setState({ blue: this.blue });
       setTimeout(
@@ -172,13 +135,11 @@ FleetAndCombatSimulatorState
         newBreakClause, interval, reportInterval, simulationSpeed,
       );
     } else {
-      this.logUpdate(this.blue, this.red, breakClause / 10);
       this.setState({ simulationState: 'finished' });
       UIRefresh();
     }
   };
   SimulateBattle = () => {
-    this.state.reportStrings = [];
     this.redGraphData = [];
     this.blueGraphData = [];
     this.blue = this.state.blue;
@@ -259,10 +220,6 @@ FleetAndCombatSimulatorState
     }
   };
   render() {
-    const reportData = this.state.reportStrings.length < 100 ?
-      this.state.reportStrings.map((report, i) =>
-        <p key={report + i.toString()}>{ report }</p>) :
-      '';
     return (
       <div className="fleetSim" style={{ height: this.totalHeight, maxHeight: this.totalHeight }}>
         <Grid>
@@ -273,14 +230,12 @@ FleetAndCombatSimulatorState
               compact={this.props.narrowScreen ? 'very' : true}
               size={this.props.narrowScreen ? 'small' : null}
             >
-              <Table>
-                <FleetStateTableHeader side="red" />
-                { sideOneShips ?
-                  <Table.Body>
-                    { sideOneShips.map(FleetStateTable, ({ parent: this, side: 'red' }: FleetStateTableContext)) }
-                  </Table.Body> : null
-                }
-              </Table>
+              {(<FleetInfoTableWDnD
+                ships={sideOneShips || []}
+                parent={this}
+                side="red"
+              />
+               )}
             </Table>
           </Grid.Column>
           <Grid.Column width={this.props.narrowScreen ? 6 : 8} className={this.props.narrowScreen ? 'battleDisplay battleDisplayNarrow' : 'battleDisplay'}>
@@ -383,24 +338,27 @@ FleetAndCombatSimulatorState
             </Button.Group>
           </Grid.Column>
           <Grid.Column width={this.props.narrowScreen ? 5 : 4}>
-            <Table
-              celled
-              className="fleetStateTable"
-              compact={this.props.narrowScreen ? 'very' : true}
-              size={this.props.narrowScreen ? 'small' : null}
+            <DragDropContext
+              onDragStart={() => {}}
+              onDragUpdate={() => {}}
+              onDragEnd={() => {}}
             >
-              <Table>
-                <FleetStateTableHeader side="blue" />
-                { sideTwoShips ?
-                  <Table.Body>
-                    { sideTwoShips.map(FleetStateTable, ({ parent: this, side: 'blue' }: FleetStateTableContext)) }
-                  </Table.Body> : null
-                }
+              <Table
+                celled
+                className="fleetStateTable"
+                compact={this.props.narrowScreen ? 'very' : true}
+                size={this.props.narrowScreen ? 'small' : null}
+              >
+                {(<FleetInfoTableWDnD
+                  ships={sideTwoShips || []}
+                  parent={this}
+                  side="blue"
+                />
+                 )}
               </Table>
-            </Table>
+            </DragDropContext>
           </Grid.Column>
         </Grid>
-        { reportData }
         <Divider />
       </div>
     );

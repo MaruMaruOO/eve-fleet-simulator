@@ -47,8 +47,9 @@ if (root.clientWidth < 1920 && root.clientWidth > 1200) {
     document.body.style.fontSize = newFontSize;
   }
 }
-const sideOneShips: { ship: ShipData, n: number }[] = [];
-const sideTwoShips: { ship: ShipData, n: number }[] = [];
+type SideShipInfo = { ship: ShipData, n: number, iconColor: ?string }
+const sideOneShips: SideShipInfo[] = [];
+const sideTwoShips: SideShipInfo[] = [];
 
 const UIRefresh = () => {
   ReactDOM.render(
@@ -94,4 +95,4 @@ class FullUI extends React.Component<{ },
 UIRefresh();
 
 export { sideOneShips, sideTwoShips, UIRefresh, documentElement };
-export type { FullUI };
+export type { FullUI, SideShipInfo };

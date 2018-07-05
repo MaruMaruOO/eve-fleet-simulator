@@ -4,9 +4,10 @@ import type { WeaponData, WeaponType } from './flow_types';
 class PendingAttack {
   damage: number;
   timer: number;
-  constructor(dmg: number, delay: number) {
+  constructor(dmg: number, delay: number): PendingAttack {
     this.damage = dmg;
     this.timer = delay;
+    return this;
   }
 }
 
@@ -88,7 +89,7 @@ class Weapon {
     }
     return 0;
   }
-  constructor(wep: WeaponData) {
+  constructor(wep: WeaponData): Weapon {
     this.type = wep.type;
     this.damage = wep.volley;
     this.reload = 1000 * (wep.volley / wep.dps);
@@ -128,6 +129,7 @@ class Weapon {
     } else {
       console.error('UNKNOWN WEAPON TYPING', wep.type, wep);
     }
+    return this;
   }
 }
 export { Weapon, PendingAttack };

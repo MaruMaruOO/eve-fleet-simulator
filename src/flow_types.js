@@ -1,5 +1,7 @@
 // @flow
 import { Dropdown } from 'semantic-ui-react';
+// This is passed through rather than defined here to avoid importing the ShipData class
+import type { SideShipInfo } from './index';
 
 type Hp = {armor: number, hull: number, shield: number};
 type SingleResonance = {em: number, therm: number, kin: number, exp: number};
@@ -61,5 +63,5 @@ export type {
   WeaponAbility, ShipSize, ModuleQualityValue, VectorMaxLenThree,
   SyntheticInputEvent, SyntheticButtonEvent, SyntheticDropdownEvent,
   SimulationState, GenericSyntheticTransitionEvent, ButtonColors,
-  Subsystem, SubsystemType,
+  Subsystem, SubsystemType, SideShipInfo,
 };

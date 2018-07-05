@@ -1,5 +1,8 @@
 [ignore]
 .*\.less
+# This is only required due to flow errors in the module that are fixed upstream.
+# Remove when react-beautiful-dnd updates to a version newer than 7.1.3
+.*node_modules/react-beautiful-dnd/dist/.*flow
 
 [include]
 

@@ -567,3 +567,68 @@ body {
   background-color: transparent;
   align-self: flex-end;
 }
+
+/* dnd table styling */
+td >.ui.fluid.image >.ui.corner.label {
+  height: ~"calc(2.8em - 1px)";
+  width: ~"calc(2.8em - 1px)";
+  border-color: inherit;
+  top: 1px;
+  right: 1px;
+}
+td >.ui.fluid.image >img {
+  border-width: 1px;
+  border-color: inherit;
+  border-style: solid;
+}
+td >.ui.fluid.image >.ui.corner.label .icon {
+  --size-multi: calc(2.8 / 4);
+  top: ~"calc(calc(0.64285714em * var(--size-multi)) * var(--size-multi))";
+  left: ~"calc(0.78571429em * var(--size-multi))";
+}
+td >.ui.fluid.image >.ui.corner.label:after {
+  border-bottom-width: ~"calc(2.8em - 1px)";
+  border-right-width: ~"calc(2.8em - 1px)";
+}
+td >.shipStatBarDiv >.shipSimBar >.bar {
+  background-color: var(--inherited-bg);
+  min-width: 10%;
+}
+
+.tableCellWithTooltip >div.cornerTooltipWrapper {
+  position: relative;
+  width: 4em;
+  height: 4em;
+  display: inline-block;
+  /* offset table padding */
+  margin: -0.92857143rem -0.7rem;
+  /* font size changed to match label font size */
+  font-size: 0.85714286rem;
+  margin-right: -2.2em;
+  /* take 0.5rem from bottom margin so the cells text doesn't move */
+  margin-bottom: calc(-0.92857143rem + -0.5rem);
+}
+.ui.celled.table th.tableCellWithTooltip {
+  /* Reduced due to the smaller font size used inside the label */
+  padding-right: 2.2 * 0.85714286em;
+  /* Originally 1.4285em (sqrt of 2). Tweaking slightly to prevent chrome rounding 19.99px to 19px on some fonts. */
+  line-height: 1.428572em;
+}
+.ui.celled.table .tableCellWithTooltip {
+  @paddingRight: 2.2 * 0.85714286em;
+  /* 5.2em is specific to the text in the header as drag and drop requires fixed widths */
+  @widthSansBorder: 5.2em + @paddingRight;
+  width: ~"calc("@widthSansBorder~" + 1px)";
+  min-width: ~"calc("@widthSansBorder~" + 1px)";
+}
+
+.ui.celled.table .shipTypeSubheader {
+  width: 20%;
+}
+.fleetStateTableSubHeader >th {
+  white-space: pre;
+}
+.draggingRow {
+  display: table;
+  background: rgb(185, 244, 188);
+}

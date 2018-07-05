@@ -1,7 +1,7 @@
 // @flow
 import Ship from './ship_class';
 import ShipData from './ship_data_class';
-
+import type { SideShipInfo } from './flow_types';
 
 type Subfleet = {fc: Ship, ewar: {
   currentTarget: Ship | null,
@@ -55,7 +55,10 @@ class Side {
   theoreticalDamage: number = 0;
   appliedDamage: number = 0;
   damageApplicationRatio: number = this.appliedDamage / this.theoreticalDamage;
-  makeFleet(sidesShips: {ship: ShipData, n: number}[], initalDistance: number) {
+  makeFleet: (SideShipInfo[], number) => void = (
+    sidesShips: SideShipInfo[],
+    initalDistance: number,
+  ): void => {
     this.uniqueFitCount = 0;
     this.totalShipCount = 0;
     const colorChangePerShip: number = 255 / sidesShips.length;
@@ -64,9 +67,12 @@ class Side {
       this.totalShipCount += shipClass.n;
       const alternateColoring = this.uniqueFitCount % 2 === 0;
       const colorShift = ((this.uniqueFitCount - 1) * colorChangePerShip).toFixed(0);
-      const iconColor = this.color === 'red' ?
-        `rgb(${alternateColoring ? '180' : '255'}, ${colorShift}, ${alternateColoring ? '80' : '0'})` :
-        `rgb(${alternateColoring ? '80' : '0'}, ${colorShift}, ${alternateColoring ? '180' : '255'})`;
+      if (!shipClass.iconColor) {
+        shipClass.iconColor = this.color === 'red' ?
+          `rgb(${alternateColoring ? '180' : '255'}, ${colorShift}, ${alternateColoring ? '80' : '0'})` :
+          `rgb(${alternateColoring ? '80' : '0'}, ${colorShift}, ${alternateColoring ? '180' : '255'})`;
+      }
+      const { iconColor } = shipClass;
       let lastShotCaller: Ship | null = null;
       let lastAnchor: Ship | null = null;
       const shipStats: ShipData = shipClass.ship;
@@ -90,10 +96,11 @@ class Side {
         this.ships.push(localShip);
       }
     }
-  }
-  constructor(color: 'red' | 'blue') {
+  };
+  constructor(color: 'red' | 'blue'): Side {
     this.targetGrouping = 1000;
     this.color = color;
+    return this;
   }
 }
 
