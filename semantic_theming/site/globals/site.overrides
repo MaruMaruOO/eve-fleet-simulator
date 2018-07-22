@@ -616,14 +616,16 @@ td >.shipStatBarDiv >.shipSimBar >.bar {
 }
 .ui.celled.table .tableCellWithTooltip {
   @paddingRight: 2.2 * 0.85714286em;
-  /* 5.2em is specific to the text in the header as drag and drop requires fixed widths */
-  @widthSansBorder: 5.2em + @paddingRight;
+  /* 5.04286em is specific to the text and font in the header as drag and drop requires fixed widths */
+  @widthSansBorder: 5.04286em + @paddingRight;
+  /* Default chrome font would display correctly with 5.2em for example */
+  /*@widthSansBorder: 5.2em + @paddingRight;*/
   width: ~"calc("@widthSansBorder~" + 1px)";
   min-width: ~"calc("@widthSansBorder~" + 1px)";
 }
 
 .ui.celled.table .shipTypeSubheader {
-  width: 20%;
+  width: 18%;
 }
 .fleetStateTableSubHeader >th {
   white-space: pre;

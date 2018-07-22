@@ -122,14 +122,15 @@ FleetAndCombatSimulatorState
         if (isDamageDealtRed) {
           this.removeDeadShips(this.blue);
         }
-        this.logUpdate(this.blue, this.red, (breakClause + (i / 100)) / 10);
-        if (this.blue.ships.length === 0 || this.red.ships.length === 0) {
-          break;
+        if (isDamageDealtBlue || isDamageDealtRed) {
+          this.logUpdate(this.blue, this.red, (breakClause + (i / 100)) / 10);
+          if (this.blue.ships.length === 0 || this.red.ships.length === 0) {
+            break;
+          }
         }
       }
       const newBreakClause = breakClause + simulationSpeed;
-      this.setState({ red: this.red });
-      this.setState({ blue: this.blue });
+      this.setState({ red: this.red, blue: this.blue });
       setTimeout(
         this.RunSimulationLoop, reportInterval / simulationSpeed,
         newBreakClause, interval, reportInterval, simulationSpeed,
@@ -148,9 +149,7 @@ FleetAndCombatSimulatorState
     this.blue = new Side('blue');
     this.red.makeFleet(sideOneShips, this.state.initalDistance);
     this.blue.makeFleet(sideTwoShips, this.state.initalDistance);
-    this.setState({ red: this.red });
-    this.setState({ blue: this.blue });
-    this.setState({ simulationState: 'running' });
+    this.setState({ red: this.red, blue: this.blue, simulationState: 'running' });
     const largestFleet = Math.max(this.blue.ships.length, this.red.ships.length);
     const charLengthOfMaxShips = largestFleet.toString().length;
     this.setXYPlotMargin(charLengthOfMaxShips);
@@ -241,6 +240,7 @@ FleetAndCombatSimulatorState
           <Grid.Column width={this.props.narrowScreen ? 6 : 8} className={this.props.narrowScreen ? 'battleDisplay battleDisplayNarrow' : 'battleDisplay'}>
             <Dimmer.Dimmable className="battleDisplayDimmer" dimmed={this.state.simulationState === 'finished'}>
               <Dimmer active={this.state.simulationState === 'finished'}>
+              {this.state.simulationState === 'finished' ?
                 <div className="battleDisplayResults">
                   <Segment
                     className={this.props.narrowScreen ?
@@ -300,6 +300,7 @@ FleetAndCombatSimulatorState
                     {`Blue Application: ${((this.blue.appliedDamage / this.blue.theoreticalDamage) * 100).toPrecision(4)}%`}
                   </Segment>
                 </div>
+              : ''}
               </Dimmer>
               <BattleDisplay red={this.red} blue={this.blue} />
             </Dimmer.Dimmable>
@@ -338,25 +339,18 @@ FleetAndCombatSimulatorState
             </Button.Group>
           </Grid.Column>
           <Grid.Column width={this.props.narrowScreen ? 5 : 4}>
-            <DragDropContext
-              onDragStart={() => {}}
-              onDragUpdate={() => {}}
-              onDragEnd={() => {}}
-            >
               <Table
                 celled
                 className="fleetStateTable"
                 compact={this.props.narrowScreen ? 'very' : true}
                 size={this.props.narrowScreen ? 'small' : null}
               >
-                {(<FleetInfoDnDTable
+                <FleetInfoDnDTable
                   ships={sideTwoShips || []}
                   parent={this}
                   side="blue"
                 />
-                 )}
               </Table>
-            </DragDropContext>
           </Grid.Column>
         </Grid>
         <Divider />

@@ -21,8 +21,7 @@ try {
 } catch (e) {
   renderIconsW35 = null;
 }
-
-const defaultFits: ShipData[] = JSON.parse(shipJSON);
+const defaultFits: ShipData[] = shipJSON;
 defaultFits.forEach(s => ShipData.processing(s));
 let localFits: ShipData[] = [];
 try {
@@ -34,9 +33,8 @@ try {
   localStorage.setItem('efsLocalShipData', JSON.stringify(localFits));
 }
 const ships: ShipData[] = localFits.length > 0 ? [...defaultFits, ...localFits] : defaultFits;
-const baseShips: ShipData[] = JSON.parse(shipBaseJSON);
+const baseShips: ShipData[] = shipBaseJSON;
 baseShips.forEach(s => ShipData.processing(s));
-
 const ShipSizes = ['Frigate', 'Destroyer', 'Cruiser', 'Battlecruiser', 'Battleship', 'Capital', 'Industrial', 'Misc'];
 
 const shipGroupIDNamePair: { [string]: number } = {

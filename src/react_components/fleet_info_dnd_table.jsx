@@ -21,8 +21,8 @@ function FleetStateTableHeader(props: { side: 'red' | 'blue' }) {
       flowing
       position="right center"
       trigger={triggerVal}
-      content="Opposing side will target ships with the lowest priority first.<br />
-Click and drag table rows to change target priority."
+      content={(<div>Opposing side will target ships with the lowest priority first.<br />
+      Click and drag table rows to change target priority.</div>)}
     />
   );
   return (
@@ -34,7 +34,7 @@ Click and drag table rows to change target priority."
       </Table.Row>
       <Table.Row className="fleetStateTableSubHeader">
         <Table.HeaderCell>Name</Table.HeaderCell>
-        <Table.HeaderCell className="shipTypeSubheader" >Ship Type</Table.HeaderCell>
+        <Table.HeaderCell className="shipTypeSubheader" >Type</Table.HeaderCell>
         <Table.HeaderCell className="tableCellWithTooltip">
           Priority
           <div className="cornerTooltipWrapper">{popupInfo}</div>
@@ -92,7 +92,7 @@ export default class FleetInfoDnDTable extends React.Component<FleetTableProps, 
       <DragDropContext onDragEnd={this.onDragEnd}>
         <Fragment>
           <Table>
-            {FleetStateTableHeader({ side: this.props.side })}
+            <FleetStateTableHeader side={this.props.side} />
             <Droppable droppableId="table">
               {(droppableProvided: DroppableProvided) => (
                 <tbody

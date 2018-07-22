@@ -60,7 +60,7 @@ export default class DraggableTableRow extends React.Component<DraggableTableRow
     const matchingShip = side.ships.find(s => s.id === shipInfo.ship.id);
     const shipIconColor = (matchingShip || { iconColor: 'grey' }).iconColor;
     const iconCellStyle = {
-      padding: '0em', width: '20%', paddingTop: '1px', paddingLeft: '1px',
+      padding: '0em', width: '18%', paddingTop: '1px', paddingLeft: '1px',
     };
     const shipBorder = {
       maxWidth: '82px',
@@ -116,7 +116,7 @@ export default class DraggableTableRow extends React.Component<DraggableTableRow
         <Table.Cell className="tableCellWithTooltip">
           {priority}
         </Table.Cell>
-        <Table.Cell style={{ width: '40%', minWidth: '40%' }}>
+        <Table.Cell style={{ width: '24%', minWidth: '24%' }}>
           {dataBar}
         </Table.Cell>
       </tr>
