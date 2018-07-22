@@ -2,7 +2,6 @@
 import React from 'react';
 import { Divider, Table, Grid, Button, Dimmer, Segment } from 'semantic-ui-react';
 import { XYPlot, LineSeries, XAxis, YAxis } from 'react-vis';
-import { DragDropContext } from 'react-beautiful-dnd';
 import { sideOneShips, sideTwoShips, UIRefresh } from './../index';
 import RunFleetActions from './../fleet_actions';
 import Side from './../side_class';
@@ -240,67 +239,67 @@ FleetAndCombatSimulatorState
           <Grid.Column width={this.props.narrowScreen ? 6 : 8} className={this.props.narrowScreen ? 'battleDisplay battleDisplayNarrow' : 'battleDisplay'}>
             <Dimmer.Dimmable className="battleDisplayDimmer" dimmed={this.state.simulationState === 'finished'}>
               <Dimmer active={this.state.simulationState === 'finished'}>
-              {this.state.simulationState === 'finished' ?
-                <div className="battleDisplayResults">
-                  <Segment
-                    className={this.props.narrowScreen ?
-                               'applicationDisplay applicationDisplayNarrow' : 'applicationDisplay'}
-                    inverted
-                    floated="left"
-                  >
-                    {`Red Application: ${((this.red.appliedDamage / this.red.theoreticalDamage) * 100).toPrecision(4)}%`}
-                  </Segment>
-                  <XYPlot
-                    height={this.XYPlotSize}
-                    width={this.XYPlotSize}
-                    margin={this.XYPlotMargin}
-                  >
-                    <LineSeries
-                      color="red"
-                      data={this.redGraphData}
-                      curve="curveMonotoneX"
-                      strokeWidth="0.2em"
-                      style={{ fill: 'rgba(0, 0 ,0, 0)' }}
-                    />
-                    <LineSeries
-                      color="blue"
-                      data={this.blueGraphData}
-                      curve="curveMonotoneX"
-                      strokeWidth="0.2em"
-                      style={{ fill: 'rgba(0, 0 ,0, 0)' }}
-                    />
-                    <XAxis
-                      title="Time (Seconds)"
-                      tickTotal={this.props.narrowScreen ? 3 : 5}
-                      style={{
-                        stroke: 'var(--graph-font-color)',
-                        fill: 'var(--graph-font-color)',
-                        line: { stroke: 'grey' },
-                        ticks: { stroke: 'var(--graph-font-color)' },
-                        text: { stroke: 'var(--graph-font-color)', fill: 'var(--graph-font-color)' },
-                      }}
-                    />
-                    <YAxis
-                      title="Ships"
-                      style={{
-                        stroke: 'var(--graph-font-color)',
-                        fill: 'var(--graph-font-color)',
-                        line: { stroke: 'grey' },
-                        ticks: { stroke: 'var(--graph-font-color)' },
-                        text: { stroke: 'var(--graph-font-color)', fill: 'var(--graph-font-color)' },
-                      }}
-                    />
-                  </XYPlot>
-                  <Segment
-                    className={this.props.narrowScreen ?
-                               'applicationDisplay applicationDisplayNarrow' : 'applicationDisplay'}
-                    inverted
-                    floated="right"
-                  >
-                    {`Blue Application: ${((this.blue.appliedDamage / this.blue.theoreticalDamage) * 100).toPrecision(4)}%`}
-                  </Segment>
-                </div>
-              : ''}
+                {this.state.simulationState === 'finished' ?
+                  <div className="battleDisplayResults">
+                    <Segment
+                      className={this.props.narrowScreen ?
+                                 'applicationDisplay applicationDisplayNarrow' : 'applicationDisplay'}
+                      inverted
+                      floated="left"
+                    >
+                      {`Red Application: ${((this.red.appliedDamage / this.red.theoreticalDamage) * 100).toPrecision(4)}%`}
+                    </Segment>
+                    <XYPlot
+                      height={this.XYPlotSize}
+                      width={this.XYPlotSize}
+                      margin={this.XYPlotMargin}
+                    >
+                      <LineSeries
+                        color="red"
+                        data={this.redGraphData}
+                        curve="curveMonotoneX"
+                        strokeWidth="0.2em"
+                        style={{ fill: 'rgba(0, 0 ,0, 0)' }}
+                      />
+                      <LineSeries
+                        color="blue"
+                        data={this.blueGraphData}
+                        curve="curveMonotoneX"
+                        strokeWidth="0.2em"
+                        style={{ fill: 'rgba(0, 0 ,0, 0)' }}
+                      />
+                      <XAxis
+                        title="Time (Seconds)"
+                        tickTotal={this.props.narrowScreen ? 3 : 5}
+                        style={{
+                          stroke: 'var(--graph-font-color)',
+                          fill: 'var(--graph-font-color)',
+                          line: { stroke: 'grey' },
+                          ticks: { stroke: 'var(--graph-font-color)' },
+                          text: { stroke: 'var(--graph-font-color)', fill: 'var(--graph-font-color)' },
+                        }}
+                      />
+                      <YAxis
+                        title="Ships"
+                        style={{
+                          stroke: 'var(--graph-font-color)',
+                          fill: 'var(--graph-font-color)',
+                          line: { stroke: 'grey' },
+                          ticks: { stroke: 'var(--graph-font-color)' },
+                          text: { stroke: 'var(--graph-font-color)', fill: 'var(--graph-font-color)' },
+                        }}
+                      />
+                    </XYPlot>
+                    <Segment
+                      className={this.props.narrowScreen ?
+                                 'applicationDisplay applicationDisplayNarrow' : 'applicationDisplay'}
+                      inverted
+                      floated="right"
+                    >
+                      {`Blue Application: ${((this.blue.appliedDamage / this.blue.theoreticalDamage) * 100).toPrecision(4)}%`}
+                    </Segment>
+                  </div>
+                : ''}
               </Dimmer>
               <BattleDisplay red={this.red} blue={this.blue} />
             </Dimmer.Dimmable>
@@ -339,18 +338,18 @@ FleetAndCombatSimulatorState
             </Button.Group>
           </Grid.Column>
           <Grid.Column width={this.props.narrowScreen ? 5 : 4}>
-              <Table
-                celled
-                className="fleetStateTable"
-                compact={this.props.narrowScreen ? 'very' : true}
-                size={this.props.narrowScreen ? 'small' : null}
-              >
-                <FleetInfoDnDTable
-                  ships={sideTwoShips || []}
-                  parent={this}
-                  side="blue"
-                />
-              </Table>
+            <Table
+              celled
+              className="fleetStateTable"
+              compact={this.props.narrowScreen ? 'very' : true}
+              size={this.props.narrowScreen ? 'small' : null}
+            >
+              <FleetInfoDnDTable
+                ships={sideTwoShips || []}
+                parent={this}
+                side="blue"
+              />
+            </Table>
           </Grid.Column>
         </Grid>
         <Divider />

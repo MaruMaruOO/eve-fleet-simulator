@@ -21,8 +21,10 @@ function FleetStateTableHeader(props: { side: 'red' | 'blue' }) {
       flowing
       position="right center"
       trigger={triggerVal}
-      content={(<div>Opposing side will target ships with the lowest priority first.<br />
-      Click and drag table rows to change target priority.</div>)}
+      content={(
+        <div>Opposing side will target ships with the lowest priority first.<br />
+          Click and drag table rows to change target priority.
+        </div>)}
     />
   );
   return (
