@@ -82,7 +82,7 @@ class ShipDataDisplayManager {
     new ShipTypeDataType(ShipData.getLowSlots, 'lowSlots', false, true, lowSlotIcon, 'grey', '', 'Low Slots'),
   ];
 
-  static isDisplayModeFit: boolean = false;
+  static isDisplayModeFit: boolean = true;
   static shipDisplaySort: (ShipData) => number = ShipDataDisplayManager.shipTypeDataTypes[0].getter;
   static shipDisplaySortName = 'default';
   static moduleQuality: ModuleQualityValue = 1;
