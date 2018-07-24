@@ -135,7 +135,7 @@ function getApplicationArgs(ship: Ship, target: Ship): ApplicationArgArray {
   if (wep && wep.type === 'Turret') {
     const damageFunction = TurretApplication;
     const trackingFactor = wep.stats.tracking * target.sigRadius;
-    maxRange = Math.min(ship.maxTargetRange, (wep.optimal + wep.stats.falloff) * 3);
+    maxRange = Math.min(ship.maxTargetRange, wep.optimal + (wep.stats.falloff * 3));
     let velocity;
     let oppVelocity = [0];
     if (wep.autonomousMovement) {
@@ -289,7 +289,11 @@ function calculateDamage(ship: Ship, target: Ship, wep: Weapon, side: Side): num
     } else {
       velocity = [getVelocityDelta(ship, target, wep)];
     }
-    return wep.damage * TurretApplication(ship.distanceFromTarget, [
+    const bonusMulti = 1 + wep.bonusMulti;
+    if (wep.stats.bonusMultiInc && wep.bonusMulti < wep.stats.bonusMultiCap) {
+      wep.bonusMulti += wep.stats.bonusMultiInc;
+    }
+    return wep.damage * bonusMulti * TurretApplication(ship.distanceFromTarget, [
       velocity, oppVelocity,
       wep.stats.tracking * target.sigRadius,
       wep.optimal, wep.stats.falloff]);
@@ -306,7 +310,12 @@ function dealDamage(ship: Ship, t: number, wep: Weapon, side: Side) {
   } else {
     wep.currentReload -= t;
     if (wep.currentReload <= 0) {
-      const damage = calculateDamage(ship, ship.targets[0], wep, side);
+      const [target] = ship.targets;
+      if (wep.bonusMulti && target !== ship.previousTarget) {
+        wep.bonusMulti = 0;
+        ship.previousTarget = target;
+      }
+      const damage = calculateDamage(ship, target, wep, side);
       const attack = new PendingAttack(damage, wep.getDamageDelay(ship.distanceFromTarget));
       wep.pendingDamage.push(attack);
       wep.currentReload = wep.reload;

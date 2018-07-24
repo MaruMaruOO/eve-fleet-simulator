@@ -40,6 +40,8 @@ class WeaponData {
   explosionRadius: number;
   explosionVelocity: number;
   tracking: number;
+  damageMultiplierBonusPerCycle: number;
+  damageMultiplierBonusMax: number;
 }
 
 type ModuleQualityValue = 1 | 2 | 3 | 4;

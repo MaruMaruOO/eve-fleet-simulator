@@ -83,7 +83,7 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
         </div>
         <div className="ui">
           <Button.Group className={props.buttonColors[3]} inverted={props.buttonColors[0]}>
-            <Button className="formattingButton">Ship type module quality</Button>
+            <Button className="formattingButton">Module Quality</Button>
             <Dropdown
               className="contentButton"
               onChange={moduleQualityChange}
@@ -98,7 +98,7 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
         </div>
         <div className="ui">
           <Button.Group className={props.buttonColors[2]} inverted={props.buttonColors[0]}>
-            <Button className="formattingButton">Sort ship types by</Button>
+            <Button className="formattingButton">Sort Ships by</Button>
             <Dropdown
               className="contentButton"
               onChange={sortChange}

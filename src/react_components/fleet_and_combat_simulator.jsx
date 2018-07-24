@@ -40,6 +40,13 @@ function BattleDisplay(props: { red: Side, blue: Side }) {
   );
 }
 
+function getApplicationString(appliedDamage: number, theoreticalDamage: number) {
+  if (Number.isNaN(appliedDamage) || theoreticalDamage === 0) {
+    return 'None';
+  }
+  return `${((appliedDamage / theoreticalDamage) * 100).toPrecision(4)}%`;
+}
+
 type FleetAndCombatSimulatorState = {
   initalDistance: number, simulationSpeed: number,
   red: Side, blue: Side, simulationState: SimulationState,
@@ -247,7 +254,7 @@ FleetAndCombatSimulatorState
                       inverted
                       floated="left"
                     >
-                      {`Red Application: ${((this.red.appliedDamage / this.red.theoreticalDamage) * 100).toPrecision(4)}%`}
+                      {`Red Application: ${getApplicationString(this.red.appliedDamage, this.red.theoreticalDamage)}`}
                     </Segment>
                     <XYPlot
                       height={this.XYPlotSize}
@@ -296,7 +303,7 @@ FleetAndCombatSimulatorState
                       inverted
                       floated="right"
                     >
-                      {`Blue Application: ${((this.blue.appliedDamage / this.blue.theoreticalDamage) * 100).toPrecision(4)}%`}
+                      {`Blue Application: ${getApplicationString(this.blue.appliedDamage, this.blue.theoreticalDamage)}`}
                     </Segment>
                   </div>
                 : ''}

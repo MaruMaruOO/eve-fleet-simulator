@@ -19,6 +19,8 @@ class MissileStats {
   travelVelocity: number;
   baseTravelVelocity: number;
   damageReductionFactor: number;
+  bonusMultiInc: number = 0;
+  bonusMultiCap: number = 0;
   tracking: number = 0;
   baseTracking: number = 0;
   falloff: number = 0;
@@ -42,6 +44,8 @@ class TurretStats {
   travelVelocity: number = 0;
   baseTravelVelocity: number = 0;
   damageReductionFactor: number = 0;
+  bonusMultiInc: number;
+  bonusMultiCap: number;
   tracking: number;
   baseTracking: number;
   falloff: number;
@@ -51,6 +55,8 @@ class TurretStats {
     this.baseTracking = wep.tracking;
     this.falloff = wep.falloff;
     this.baseFalloff = wep.falloff;
+    this.bonusMultiInc = wep.damageMultiplierBonusPerCycle;
+    this.bonusMultiCap = wep.damageMultiplierBonusMax;
   }
 }
 
@@ -62,6 +68,8 @@ class SmartBombStats {
   travelVelocity: number = 0;
   baseTravelVelocity: number = 0;
   damageReductionFactor: number = 0;
+  bonusMultiInc: number = 0;
+  bonusMultiCap: number = 0;
   tracking: number = 10000;
   baseTracking: number = 10000;
   falloff: number;
@@ -83,6 +91,7 @@ class Weapon {
   baseOptimal: number;
   dps: number;
   autonomousMovement: boolean;
+  bonusMulti: number = 0;
   getDamageDelay(distance: number): number {
     if (this.type === 'Missile') {
       return 1000 * (distance / this.stats.travelVelocity);

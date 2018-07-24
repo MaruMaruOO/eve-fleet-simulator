@@ -27,6 +27,7 @@ class Ship {
   shotCaller: ?Ship;
   anchor: ?Ship;
   targets: Ship[];
+  previousTarget: ?Ship;
   weapons: Weapon[];
   maxTargets: number = 6;
   distanceFromTarget: number;

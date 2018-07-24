@@ -18,6 +18,13 @@ try {
   renderIconsW80 = null;
 }
 
+function trimInputZeros(e: SyntheticInputEvent) {
+  // Remove useless leading zeros if present
+  const num = Number(e.currentTarget.value);
+  // If the value is 0 reset to the default value by making it an empty string.
+  e.currentTarget.value = num === 0 ? '' : String(num);
+}
+
 function updateSideShips(sideNum: SyntheticInputEvent, sideN: number, fitind: number) {
   const s = sideN;
   let side;
@@ -98,6 +105,7 @@ class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}
               type="number"
               min="0"
               onChange={(e: SyntheticInputEvent) => updateSideShips(e, 1, ships.indexOf(fitData))}
+              onBlur={trimInputZeros}
               label={{ color: 'red' }}
               placeholder="Red"
               defaultValue={redDefaultVal}
@@ -108,6 +116,7 @@ class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}
               type="number"
               min="0"
               onChange={(e: SyntheticInputEvent) => updateSideShips(e, 2, ships.indexOf(fitData))}
+              onBlur={trimInputZeros}
               label={{ color: 'blue' }}
               placeholder="Blue"
               defaultValue={blueDefaultVal}
