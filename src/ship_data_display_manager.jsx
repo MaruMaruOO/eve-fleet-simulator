@@ -28,7 +28,7 @@ import type {
   SyntheticButtonEvent,
 } from './flow_types';
 
-class ShipTypeDataType {
+class ShipBaseDataType {
   name: string;
   isBar: boolean;
   isIcon: boolean;
@@ -43,7 +43,7 @@ class ShipTypeDataType {
   constructor(
     getterFunction: (ShipData) => number, name: string,
     isBar: boolean, isIcon: boolean, icon: string, color: string,
-    label: string, text: string, visable: ?boolean,
+    label: string, text: string,
   ) {
     this.name = name;
     this.isBar = isBar;
@@ -52,18 +52,60 @@ class ShipTypeDataType {
     this.color = color;
     this.label = label;
     this.text = text;
-    if (visable) {
-      this.visable = visable;
-    }
     this.key = name;
     this.getter = getterFunction;
   }
 }
+class ShipTypeDataType extends ShipBaseDataType {
+  constructor(
+    getterFunction: (ShipData) => number, name: string,
+    isBar: boolean, isIcon: boolean, icon: string, color: string,
+    label: string, text: string, visable: ?boolean,
+  ) {
+    super(
+      getterFunction, name,
+      isBar, isIcon, icon, color,
+      label, text,
+    );
+    const visSetting = localStorage.getItem(`StatVis.Type${name}`);
+    if (visable) {
+      this.visable = visable;
+    } else if (visSetting !== null) {
+      this.visable = visSetting === 'true';
+    }
+  }
+}
 
-class ShipFitDataType extends ShipTypeDataType {
+class ShipFitDataType extends ShipBaseDataType {
+  constructor(
+    getterFunction: (ShipData) => number, name: string,
+    isBar: boolean, isIcon: boolean, icon: string, color: string,
+    label: string, text: string, visable: ?boolean,
+  ) {
+    super(
+      getterFunction, name,
+      isBar, isIcon, icon, color,
+      label, text,
+    );
+    const visSetting = localStorage.getItem(`StatVis.Fit${name}`);
+    if (visable) {
+      this.visable = visable;
+    } else if (visSetting !== null) {
+      this.visable = visSetting === 'true';
+    }
+  }
+}
+
+function ModQualEnum(str: ?string | ?number) {
+  const n = Number(str);
+  if (n === 1 || n === 2 || n === 3 || n === 4) {
+    return n;
+  }
+  return null;
 }
 
 class ShipDataDisplayManager {
+  static isDisplayModeFit: boolean = true;
   static shipTypeDataTypes = [
     new ShipTypeDataType(() => 0, 'default', false, false, '', '', '', '', false),
     new ShipTypeDataType(ShipData.getMaxSpeed, 'maxSpeed', true, false, velocityIconAB, 'blue', 'm/s', 'Max Velocity'),
@@ -82,11 +124,10 @@ class ShipDataDisplayManager {
     new ShipTypeDataType(ShipData.getLowSlots, 'lowSlots', false, true, lowSlotIcon, 'grey', '', 'Low Slots'),
   ];
 
-  static isDisplayModeFit: boolean = true;
   static shipDisplaySort: (ShipData) => number = ShipDataDisplayManager.shipTypeDataTypes[0].getter;
   static shipDisplaySortName = 'default';
-  static moduleQuality: ModuleQualityValue = 1;
-  static activeTank: boolean = true;
+  static moduleQuality: ModuleQualityValue = ModQualEnum(localStorage.getItem('moduleQuality')) || 1;
+  static activeTank: boolean = !(localStorage.getItem('activeTank') === 'false');
   static prevModuleQuality: ModuleQualityValue;
   static prevActiveTank: boolean;
 
@@ -134,7 +175,7 @@ class ShipDataDisplayManager {
       },
       'optimal', true, false, optimalRangeIcon, 'teal', 'm', 'Weapon Optimal Ranges',
     ),
-    new ShipTypeDataType(
+    new ShipFitDataType(
       (s: ShipData) => {
         if (s.isFit) return s.signatureRadius;
         return 0;
@@ -268,9 +309,11 @@ class ShipDataDisplayManager {
     }));
   }
 
-  static StatDisplayIcon(dataType: ShipTypeDataType) {
-    const toggleFunction = (e: SyntheticButtonEvent, dataTypeToggled: ShipTypeDataType) => {
+  static StatDisplayIcon(dataType: ShipBaseDataType) {
+    const toggleFunction = (e: SyntheticButtonEvent, dataTypeToggled: ShipBaseDataType) => {
       dataTypeToggled.visable = !dataTypeToggled.visable;
+      const key = `StatVis.${ShipDataDisplayManager.isDisplayModeFit ? 'Fit' : 'Type'}${dataTypeToggled.name}`;
+      localStorage.setItem(key, dataTypeToggled.visable.toString());
       UIRefresh();
     };
     const icon = (<Image circular className="statDisplayIconIcon" src={dataType.icon} />);

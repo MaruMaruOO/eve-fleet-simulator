@@ -19,6 +19,7 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
     const num = Number(objData.value);
     if (num === 1 || num === 2 || num === 3 || num === 4) {
       ShipDataDisplayManager.moduleQuality = num;
+      localStorage.setItem('moduleQuality', objData.value);
     }
   };
   const sortChange = (e: SyntheticDropdownEvent, objData: { value: string }) => {
@@ -33,6 +34,7 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
   };
   const activeTankToggle = () => {
     ShipDataDisplayManager.activeTank = !ShipDataDisplayManager.activeTank;
+    localStorage.setItem('activeTank', ShipDataDisplayManager.activeTank.toString());
     UIRefresh();
   };
   const isBarOrIcon = d => d.isIcon || d.isBar;
@@ -60,6 +62,7 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
       key: '4', icon: <Image src={deadspaceIcon} />, text: 'All Deadspace', value: '4',
     },
   ];
+  const defaultModQuality = ShipDataDisplayManager.moduleQuality.toString();
   return (
     <Grid.Row verticalAlign="bottom" stretched>
       <Container className="shipDisplaySettings">
@@ -92,7 +95,7 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
               floating
               button
               upward
-              defaultValue="1"
+              defaultValue={defaultModQuality}
             />
           </Button.Group>
         </div>

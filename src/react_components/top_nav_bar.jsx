@@ -60,6 +60,8 @@ function TopNavBar(props: { fullui: FullUI }) {
   ) => {
     if (data.fitmode !== undefined) {
       ShipDataDisplayManager.isDisplayModeFit = data.fitmode === 'true';
+      ShipDataDisplayManager.shipDisplaySort = ShipDataDisplayManager.shipTypeDataTypes[0].getter;
+      ShipDataDisplayManager.shipDisplaySortName = 'default';
     }
     data.fullui.setState({ page: data.page });
     UIRefresh();
