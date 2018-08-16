@@ -37,6 +37,11 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
     localStorage.setItem('activeTank', ShipDataDisplayManager.activeTank.toString());
     UIRefresh();
   };
+  const dronesEnabledToggle = () => {
+    ShipDataDisplayManager.dronesEnabled = !ShipDataDisplayManager.dronesEnabled;
+    localStorage.setItem('dronesEnabled', ShipDataDisplayManager.dronesEnabled.toString());
+    UIRefresh();
+  };
   const isBarOrIcon = d => d.isIcon || d.isBar;
   let sortOptions;
   if (ShipDataDisplayManager.isDisplayModeFit) {
@@ -67,38 +72,61 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
     <Grid.Row verticalAlign="bottom" stretched>
       <Container className="shipDisplaySettings">
         {ShipDataDisplayManager.StatDisplayIconToggles(ShipDataDisplayManager.isDisplayModeFit)}
-        <div className="ui">
-          <Button.Group
-            className={ShipDataDisplayManager.activeTank ?
-                   props.buttonColors[1] : props.buttonColors[4]}
-            inverted={props.buttonColors[0]}
-          >
-            <Button className="formattingButton">Active Tank
-            </Button>
-            <Button as="div" className="contentButton">
-              <Checkbox
-                onClick={activeTankToggle}
-                checked={ShipDataDisplayManager.activeTank}
-                toggle
+        {!ShipDataDisplayManager.isDisplayModeFit ?
+          <div className="ui">
+            <Button.Group
+              className={ShipDataDisplayManager.activeTank ?
+                     props.buttonColors[1] : props.buttonColors[4]}
+              inverted={props.buttonColors[0]}
+            >
+              <Button className="formattingButton">Active Tank
+              </Button>
+              <Button as="div" className="contentButton">
+                <Checkbox
+                  onClick={activeTankToggle}
+                  checked={ShipDataDisplayManager.activeTank}
+                  toggle
+                />
+              </Button>
+            </Button.Group>
+          </div> :
+          <div className="ui">
+            <Button.Group
+              className={ShipDataDisplayManager.dronesEnabled ?
+                     props.buttonColors[1] : props.buttonColors[4]}
+              inverted={props.buttonColors[0]}
+            >
+              <Button className="formattingButton">
+                {ShipDataDisplayManager.dronesEnabled ? 'Drones Enabled' : 'Drones Disabled'}
+              </Button>
+              <Button as="div" className="contentButton">
+                <Checkbox
+                  onClick={dronesEnabledToggle}
+                  checked={ShipDataDisplayManager.dronesEnabled}
+                  toggle
+                />
+              </Button>
+            </Button.Group>
+          </div>
+        }
+        {!ShipDataDisplayManager.isDisplayModeFit ?
+          <div className="ui">
+            <Button.Group className={props.buttonColors[3]} inverted={props.buttonColors[0]}>
+              <Button className="formattingButton">Module Quality</Button>
+              <Dropdown
+                className="contentButton"
+                onChange={moduleQualityChange}
+                onClose={UIRefresh}
+                options={moduleQualityOptions}
+                floating
+                button
+                upward
+                defaultValue={defaultModQuality}
               />
-            </Button>
-          </Button.Group>
-        </div>
-        <div className="ui">
-          <Button.Group className={props.buttonColors[3]} inverted={props.buttonColors[0]}>
-            <Button className="formattingButton">Module Quality</Button>
-            <Dropdown
-              className="contentButton"
-              onChange={moduleQualityChange}
-              onClose={UIRefresh}
-              options={moduleQualityOptions}
-              floating
-              button
-              upward
-              defaultValue={defaultModQuality}
-            />
-          </Button.Group>
-        </div>
+            </Button.Group>
+          </div> :
+          null
+        }
         <div className="ui">
           <Button.Group className={props.buttonColors[2]} inverted={props.buttonColors[0]}>
             <Button className="formattingButton">Sort Ships by</Button>

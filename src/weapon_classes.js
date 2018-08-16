@@ -1,5 +1,6 @@
 // @flow
 import type { WeaponData, WeaponType } from './flow_types';
+import ShipDataDisplayManager from './ship_data_display_manager';
 
 class PendingAttack {
   damage: number;
@@ -115,6 +116,11 @@ class Weapon {
       this.stats = new TurretStats(wep);
       this.autonomousMovement = true;
       this.stats.travelVelocity = wep.maxSpeed;
+      if (ShipDataDisplayManager.dronesEnabled === false) {
+        this.dps = 0;
+        this.damage = 0;
+        this.reload = 10000000;
+      }
     } else if (this.type === 'SmartBomb') {
       if (wep.name.includes('Doomsday')) {
         this.type = 'Missile';

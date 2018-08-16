@@ -128,6 +128,7 @@ class ShipDataDisplayManager {
   static shipDisplaySortName = 'default';
   static moduleQuality: ModuleQualityValue = ModQualEnum(localStorage.getItem('moduleQuality')) || 1;
   static activeTank: boolean = !(localStorage.getItem('activeTank') === 'false');
+  static dronesEnabled: boolean = !(localStorage.getItem('dronesEnabled') === 'false');
   static prevModuleQuality: ModuleQualityValue;
   static prevActiveTank: boolean;
 
