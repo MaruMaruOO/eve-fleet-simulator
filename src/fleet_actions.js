@@ -10,7 +10,12 @@ function getTargets(targetCaller: Ship, opposingSide: Side) {
   let newTarget;
   if (targetCaller.maxTargets >= opposingSide.ships.length) {
     newTarget = opposingSide.ships.find(oppShip =>
+      !oppShip.isShotCaller &&
       !targetCaller.targets.some(target => target === oppShip) && oppShip.currentEHP > 0);
+    if (!newTarget) {
+      newTarget = opposingSide.ships.find(oppShip =>
+        !targetCaller.targets.some(target => target === oppShip) && oppShip.currentEHP > 0);
+    }
   } else {
     const targetOppFc = s => s.isShotCaller && !targetCaller.targets.some(target => target === s);
     const oppFcIndex = oppShips.slice(0, targetCaller.maxTargets - 1).findIndex(targetOppFc);
@@ -94,9 +99,11 @@ const TurretApplication = (distance: number, hitChanceArgs: DamageApplicationArg
 const DamageRatioFunction = (
   distance: number,
   [damageFunction, oppDamageFunction, args, oppArgs]: DamageRatioArgs,
+  overrideDroneDistance: ?number,
+  oppOverrideDroneDistance: ? number,
 ) => {
-  let damageApplication = damageFunction(distance, args);
-  let oppApplication = oppDamageFunction(distance, oppArgs);
+  let damageApplication = damageFunction(overrideDroneDistance || distance, args);
+  let oppApplication = oppDamageFunction(oppOverrideDroneDistance || distance, oppArgs);
   if (damageApplication < 0.3) {
     damageApplication -= 1;
     oppApplication += 0.001;
@@ -139,8 +146,12 @@ function getApplicationArgs(ship: Ship, target: Ship): ApplicationArgArray {
     let velocity;
     let oppVelocity = [0];
     if (wep.autonomousMovement) {
-      velocity = [wep.stats.travelVelocity];
-      oppVelocity = [target.velocity];
+      if (wep.stats.travelVelocity > Math.max(target.velocity, 10)) {
+        maxRange = Math.min(ship.droneControlRange, ship.maxTargetRange);
+      } else {
+        maxRange = Math.min(ship.droneControlRange, maxRange);
+      }
+      velocity = [Math.abs((wep.stats.travelVelocity / 5) - target.velocity)];
     } else {
       velocity = [getVelocityDelta(ship, target, wep)];
     }
@@ -280,12 +291,19 @@ function calculateDamage(ship: Ship, target: Ship, wep: Weapon, side: Side): num
   } else if (wep.type === 'Turret') {
     let velocity;
     let oppVelocity = [0];
+    let distance = ship.distanceFromTarget;
     if (wep.autonomousMovement) {
-      if (ship.distanceFromTarget > ship.droneControlRange ? ship.droneControlRange : 84000) {
+      if (ship.distanceFromTarget > ship.droneControlRange) {
         return 0;
       }
-      velocity = [wep.stats.travelVelocity];
-      oppVelocity = [target.velocity];
+      // Assume non-sentry drones are at optimal if faster than target.
+      // This is somewhat overly generous against fairly fast targets.
+      if (wep.stats.travelVelocity > Math.max(target.velocity, 10)) {
+        distance = wep.optimal;
+      }
+      // Drone orbit velocity isn't really v/5 but it's close enough.
+      // In practice drones have all sorts of funkyness that's not practical to model.
+      velocity = [Math.abs((wep.stats.travelVelocity / 5) - target.velocity)];
     } else {
       velocity = [getVelocityDelta(ship, target, wep)];
     }
@@ -293,7 +311,7 @@ function calculateDamage(ship: Ship, target: Ship, wep: Weapon, side: Side): num
     if (wep.stats.bonusMultiInc && wep.bonusMulti < wep.stats.bonusMultiCap) {
       wep.bonusMulti += wep.stats.bonusMultiInc;
     }
-    return wep.damage * bonusMulti * TurretApplication(ship.distanceFromTarget, [
+    return wep.damage * bonusMulti * TurretApplication(distance, [
       velocity, oppVelocity,
       wep.stats.tracking * target.sigRadius,
       wep.optimal, wep.stats.falloff]);
@@ -387,52 +405,65 @@ function setProjections(
   // targetVals.map(val => 'base' + val.charAt(0).toUpperCase() + val.substr(1));
   for (let i = 0; i < attrs.length; i += 1) {
     const attr = attrs[i];
+    const oldTarget = ewar.currentTarget;
+    if (oldTarget) {
+      const pullIndex = oldTarget.appliedEwar[attr].findIndex(e => e[2] === ewar);
+      oldTarget.appliedEwar[attr].splice(pullIndex, 1);
+      targetVals[i](oldTarget, attr);
+    }
     const baseMulti = ewar[attr] / 100;
     const multi = ewarFalloffCalc(baseMulti, ewar, distance);
     target.appliedEwar[attr].push([multi, baseMulti, ewar]);
     target.appliedEwar[attr].sort((a, b) => Math.abs(b[0]) - Math.abs(a[0]));
     // target[targetVals[i]] = NetValue(target.appliedEwar[attr], target[baseTargetVals[i]]);
     targetVals[i](target, attr);
-    const oldTarget = ewar.currentTarget;
-    if (oldTarget) {
-      const pullIndex = oldTarget.appliedEwar[attr].findIndex(e => e[1] === baseMulti);
-      oldTarget.appliedEwar[attr].splice(pullIndex, 1);
-      targetVals[i](oldTarget, attr);
-    }
   }
 }
 
 function ApplyEwar(ewar, targets, distance, scatterTarget) {
   let target = targets[0];
   if (ewar.type === 'Stasis Web') {
+    const getInitalVel = (t) => t.appliedEwar.scrams.length === 0 ? t.baseVelocity : t.unpropedVelocity;
+    const oldTarget = ewar.currentTarget;
+    if (oldTarget) {
+      const pullIndex = oldTarget.appliedEwar.webs.findIndex(e => e[2] === ewar);
+      oldTarget.appliedEwar.webs.splice(pullIndex, 1);
+      oldTarget.velocity = NetValue(oldTarget.appliedEwar.webs, getInitalVel(oldTarget));
+    }
     const baseMulti = ewar.speedFactor / 100;
     const multi = ewarFalloffCalc(baseMulti, ewar, distance);
     target = getFocusedEwarTarget(targets, 'webs', multi);
     target.appliedEwar.webs.push([multi, baseMulti, ewar]);
     target.appliedEwar.webs.sort((a, b) => Math.abs(b[0]) - Math.abs(a[0]));
-    target.velocity = NetValue(target.appliedEwar.webs, target.baseVelocity);
+    target.velocity = NetValue(target.appliedEwar.webs, getInitalVel(target));
+  } else if (ewar.type === 'Target Painter') {
+    const getInitalSig = (t) => t.appliedEwar.scrams.length === 0 ? t.baseSigRadius : t.unpropedSigRadius;
     const oldTarget = ewar.currentTarget;
     if (oldTarget) {
-      const pullIndex = oldTarget.appliedEwar.webs.findIndex(e => e[1] === baseMulti);
-      oldTarget.appliedEwar.webs.splice(pullIndex, 1);
-      oldTarget.velocity = NetValue(oldTarget.appliedEwar.webs, oldTarget.baseVelocity);
+      const pullIndex = oldTarget.appliedEwar.tps.findIndex(e => e[2] === ewar);
+      oldTarget.appliedEwar.tps.splice(pullIndex, 1);
+      oldTarget.sigRadius = NetValue(oldTarget.appliedEwar.tps, getInitalSig(oldTarget));
     }
-  } else if (ewar.type === 'Target Painter') {
     const baseMulti = ewar.signatureRadiusBonus / 100;
     const multi = ewarFalloffCalc(baseMulti, ewar, distance);
     target = getFocusedEwarTarget(targets, 'tps', multi);
     target.appliedEwar.tps.push([multi, baseMulti, ewar]);
     target.appliedEwar.tps.sort((a, b) => Math.abs(b[0]) - Math.abs(a[0]));
-    target.sigRadius = NetValue(target.appliedEwar.tps, target.baseSigRadius);
-    const oldTarget = ewar.currentTarget;
-    if (oldTarget) {
-      const pullIndex = oldTarget.appliedEwar.tps.findIndex(e => e[1] === baseMulti);
-      oldTarget.appliedEwar.tps.splice(pullIndex, 1);
-      oldTarget.sigRadius = NetValue(oldTarget.appliedEwar.tps, oldTarget.baseSigRadius);
-    }
+    target.sigRadius = NetValue(target.appliedEwar.tps, getInitalSig(target));
   } else if (ewar.type === 'Sensor Dampener') {
     target = scatterTarget;
     for (const attr of ['maxTargetRangeBonus', 'scanResolutionBonus']) {
+      const oldTarget = ewar.currentTarget;
+      if (oldTarget) {
+        const pullIndex = oldTarget.appliedEwar[attr].findIndex(e => e[2] === ewar);
+        oldTarget.appliedEwar[attr].splice(pullIndex, 1);
+        if (attr === 'maxTargetRangeBonus') {
+          oldTarget.maxTargetRange =
+            NetValue(oldTarget.appliedEwar[attr], oldTarget.baseMaxTargetRange);
+        } else {
+          oldTarget.scanRes = NetValue(oldTarget.appliedEwar[attr], oldTarget.baseScanRes);
+        }
+      }
       const baseMulti = ewar[attr] / 100;
       const multi = ewarFalloffCalc(baseMulti, ewar, distance);
       target.appliedEwar[attr].push([multi, baseMulti, ewar]);
@@ -441,17 +472,6 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
         target.maxTargetRange = NetValue(target.appliedEwar[attr], target.baseMaxTargetRange);
       } else {
         target.scanRes = NetValue(target.appliedEwar[attr], target.baseScanRes);
-      }
-      const oldTarget = ewar.currentTarget;
-      if (oldTarget) {
-        const pullIndex = oldTarget.appliedEwar[attr].findIndex(e => e[1] === baseMulti);
-        oldTarget.appliedEwar[attr].splice(pullIndex, 1);
-        if (attr === 'maxTargetRangeBonus') {
-          oldTarget.maxTargetRange =
-            NetValue(oldTarget.appliedEwar[attr], oldTarget.baseMaxTargetRange);
-        } else {
-          oldTarget.scanRes = NetValue(oldTarget.appliedEwar[attr], oldTarget.baseScanRes);
-        }
       }
     }
   } else if (ewar.type === 'Weapon Disruptor') {
@@ -500,21 +520,25 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
     setProjections(ewar, distance, attrs, targetVals, target);
   } else if (ewar.type === 'Warp Scrambler') {
     target = scatterTarget;
-    target.appliedEwar.scrams.push([0, 0, ewar]);
-    target.velocity *= target.unpropedVelocity / target.baseVelocity;
-    target.sigRadius *= target.unpropedSigRadius / target.baseSigRadius;
+    const getInitalVel = (t) => t.appliedEwar.scrams.length === 0 ? t.baseVelocity : t.unpropedVelocity;
+    const getInitalSig = (t) => t.appliedEwar.scrams.length === 0 ? t.baseSigRadius : t.unpropedSigRadius;
     const oldTarget = ewar.currentTarget;
     if (oldTarget) {
       oldTarget.appliedEwar.scrams.pop();
-      oldTarget.velocity *= oldTarget.baseVelocity / oldTarget.unpropedVelocity;
-      oldTarget.sigRadius *= oldTarget.baseSigRadius / oldTarget.unpropedSigRadius;
+      oldTarget.velocity = NetValue(oldTarget.appliedEwar.webs, getInitalVel(oldTarget));
+      oldTarget.sigRadius = NetValue(oldTarget.appliedEwar.tps, getInitalSig(oldTarget));
+    }
+    if (distance <= ewar.optimal) {
+      target.appliedEwar.scrams.push([0, 0, ewar]);
+      target.velocity = NetValue(target.appliedEwar.webs, getInitalVel(target));
+      target.sigRadius = NetValue(target.appliedEwar.tps, getInitalSig(target));
     }
   }
   ewar.currentTarget = target;
   ewar.currentDuration = ewar.duration;
 }
 
-const SetArgsFunction = (distance: number, [ship]: [Ship]): number => {
+function RecalcEwarForDistance(ship: Ship, distance: number) {
   const attrs = [
     'webs', 'tps', 'scrams', 'maxTargetRangeBonus', 'scanResolutionBonus',
     'trackingSpeedBonus', 'maxRangeBonus', 'falloffBonus', 'aoeCloudSizeBonus',
@@ -522,10 +546,14 @@ const SetArgsFunction = (distance: number, [ship]: [Ship]): number => {
   ];
   const impactedAttrs = attrs.filter(at => ship.appliedEwar[at].length > 0);
   for (const att of impactedAttrs) {
-    const ewarApp = (ship.appliedEwar[att].pop());
+    const [ewarApp] = ship.appliedEwar[att];
     const ewar = ewarApp[2];
     ApplyEwar(ewar, [ship], distance, ship);
   }
+}
+
+const SetArgsFunction = (distance: number, [ship]: [Ship]): number => {
+  RecalcEwarForDistance(ship, distance);
   const target = ship.targets[0];
   const damageFunctionAndArgs = getApplicationArgs(ship, target);
   const oppDamageFunctionAndArgs = getApplicationArgs(target, ship);
@@ -542,7 +570,22 @@ const SetArgsFunction = (distance: number, [ship]: [Ship]): number => {
   if (distance < min || distance > max) {
     return -1 * (-2 / 1);
   }
-  return DamageRatioFunction(distance, combinedArgs);
+  //Need to fix ships distance if for calculations if the primary wep is drones
+  let overrideDroneDistance = null;
+  const wep = ship.weapons.sort((a, b) => b.dps - a.dps)[0];
+  if (wep && wep.type === 'Turret' && wep.autonomousMovement) {
+    if (wep.stats.travelVelocity > Math.max(target.velocity, 10)) {
+      overrideDroneDistance = wep.optimal;
+    }
+  }
+  let oppOverrideDroneDistance = null;
+  const oppWep = target.weapons.sort((a, b) => b.dps - a.dps)[0];
+  if (oppWep && oppWep.type === 'Turret' && oppWep.autonomousMovement) {
+    if (oppWep.stats.travelVelocity > Math.max(ship.velocity, 10)) {
+      oppOverrideDroneDistance = oppWep.optimal;
+    }
+  }
+  return DamageRatioFunction(distance, combinedArgs, overrideDroneDistance, oppOverrideDroneDistance);
 };
 
 function FindIdealRange(ship: Ship): number {
@@ -582,6 +625,7 @@ function moveShip(ship: Ship, t: number, side: Side) {
   const shipsInSubFleet = side.ships.filter(s => s.id === ship.id);
   const oppCurrentPrimary = shipsInSubFleet.length > 1 ? shipsInSubFleet[1] : shipsInSubFleet[0];
   ship.preferedDistance = FindIdealRange(oppCurrentPrimary);
+  RecalcEwarForDistance(ship, ship.distanceFromTarget);
 
   console.log(ship.name, ' Best Ratio: ', ship.preferedDistance);
 }

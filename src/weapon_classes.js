@@ -123,8 +123,6 @@ class Weapon {
         wep.damageReductionFactor = 0.01;
         wep.maxVelocity = 12000;
         this.stats = new MissileStats(wep);
-        this.optimal = 300000;
-        this.baseOptimal = 300000;
       } else {
         this.type = 'Turret';
         this.stats = new SmartBombStats();

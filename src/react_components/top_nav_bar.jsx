@@ -30,25 +30,20 @@ function TopNavBar(props: { fullui: FullUI }) {
     },
     {
       key: '3',
-      text: (<div><Icon name="square" style={{ color: 'rgb(5, 55, 55)' }} /> Shipwrecked</div>),
-      value: 'shipwreckedTheme',
-    },
-    {
-      key: '4',
       text: (<div><Icon name="square" style={{ color: 'rgb(180, 180, 180)' }} /> Default</div>),
       value: 'defaultTheme',
     },
   ];
   const themeChange = (
     e: SyntheticDropdownEvent,
-    objData: { fullui: FullUI, value: 'darkTheme' | 'lightTheme' | 'shipwreckedTheme' | 'defaultTheme' },
+    objData: { fullui: FullUI, value: 'darkTheme' | 'lightTheme' | 'defaultTheme' },
   ) => {
     const newTheme = objData.value;
     documentElement.className = newTheme;
   };
   const updateUiTheming = (
     e: SyntheticDropdownEvent,
-    objData: { fullui: FullUI, value: 'darkTheme' | 'lightTheme' | 'shipwreckedTheme' | 'defaultTheme' },
+    objData: { fullui: FullUI, value: 'darkTheme' | 'lightTheme' | 'defaultTheme' },
   ) => {
     localStorage.setItem('efsTheme', documentElement.className);
     const colors: ButtonColors = objData.fullui.GetButtonColors();
