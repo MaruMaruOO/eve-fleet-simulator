@@ -59971,7 +59971,7 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 /*******************************
         Global Overrides
 *******************************/
-:root.defaultTheme {
+:root.defaultTheme.unused {
   --color0: rgba(0, 0, 0, 0);
   --color1: #000000;
   --color2: #1b1c1d;
@@ -60002,36 +60002,68 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
   --inverse-color: #000000;
   --button-opacity: 1;
 }
-:root.shipwreckedTheme {
+:root.defaultTheme {
+  --color2: #e8e8e7;
+  /*--color9: rgba(252, 252, 252, 1);*/
+  --color9: #f9f9fa;
+  --color6: #ebebea;
+  --stock-font-color: #0c0c0d;
+  --high-contrast-font-color: #2e3436;
+  --input-text-color: var(--stock-font-color);
+  --input-text-color-focused: rgba(12, 12, 13, 0.93);
+  --inverse-color: #000000;
+  --weak-stock-font-color: rgba(12, 12, 13, 0.15);
+  /*--stock-font-color: rgba(24, 25, 26, 1);
+  --high-contrast-font-color: rgba(41, 46, 51, 1);
+  --input-text-color: var(--stock-font-color);
+  --input-text-color-focused: rgba(24,25,26,0.93);*/
+  --color3: var(--color6);
+  --color4: #929291;
+  --color5: #d0d0d0;
+  --color6h: var(--color5);
+  --color6a: var(--color2);
+  --color10: var(--color6);
+  --color11: var(--color2);
+  --color7: var(--color6);
+  --color7t: rgba(235, 235, 234, 0.85);
+  /*--button-opacity:0.9;*/
+  --button-opacity: 1;
+  --semantic-invert-buttons: false;
+  --semantic-button-color-one: mid-blue;
+  --semantic-button-color-two: mid-blue;
+  --semantic-button-color-three: mid-blue;
+  --semantic-button-color-four: grey;
+  --semantic-button-color-five-no-button-groups: bright-blue;
+}
+/*:root.shipwreckedTheme {
   --color0: rgba(0, 0, 0, 0.85);
-  --color1: #000000;
-  --color2: #071c1d;
-  --color3: #03577b;
-  --color4: #00aae6;
-  --color5: #05b4b4;
-  --color6: #03252b;
-  --color6h: #09363f;
-  --color7: #004646;
-  --color7t: rgba(0, 70, 70, 0.85);
-  --color8: #087676;
-  --color9: #053737;
-  /* --color10: rgb(9, 0, 1); */
+  --color1: rgb(0, 0, 0);
+  --color2: rgb(7, 28, 29);
+  --color3: rgb(3, 87, 123);
+  --color4: rgb(0, 170, 230);
+  --color5: rgb(5, 180, 180);
+  --color6: rgb(3, 37, 43);
+  --color6h: rgb(9, 54, 63);
+  --color7: rgb(0, 70, 70);
+  --color7t: rgba(0,70,70,0.85);
+  --color8: rgb(8, 118, 118);
+  --color9: rgb(5, 55, 55);
   --color10: var(--color6h);
-  --color11: #022020;
-  --stock-font-color: #e8e8e8;
-  --high-contrast-font-color: #f9fafb;
-  --inverse-color: #ffffff;
+  --color11: rgb(2, 32, 32);
+  --stock-font-color: rgb(232,232,232);
+  --high-contrast-font-color: rgb(249, 250, 251);
+  --inverse-color: rgb(255, 255, 255);
   --stock-table-border-color: rgba(234, 236, 238, 0.35);
   --stock-table-cell-border-color: rgba(234, 236, 238, 0.2);
-  --input-text-color: rgba(232, 232, 232, 0.87);
-  --input-text-color-focused: rgba(232, 232, 232, 0.8);
-  --semantic-button-color-one: olive;
-  --semantic-button-color-two: teal;
-  --semantic-button-color-three: blue;
-  --semantic-button-color-four: grey;
-  --semantic-button-color-five-no-button-groups: vk;
-  --button-opacity: 1;
-}
+  --input-text-color: rgba(232,232,232,.87);
+  --input-text-color-focused: rgba(232,232,232,0.8);
+  --semantic-button-color-one:olive;
+  --semantic-button-color-two:teal;
+  --semantic-button-color-three:blue;
+  --semantic-button-color-four:grey;
+  --semantic-button-color-five-no-button-groups:vk;
+  --button-opacity:1;
+}*/
 /* default firefox dark theme */
 :root.darkTheme {
   --color2: #252c33;
@@ -60042,6 +60074,7 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
   --inverse-color: #ffffff;
   --input-text-color: var(--stock-font-color);
   --input-text-color-focused: rgba(143, 161, 178, 0.93);
+  --weak-stock-font-color: rgba(143, 161, 178, 0.15);
   --color3: var(--color6);
   --color4: #000000;
   --color5: #343c45;
@@ -60071,6 +60104,7 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
   --inverse-color: #000000;
   --input-text-color: var(--stock-font-color);
   --input-text-color-focused: rgba(24, 25, 26, 0.93);
+  --weak-stock-font-color: rgba(24, 25, 26, 0.15);
   --color3: var(--color6);
   --color4: #aaaaaa;
   --color5: #f0f1f2;
@@ -60089,10 +60123,10 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
   --semantic-button-color-four: grey;
   --semantic-button-color-five-no-button-groups: bright-blue;
 }
-:root:not(.defaultTheme) {
+:root:not(.defaultThemeUnused) {
   --graph-font-color: var(--high-contrast-font-color);
 }
-:root.defaultTheme {
+:root.defaultThemeUnused {
   --graph-font-color: white;
 }
 .ui.toggle.checkbox .box:before,
@@ -60144,6 +60178,11 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 .ui.secondary.inverted.menu {
   background: var(--color2);
 }
+.ui.secondary.inverted.pointing.menu {
+  border-color: var(--weak-stock-font-color);
+  border-width: 0px;
+  border-bottom-width: 2px;
+}
 .ui.menu .item {
   line-height: 32.208px;
 }
@@ -60163,20 +60202,20 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 .ui.dropdown .menu > .item {
   color: var(--stock-font-color);
 }
-:root:not(.defaultTheme) .ui.dropdown .menu .selected.item,
-:root:not(.defaultTheme) .ui.dropdown.selected,
-:root:not(.defaultTheme) .ui.dropdown .menu > .item:hover,
-:root:not(.defaultTheme) .ui.dropdown .menu .active.item {
+:root:not(.defaultThemeUnused) .ui.dropdown .menu .selected.item,
+:root:not(.defaultThemeUnused) .ui.dropdown.selected,
+:root:not(.defaultThemeUnused) .ui.dropdown .menu > .item:hover,
+:root:not(.defaultThemeUnused) .ui.dropdown .menu .active.item {
   color: var(--high-contrast-font-color);
 }
-:root:not(.defaultTheme) .ui.menu .dropdown.item .menu {
+:root:not(.defaultThemeUnused) .ui.menu .dropdown.item .menu {
   background: var(--color2);
   color: var(--stock-font-color);
 }
-:root:not(.defaultTheme) .ui.menu .ui.dropdown .menu .active.item {
+:root:not(.defaultThemeUnused) .ui.menu .ui.dropdown .menu .active.item {
   color: var(--high-contrast-font-color) !important;
 }
-:root:not(.defaultTheme) .ui.menu .ui.dropdown .menu > .item {
+:root:not(.defaultThemeUnused) .ui.menu .ui.dropdown .menu > .item {
   color: var(--stock-font-color) !important;
 }
 .ui.menu .square.icon {
@@ -60207,8 +60246,21 @@ body .ui.inverted::-webkit-scrollbar-thumb:hover {
 .ui.label {
   color: var(--stock-font-color);
 }
-.ui.label.corner {
+/*.ui.label.corner {
   border-color: var(--color11);
+}*/
+:not(.image) > .ui.label.corner {
+  /* this allows the label to adjust to the theme automatically while remaining functionally opaque
+     despite the transparency in --weak-stock-font-color */
+  background: linear-gradient(225deg, var(--color9) calc(49%), transparent calc(49%));
+  border-color: var(--weak-stock-font-color);
+}
+:not(.image) > .ui.label.corner:hover {
+  /*background-color: #E0E0E0; 224 actual shadow is 212, 212, 213
+    border-color: #E0E0E0;
+    background-image: none;
+    color: rgba(0, 0, 0, 0.8);*/
+  border-color: #e0e0e0;
 }
 body {
   color: var(--stock-font-color);
@@ -60217,24 +60269,24 @@ body {
 .ui.progress > .label {
   color: var(--stock-font-color);
 }
-:root:not(.defaultTheme) .ui.menu > .ui.container .item,
-:root:not(.defaultTheme) .ui.menu > .ui.container .menu .item {
+:root:not(.defaultThemeUnused) .ui.menu > .ui.container .item,
+:root:not(.defaultThemeUnused) .ui.menu > .ui.container .menu .item {
   color: var(--stock-font-color) !important;
 }
-:root:not(.defaultTheme) .ui.menu > .ui.container .item.header,
-:root:not(.defaultTheme) .ui.menu > .ui.container .menu .item.header {
+:root:not(.defaultThemeUnused) .ui.menu > .ui.container .item.header,
+:root:not(.defaultThemeUnused) .ui.menu > .ui.container .menu .item.header {
   color: var(--high-contrast-font-color) !important;
 }
-:root:not(.defaultTheme) .ui.menu > .ui.container .item.active,
-:root:not(.defaultTheme) .ui.menu > .ui.container .menu .item.active {
+:root:not(.defaultThemeUnused) .ui.menu > .ui.container .item.active,
+:root:not(.defaultThemeUnused) .ui.menu > .ui.container .menu .item.active {
   color: var(--high-contrast-font-color) !important;
 }
-:root:not(.defaultTheme) .ui.menu > .ui.container .item:active,
-:root:not(.defaultTheme) .ui.menu > .ui.container .item:hover,
-:root:not(.defaultTheme) .ui.menu > .ui.container .item:focus,
-:root:not(.defaultTheme) .ui.menu > .ui.container .item:focus,
-:root:not(.defaultTheme) .ui.menu > .ui.container .menu .item:active,
-:root:not(.defaultTheme) .ui.menu > .ui.container .menu .item:active {
+:root:not(.defaultThemeUnused) .ui.menu > .ui.container .item:active,
+:root:not(.defaultThemeUnused) .ui.menu > .ui.container .item:hover,
+:root:not(.defaultThemeUnused) .ui.menu > .ui.container .item:focus,
+:root:not(.defaultThemeUnused) .ui.menu > .ui.container .item:focus,
+:root:not(.defaultThemeUnused) .ui.menu > .ui.container .menu .item:active,
+:root:not(.defaultThemeUnused) .ui.menu > .ui.container .menu .item:active {
   color: var(--high-contrast-font-color) !important;
 }
 .ui.input input {
@@ -60266,7 +60318,7 @@ body {
   background-color: var(--color10);
   color: var(--stock-font-color);
 }
-:root:not(.defaultTheme) .sidebarColumn.column > .grid.ui > .row.sidebarShipDisplayRow div ul {
+:root:not(.defaultThemeUnused) .sidebarColumn.column > .grid.ui > .row.sidebarShipDisplayRow div ul {
   /* background-color: var(--color6) !important; */
   color: var(--stock-font-color) !important;
 }
@@ -60282,7 +60334,7 @@ body {
 .sidebarColumn.column > .grid.ui > .row.sidebarShipDisplayRow div ul li > div:active {
   background-color: var(--color6a) !important;
 }
-:root:not(.defaultTheme) .sidebarColumn.column > .grid.ui > .row.sidebarShipDisplayRow div ul li > div > div {
+:root:not(.defaultThemeUnused) .sidebarColumn.column > .grid.ui > .row.sidebarShipDisplayRow div ul li > div > div {
   color: var(--stock-font-color) !important;
   /* background-color: var(--color6h) !important; */
 }
@@ -60305,13 +60357,18 @@ body {
 .ui.grid > .column.combatAndShipDisplay {
   /* padding-top: 6em; */
   padding-top: calc(3.72244898em + 32.2344px);
+  padding-top: calc(3.45918368em + calc(34.208px - 0.2233px));
   padding-left: 0em;
   max-height: 100%;
   bottom: 0px;
   top: 0px;
 }
 .ui.grid > .column.sidebarColumn {
+  /* Max font size is 16 for header not 14 hence the 1.1428 */
   padding-top: calc(3.72244898em + 32.2344px);
+  padding-top: calc(3.459184em + 34.2344px);
+  /* The -0.223 is due to chrome being a special snowflake that rounds in very dumb ways. */
+  padding-top: calc(3.45918368em + calc(34.208px - 0.2233px));
   background-color: var(--color3);
   max-height: 100%;
 }
@@ -60336,6 +60393,7 @@ body {
   width: 100%;
   /* this is to compensate for inconsistant rendering between browsers */
   border-top-width: 2px;
+  border-color: var(--stock-font-color);
 }
 .sidebarColumn.column > .grid.ui {
   background-color: var(--color3);
@@ -60544,6 +60602,9 @@ td > .ui.fluid.image > .ui.corner.label {
   top: 1px;
   right: 1px;
 }
+td > .ui.fluid.image > .ui.corner.label:hover {
+  color: var(--high-contrast-font-color);
+}
 td > .ui.fluid.image > img {
   border-width: 1px;
   border-color: inherit;
@@ -60583,6 +60644,7 @@ td > .shipStatBarDiv > .shipSimBar > .bar {
 }
 .ui.celled.table .tableCellWithTooltip {
   /* 5.04286em is specific to the text and font in the header as drag and drop requires fixed widths */
+  /*@widthSansBorder: 8.3286em + @paddingRight;*/
   /* Default chrome font would display correctly with 5.2em for example */
   /*@widthSansBorder: 5.2em + @paddingRight;*/
   width: calc( 6.92857429em  + 1px);
@@ -60591,9 +60653,10 @@ td > .shipStatBarDiv > .shipSimBar > .bar {
 .ui.celled.table .shipTypeSubheader {
   width: 18%;
 }
-.fleetStateTableSubHeader > th {
+/*
+.fleetStateTableSubHeader >th {
   white-space: pre;
-}
+}*/
 .draggingRow {
   display: table;
   background: #b9f4bc;
