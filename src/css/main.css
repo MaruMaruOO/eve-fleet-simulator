@@ -60661,3 +60661,26 @@ td > .shipStatBarDiv > .shipSimBar > .bar {
   display: table;
   background: #b9f4bc;
 }
+.ui.accordion.attached {
+  top: 0px;
+  bottom: 0px;
+  border-radius: 0px;
+  margin: 0em -1px;
+  width: calc(100% + 2px);
+  max-width: calc(100% + 2px);
+  box-shadow: none;
+  border: 1px solid #D4D4D5;
+}
+.accordion > .content > div > .container.text {
+  display: flex;
+  width: 100%;
+  align-items: center;
+  margin-left: inherit !important;
+  max-width: none !important;
+}
+.accordion > .content > div > .container.text > .container.text {
+  margin-left: inherit !important;
+}
+.ui.attached:not(.message) + .ui.attached.accordion:not(.top) {
+  border-top: none;
+}

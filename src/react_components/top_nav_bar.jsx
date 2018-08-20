@@ -51,7 +51,8 @@ function TopNavBar(props: { fullui: FullUI }) {
   };
   const pageChange = (
     e: SyntheticButtonEvent,
-    data: { fullui: FullUI, page: '<FleetSimAndShips />' | '<AddOrRemoveFits />', fitmode: ?('true' | 'false') },
+    data: { fullui: FullUI, page: '<FleetSimAndShips />' | '<AddOrRemoveFits />' | '<AboutPage />',
+            fitmode: ?('true' | 'false') },
   ) => {
     if (data.fitmode !== undefined) {
       ShipDataDisplayManager.isDisplayModeFit = data.fitmode === 'true';
@@ -109,6 +110,15 @@ function TopNavBar(props: { fullui: FullUI }) {
           </Menu.Item>
         </Menu.Menu>
         <Menu.Menu position="right">
+          <Menu.Item
+            as="a"
+            active={props.fullui.state.page === '<AboutPage />'}
+            fullui={props.fullui}
+            page="<AboutPage />"
+            onClick={pageChange}
+          >
+            About
+          </Menu.Item>
           <Dropdown
             className="link item"
             onChange={themeChange}

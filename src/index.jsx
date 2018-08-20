@@ -13,6 +13,7 @@ import pageIcon from './eve_icons/page_icon.ico';
 import FleetSimAndShips from './react_components/fleet_sim_and_ships';
 import TopNavBar from './react_components/top_nav_bar';
 import AddOrRemoveFits from './react_components/add_or_remove_fits';
+import AboutPage from './react_components/about_page';
 
 import type { ButtonColors } from './flow_types';
 
@@ -85,8 +86,15 @@ class FullUI extends React.Component<{ },
     return (
       <div style={{ height: '100%', position: 'fixed', display: 'block' }}>
         <TopNavBar fullui={this} />
-        {this.state.page === '<FleetSimAndShips />' ?
-          <FleetSimAndShips button_colors={this.state.button_colors} /> : <AddOrRemoveFits />}
+        { this.state.page === '<FleetSimAndShips />' ?
+          <FleetSimAndShips button_colors={this.state.button_colors} />
+          : null }
+        { this.state.page === '<AddOrRemoveFits />' ?
+            <AddOrRemoveFits />
+          : null }
+        { this.state.page === '<AboutPage />' ?
+            <AboutPage />
+          : null }
       </div>
     );
   }

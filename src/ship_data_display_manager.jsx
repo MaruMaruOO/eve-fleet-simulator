@@ -109,7 +109,7 @@ class ShipDataDisplayManager {
   static shipTypeDataTypes = [
     new ShipTypeDataType(() => 0, 'default', false, false, '', '', '', '', false),
     new ShipTypeDataType(ShipData.getMaxSpeed, 'maxSpeed', true, false, velocityIconAB, 'blue', 'm/s', 'Max Velocity'),
-    new ShipTypeDataType((s: ShipData) => s.mwdPropSpeed, 'mwdPropSpeed', true, false, velocityIconMWD, 'purple', 'm/s', 'MWD Max Velocity'),
+    new ShipTypeDataType((s: ShipData) => s.mwdPropSpeed || ShipData.getMaxSpeed(s), 'mwdPropSpeed', true, false, velocityIconMWD, 'purple', 'm/s', 'MWD Max Velocity'),
     new ShipTypeDataType(ShipData.getEffectiveLaunchers, 'effectiveLaunchers', true, false, launcherIcon, 'orange', '', 'Effective Launchers'),
     new ShipTypeDataType(ShipData.getEffectiveTurrets, 'effectiveTurrets', true, false, turretIcon, 'red', '', 'Effective Turrets'),
     new ShipTypeDataType(ShipData.getEffectiveDroneBandwidth, 'effectiveDroneBandwidth', true, false, droneIcon, 'yellow', 'mbit/s', 'Effective Drone Bandwidth'),
@@ -269,7 +269,7 @@ class ShipDataDisplayManager {
           className="shipStatBarMain"
           label={label}
           size="small"
-          percent={100 * (props.val / props.max)}
+          percent={100 * (props.val / props.max || props.val)}
           color={props.color}
         />
       </div>
