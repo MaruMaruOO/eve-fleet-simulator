@@ -400,7 +400,7 @@ function calculateDamage(ship: Ship, target: Ship, wep: Weapon, side: Side): num
     } else {
       velocity = [getVelocityDelta(ship, target, side, wep)];
     }
-    const hasDmgRamp = wep.stats.bonusMultiInc ? true : false;
+    const hasDmgRamp = Boolean(wep.stats.bonusMultiInc);
     const bonusMulti = hasDmgRamp ? (1 + wep.bonusMulti) / (1 + wep.stats.bonusMultiCap) : 1;
     if (wep.stats.bonusMultiInc && wep.bonusMulti < wep.stats.bonusMultiCap) {
       wep.bonusMulti += wep.stats.bonusMultiInc;
@@ -427,8 +427,7 @@ function dealDamage(ship: Ship, t: number, wep: Weapon, side: Side) {
         wep.bonusMulti = 0;
         ship.previousTarget = target;
       }
-      const damage = calculateDamage(ship, target, wep, side);
-      const attack = new PendingAttack(damage, wep.getDamageDelay(ship.distanceFromTarget));
+      const attack = new PendingAttack(wep.getDamageDelay(ship.distanceFromTarget));
       wep.pendingDamage.push(attack);
       wep.currentReload = wep.reload;
     }
@@ -437,7 +436,8 @@ function dealDamage(ship: Ship, t: number, wep: Weapon, side: Side) {
       pendingAttack.timer -= t;
       if (pendingAttack.timer <= 0) {
         const initalHP: number = ship.targets[0].currentEHP;
-        ship.targets[0].currentEHP -= pendingAttack.damage;
+        const damage = calculateDamage(ship, ship.targets[0], wep, side);
+        ship.targets[0].currentEHP -= damage;
         if (Number.isNaN(initalHP) || Number.isNaN(ship.targets[0].currentEHP)) {
           console.error(
             'Applied damage or target EHP is not a number, this is likely a bug.',

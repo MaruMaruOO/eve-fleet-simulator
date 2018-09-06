@@ -2,10 +2,8 @@
 import type { WeaponData, WeaponType } from './flow_types';
 
 class PendingAttack {
-  damage: number;
   timer: number;
-  constructor(dmg: number, delay: number): PendingAttack {
-    this.damage = dmg;
+  constructor(delay: number): PendingAttack {
     this.timer = delay;
     return this;
   }

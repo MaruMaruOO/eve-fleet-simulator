@@ -392,10 +392,9 @@ var _createClass = function () { function defineProperties(target, props) { for 
 
 function _classCallCheck(instance, Constructor) { if (!(instance instanceof Constructor)) { throw new TypeError("Cannot call a class as a function"); } }
 
-var PendingAttack = function PendingAttack(dmg, delay) {
+var PendingAttack = function PendingAttack(delay) {
   _classCallCheck(this, PendingAttack);
 
-  this.damage = dmg;
   this.timer = delay;
   return this;
 };
@@ -1497,7 +1496,7 @@ function calculateDamage(ship, target, wep, side) {
     } else {
       velocity = [getVelocityDelta(ship, target, side, wep)];
     }
-    var hasDmgRamp = wep.stats.bonusMultiInc ? true : false;
+    var hasDmgRamp = Boolean(wep.stats.bonusMultiInc);
     var bonusMulti = hasDmgRamp ? (1 + wep.bonusMulti) / (1 + wep.stats.bonusMultiCap) : 1;
     if (wep.stats.bonusMultiInc && wep.bonusMulti < wep.stats.bonusMultiCap) {
       wep.bonusMulti += wep.stats.bonusMultiInc;
@@ -1523,8 +1522,7 @@ function dealDamage(ship, t, wep, side) {
         wep.bonusMulti = 0;
         ship.previousTarget = target;
       }
-      var damage = calculateDamage(ship, target, wep, side);
-      var attack = new _weapon_classes.PendingAttack(damage, wep.getDamageDelay(ship.distanceFromTarget));
+      var attack = new _weapon_classes.PendingAttack(wep.getDamageDelay(ship.distanceFromTarget));
       wep.pendingDamage.push(attack);
       wep.currentReload = wep.reload;
     }
@@ -1540,7 +1538,8 @@ function dealDamage(ship, t, wep, side) {
         pendingAttack.timer -= t;
         if (pendingAttack.timer <= 0) {
           var initalHP = ship.targets[0].currentEHP;
-          ship.targets[0].currentEHP -= pendingAttack.damage;
+          var damage = calculateDamage(ship, ship.targets[0], wep, side);
+          ship.targets[0].currentEHP -= damage;
           if (Number.isNaN(initalHP) || Number.isNaN(ship.targets[0].currentEHP)) {
             console.error('Applied damage or target EHP is not a number, this is likely a bug.', wep, initalHP, ship.targets[0].currentEHP, ship);
           }
