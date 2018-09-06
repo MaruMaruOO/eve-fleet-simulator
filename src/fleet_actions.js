@@ -513,14 +513,16 @@ function setProjections(
         targetVals[i](oldTarget, attr);
       }
     }
-    const baseMulti = ewar[attr] / 100;
-    const multi = ewarFalloffCalc(baseMulti, ewar, distance);
-    target.appliedEwar[attr].push([multi, baseMulti, ewar]);
-    target.appliedEwar[attr].sort((a, b) => Math.abs(b[0]) - Math.abs(a[0]));
-    if (target.appliedEwar[attr].length > 7) {
-      target.appliedEwar[attr].pop();
+    if (Math.abs(ewar[attr]) > 0) {
+      const baseMulti = ewar[attr] / 100;
+      const multi = ewarFalloffCalc(baseMulti, ewar, distance);
+      target.appliedEwar[attr].push([multi, baseMulti, ewar]);
+      target.appliedEwar[attr].sort((a, b) => Math.abs(b[0]) - Math.abs(a[0]));
+      if (target.appliedEwar[attr].length > 7) {
+        target.appliedEwar[attr].pop();
+      }
+      targetVals[i](target, attr);
     }
-    targetVals[i](target, attr);
   }
 }
 
