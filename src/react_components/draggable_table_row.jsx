@@ -6,8 +6,8 @@ import type {
   DraggableStateSnapshot,
 } from 'react-beautiful-dnd';
 import type { SideShipInfo } from './../flow_types';
+import type { GuiSide } from './fleet_and_combat_simulator';
 import FleetAndCombatSimulator from './fleet_and_combat_simulator';
-import Side from './../side_class';
 import renderIconsW80 from '../eve_icons/renders/renderIconsW80';
 
 type shipBasicVisBarProps = {
@@ -54,7 +54,7 @@ export default class DraggableTableRow extends React.Component<DraggableTableRow
     const {
       snapshot, shipinfo, provided, parent, sidestr, index,
     } = this.props;
-    const side: Side = sidestr === 'red' ? parent.red : parent.blue;
+    const side: GuiSide = sidestr === 'red' ? parent.red : parent.blue;
     const shipInfo = shipinfo;
     // Don't get this from shipinfo.iconColor, as it's used for persistance and often undefined.
     const matchingShip = side.ships.find(s => s.id === shipInfo.ship.id);

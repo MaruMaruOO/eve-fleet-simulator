@@ -14,7 +14,10 @@ remoteRepair: {
   attachedShip: Ship,
   type: string,
   [string]: number
-}[]};
+}[],
+initalStartInd: number,
+n: number,
+};
 function mapProjection(
   subfleet: Subfleet,
   projection: {type: string, [string]: number},
@@ -47,17 +50,20 @@ class Side {
   uniqueFitCount: number;
   totalShipCount: number;
   color: string;
+  oppSide: Side;
   ships: Ship[] = [];
   deadShips: Ship[] = [];
   subFleets: Subfleet[] = [];
+  subFleetEffectPurgeTimer: number = 120000
   aliveShipString: string;
   deadShipString: string;
   theoreticalDamage: number = 0;
   appliedDamage: number = 0;
   damageApplicationRatio: number = this.appliedDamage / this.theoreticalDamage;
-  makeFleet: (SideShipInfo[], number) => void = (
+  makeFleet: (SideShipInfo[], number, boolean) => void = (
     sidesShips: SideShipInfo[],
     initalDistance: number,
+    dronesEnabled: boolean,
   ): void => {
     this.uniqueFitCount = 0;
     this.totalShipCount = 0;
@@ -79,13 +85,20 @@ class Side {
       const size = shipClass.n;
       for (let i = 0; i < size; i += 1) {
         const localShip: Ship =
-          new Ship(lastShotCaller, lastAnchor, shipStats, initalDistance);
+          new Ship(lastShotCaller, lastAnchor, shipStats, initalDistance, dronesEnabled);
         if (i === 0 || i % this.targetGrouping === 0) {
           localShip.isAnchor = true;
           localShip.isShotCaller = true;
+          localShip.rangeRecalc = 10000;
           lastShotCaller = localShip;
           lastAnchor = localShip;
-          this.subFleets.push({ fc: localShip, ewar: [], remoteRepair: [] });
+          this.subFleets.push({
+            fc: localShip,
+            ewar: [],
+            remoteRepair: [],
+            initalStartInd: this.totalShipCount - shipClass.n,
+            n: size,
+          });
           console.log(shipStats);
           console.log(localShip);
         }
@@ -93,6 +106,8 @@ class Side {
           mapProjection(this.subFleets[this.uniqueFitCount - 1], projection, localShip);
         }
         localShip.iconColor = iconColor;
+        localShip.dis = this.color === 'red' ? 0.5 * initalDistance : -0.5 * initalDistance;
+        localShip.pendingDis = localShip.dis;
         this.ships.push(localShip);
       }
     }
@@ -104,4 +119,5 @@ class Side {
   }
 }
 
+export type { Subfleet };
 export default Side;

@@ -60,7 +60,8 @@ const UIRefresh = () => {
 };
 
 class FullUI extends React.Component<{ },
-  { page: '<FleetSimAndShips />' | '<AddOrRemoveFits />', button_colors: ButtonColors }> {
+  { page: '<FleetSimAndShips />' | '<AddOrRemoveFits />' | '<AboutPage />',
+    button_colors: ButtonColors }> {
   constructor(props: { }) {
     super(props);
     this.GetButtonColors = () => {
@@ -90,10 +91,10 @@ class FullUI extends React.Component<{ },
           <FleetSimAndShips button_colors={this.state.button_colors} />
           : null }
         { this.state.page === '<AddOrRemoveFits />' ?
-            <AddOrRemoveFits />
+          <AddOrRemoveFits />
           : null }
         { this.state.page === '<AboutPage />' ?
-            <AboutPage />
+          <AboutPage />
           : null }
       </div>
     );

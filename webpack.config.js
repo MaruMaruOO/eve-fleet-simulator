@@ -1,6 +1,6 @@
 const path = require('path');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-module.exports = {
+module.exports = [{
   entry: './src/index.jsx',
   output: { path: path.join(__dirname, 'src/css'), filename: './../../lib/testWebpack.js' },
   resolve: {
@@ -9,7 +9,18 @@ module.exports = {
     },
     extensions: ['.js', '.jsx'],
   },
-  module: { rules: [ { test: /\.(js|jsx)$/, exclude: /(node_modules|bower_components)/,
+  module: { rules: [
+    {
+      test: /\.worker\.js$/,
+      use: [
+        {
+          loader: 'worker-loader',
+          options: { name: 'sim.worker.js', inline: true }
+        },
+        { loader: 'babel-loader' },
+      ]
+    },
+                     { test: /\.(js|jsx)$/, exclude: [/\.worker\.js$/, /(node_modules|bower_components)/],
                        use: { loader: 'babel-loader' }
                      },
                      { test: /\.css$/,
@@ -48,4 +59,4 @@ module.exports = {
       filename: '[name].css',
     }),
   ]
-};
+}];

@@ -68,9 +68,12 @@ class Ship {
   unpropedVelocity: number;
   baseMaxTargetRange: number;
   baseScanRes: number;
+  dis: number;
+  pendingDis: number;
+  rangeRecalc: number;
   constructor(
     currentShotCaller: Ship | null, currentAnchor: Ship | null,
-    shipStats: ShipData, initalDistance: number,
+    shipStats: ShipData, initalDistance: number, dronesEnabled: boolean,
   ) {
     if (shipStats !== null) {
       this.distanceFromTarget = initalDistance;
@@ -109,11 +112,11 @@ class Ship {
         if (wep.type === 'Fighter') {
           for (const ability of wep.abilities) {
             ability.type = 'Fighter';
-            const addedWep = new Weapon(ability);
+            const addedWep = new Weapon(ability, dronesEnabled);
             this.weapons.push(addedWep);
           }
         } else {
-          const addedWep = new Weapon(wep);
+          const addedWep = new Weapon(wep, dronesEnabled);
           this.weapons.push(addedWep);
         }
       }

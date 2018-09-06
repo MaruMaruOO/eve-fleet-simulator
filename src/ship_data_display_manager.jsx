@@ -21,7 +21,7 @@ import droneIcon from './eve_icons/drones.png';
 
 import ShipData from './ship_data_class';
 import { GetMaxEHP } from './base_derived_stats';
-import { SidebarShipNode } from './react_components/sidebar_ship_display';
+import type { SidebarShipNode } from './react_components/sidebar_ship_display';
 import { UIRefresh } from './index';
 import type {
   ShipSize, ModuleQualityValue,

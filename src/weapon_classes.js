@@ -1,6 +1,5 @@
 // @flow
 import type { WeaponData, WeaponType } from './flow_types';
-import ShipDataDisplayManager from './ship_data_display_manager';
 
 class PendingAttack {
   damage: number;
@@ -99,7 +98,7 @@ class Weapon {
     }
     return 0;
   }
-  constructor(wep: WeaponData): Weapon {
+  constructor(wep: WeaponData, dronesEnabled: boolean): Weapon {
     this.type = wep.type;
     this.damage = wep.volley;
     this.reload = 1000 * (wep.volley / wep.dps);
@@ -116,7 +115,7 @@ class Weapon {
       this.stats = new TurretStats(wep);
       this.autonomousMovement = true;
       this.stats.travelVelocity = wep.maxSpeed;
-      if (ShipDataDisplayManager.dronesEnabled === false) {
+      if (dronesEnabled === false) {
         this.dps = 0;
         this.damage = 0;
         this.reload = 10000000;

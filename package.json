@@ -13,7 +13,8 @@
   "flow-coverage-report": {
     "excludeGlob": [
       "./src/*/**.png",
-      "./src/*JSON*"
+      "./src/*JSON*",
+      "./src/css/sim.worker.js"
     ],
     "includeGlob": [
       "./src/**/**.js*"
@@ -51,6 +52,7 @@
     "style-loader": "^0.20.2",
     "url-loader": "^0.6.2",
     "webpack": "^3.11.0",
+    "worker-loader": "^2.0.0",
     "yarn": "^1.4.0"
   },
   "dependencies": {

@@ -3,35 +3,109 @@ import React from 'react';
 import { Divider, Table, Grid, Button, Dimmer, Segment } from 'semantic-ui-react';
 import { XYPlot, LineSeries, XAxis, YAxis } from 'react-vis';
 import { sideOneShips, sideTwoShips, UIRefresh } from './../index';
-import RunFleetActions from './../fleet_actions';
 import Side from './../side_class';
-import Ship from './../ship_class';
-import type { SimulationState, SyntheticInputEvent, ButtonColors } from './../flow_types';
+import ShipData from './../ship_data_class';
+import type { SimulationState, SyntheticInputEvent, ButtonColors, SideShipInfo } from './../flow_types';
 import FleetInfoDnDTable from './fleet_info_dnd_table';
+import ShipDataDisplayManager from './../ship_data_display_manager';
+import SimWorker from './../sim.worker';
 
-function BattleDisplay(props: { red: Side, blue: Side }) {
+
+type SideGuiStats = {
+  appliedDamage: number,
+  theoreticalDamage: number,
+  graphData: { x: number, y: number }[],
+};
+type EndStats = { red: SideGuiStats, blue: SideGuiStats };
+type GuiShipData = {
+  dis: number,
+  iconColor: string,
+  id: number,
+}
+type ShipUpdate = { red: GuiShipData[], blue: GuiShipData[] };
+
+type SimMessageData = {| +type: 'setXYPlotMargin', +val: number |} |
+  {| +type: 'updateSides', +val: ShipUpdate |} |
+  {| +type: 'simulationFinished', +val: null |} |
+  {| +type: 'endStats', +val: EndStats |};
+
+type SimMessageEvent = {
+  data: SimMessageData,
+  origin: string,
+  lastEventId: string,
+  source: WindowProxy,
+}
+
+class GuiSide {
+  ships: GuiShipData[];
+  deadShips: GuiShipData[];
+  theoreticalDamage: number = 0;
+  appliedDamage: number = 0;
+  oppSide: GuiSide;
+  uniqueFitCount: number;
+  totalShipCount: number;
+  color: string;
+
+  makeFleet: (SideShipInfo[], number) => void = (
+    sidesShips: SideShipInfo[],
+    initalDistance: number,
+  ): void => {
+    this.uniqueFitCount = 0;
+    this.totalShipCount = 0;
+    const colorChangePerShip: number = 255 / sidesShips.length;
+    for (const shipClass of sidesShips) {
+      this.uniqueFitCount += 1;
+      this.totalShipCount += shipClass.n;
+      const alternateColoring = this.uniqueFitCount % 2 === 0;
+      const colorShift = ((this.uniqueFitCount - 1) * colorChangePerShip).toFixed(0);
+      if (!shipClass.iconColor) {
+        shipClass.iconColor = this.color === 'red' ?
+          `rgb(${alternateColoring ? '180' : '255'}, ${colorShift}, ${alternateColoring ? '80' : '0'})` :
+          `rgb(${alternateColoring ? '80' : '0'}, ${colorShift}, ${alternateColoring ? '180' : '255'})`;
+      }
+      const shipStats: ShipData = shipClass.ship;
+      for (let i = 0; i < shipClass.n; i += 1) {
+        const localShip: GuiShipData = {
+          dis: this.color === 'red' ? 0.5 * initalDistance : -0.5 * initalDistance,
+          iconColor: shipClass.iconColor,
+          id: shipStats.id,
+        };
+        this.ships.push(localShip);
+      }
+    }
+  };
+
+  constructor(colorArg: 'red' | 'blue'): GuiSide {
+    this.ships = [];
+    this.deadShips = [];
+    this.color = colorArg;
+    return this;
+  }
+}
+
+function BattleDisplay(props: { red: GuiSide, blue: GuiSide }) {
   return (
     <svg viewBox="0 0 200 100" className="battleDisplay">
       { props.red && props.red.ships ?
-        props.red.ships.map((ship: Ship, i, fleet) => (
+        props.red.ships.map((ship: GuiShipData, i, fleet) => (
           <rect
             key={`red${i.toString()}`}
             fill={ship.iconColor}
             width={fleet.length > 50 ? 1 : 5}
             height="1"
-            x={100 - (i / 25) - (ship.distanceFromTarget / 3000)}
+            x={(100 - (i / 25)) - (ship.dis / 3000)}
             y={49 + (i % 2 ? (i % 50) + 1 : -i % 50)}
           />
         )) : null
       }
       { props.blue && props.blue.ships ?
-        props.blue.ships.map((ship: Ship, i, fleet) => (
+        props.blue.ships.map((ship: GuiShipData, i, fleet) => (
           <rect
             key={`blue${i.toString()}`}
             fill={ship.iconColor}
             width={fleet.length > 50 ? 1 : 5}
             height="1"
-            x={100 + (i / 25) + (ship.distanceFromTarget / 3000)}
+            x={(100 + (i / 25)) - (ship.dis / 3000)}
             y={49 + (i % 2 ? (i % 50) + 1 : -i % 50)}
           />
         )) : null
@@ -49,7 +123,7 @@ function getApplicationString(appliedDamage: number, theoreticalDamage: number) 
 
 type FleetAndCombatSimulatorState = {
   initalDistance: number, simulationSpeed: number,
-  red: Side, blue: Side, simulationState: SimulationState,
+  red: GuiSide, blue: GuiSide, simulationState: SimulationState,
 };
 class FleetAndCombatSimulator extends React.Component<
 { initalDistance?: number, narrowScreen: boolean, buttonColors: ButtonColors },
@@ -62,8 +136,8 @@ FleetAndCombatSimulatorState
     this.state = {
       initalDistance: props.initalDistance || 35000,
       simulationSpeed: 10,
-      red: new Side('red'),
-      blue: new Side('blue'),
+      red: new GuiSide('red'),
+      blue: new GuiSide('blue'),
       simulationState: 'setup',
     };
     if (this.props.narrowScreen) {
@@ -95,11 +169,12 @@ FleetAndCombatSimulatorState
   currentFontSize: number;
   XYPlotSize: number;
   XYPlotMargin: {left: number, right: number, top: number, bottom: number };
-  red: Side = new Side('red');
-  blue: Side = new Side('blue');
+  red: GuiSide = new GuiSide('red');
+  blue: GuiSide = new GuiSide('blue');
   redGraphData: { x: number, y: number }[];
   blueGraphData: { x: number, y: number }[];
-  logUpdate = (blue: Side, red: Side, seconds: number) => {
+  worker: Worker;
+  logUpdate = (blue: GuiSide, red: GuiSide, seconds: number) => {
     this.redGraphData.push({ x: seconds, y: red.ships.length });
     this.blueGraphData.push({ x: seconds, y: blue.ships.length });
   };
@@ -110,62 +185,63 @@ FleetAndCombatSimulatorState
     ];
     side.ships = side.ships.filter(ship => ship.currentEHP > 0);
   };
-  RunSimulationLoop = (
-    breakClause: number, interval: number,
-    reportInterval: number, simulationSpeed: number,
-  ) => {
-    if (simulationSpeed !== this.state.simulationSpeed) {
-      const newReportInterval = 100 * this.state.simulationSpeed;
-      const newSimulationSpeed = this.state.simulationSpeed;
-      this.RunSimulationLoop(breakClause, interval, newReportInterval, newSimulationSpeed);
-    } else if (this.blue.ships.length > 0 && this.red.ships.length > 0 && breakClause < 72000) {
-      for (let i = 0; i < reportInterval; i += interval) {
-        const isDamageDealtBlue = RunFleetActions(this.blue, interval, this.red);
-        const isDamageDealtRed = RunFleetActions(this.red, interval, this.blue);
-        if (isDamageDealtBlue) {
-          this.removeDeadShips(this.red);
-        }
-        if (isDamageDealtRed) {
-          this.removeDeadShips(this.blue);
-        }
-        if (isDamageDealtBlue || isDamageDealtRed) {
-          this.logUpdate(this.blue, this.red, (breakClause + (i / 100)) / 10);
-          if (this.blue.ships.length === 0 || this.red.ships.length === 0) {
-            break;
-          }
-        }
-      }
-      const newBreakClause = breakClause + simulationSpeed;
-      this.setState({ red: this.red, blue: this.blue });
-      setTimeout(
-        this.RunSimulationLoop, reportInterval / simulationSpeed,
-        newBreakClause, interval, reportInterval, simulationSpeed,
-      );
-    } else {
-      this.setState({ simulationState: 'finished' });
-      UIRefresh();
-    }
-  };
   SimulateBattle = () => {
-    this.redGraphData = [];
-    this.blueGraphData = [];
-    this.blue = this.state.blue;
-    this.red = this.state.red;
-    this.red = new Side('red');
-    this.blue = new Side('blue');
-    this.red.makeFleet(sideOneShips, this.state.initalDistance);
-    this.blue.makeFleet(sideTwoShips, this.state.initalDistance);
-    this.setState({ red: this.red, blue: this.blue, simulationState: 'running' });
-    const largestFleet = Math.max(this.blue.ships.length, this.red.ships.length);
-    const charLengthOfMaxShips = largestFleet.toString().length;
-    this.setXYPlotMargin(charLengthOfMaxShips);
-    const reportInterval = 100 * this.state.simulationSpeed;
-    const interval = 50;
-    this.logUpdate(this.blue, this.red, 0);
-    setTimeout(
-      this.RunSimulationLoop, reportInterval / this.state.simulationSpeed,
-      0, interval, reportInterval, this.state.simulationSpeed,
-    );
+    if (this.state.simulationState === 'running') {
+      return;
+    }
+    this.setState({ simulationState: 'running' });
+    this.red = new GuiSide('red');
+    this.blue = new GuiSide('blue');
+    let worker;
+    if (!this.worker) {
+      // Flow doesn't understand worker-loader being used by webpack, hence the any cast is needed.
+      worker = (new (SimWorker: any)(): Worker);
+      this.worker = worker;
+    } else {
+      ({ worker } = this);
+    }
+    worker.onmessage = (e: Object) => {
+      // Flow doesn't directly track typing across threads.
+      // Without casting the input's type is 'mixed' which is impractical for the use case.
+      const simMsg: SimMessageEvent = (e: SimMessageEvent);
+      const { data } = simMsg;
+      if (data.type === 'setXYPlotMargin') {
+        this.setXYPlotMargin(data.val);
+      } else if (data.type === 'updateSides') {
+        const v: ShipUpdate = data.val;
+        this.red.ships = v.red;
+        this.blue.ships = v.blue;
+        this.setState({ red: this.red, blue: this.blue }, () => {
+          worker.postMessage({ type: 'frameRenderComplete', val: '' });
+        });
+      } else if (data.type === 'simulationFinished') {
+        this.setState({ simulationState: 'finished' }, () => {
+          UIRefresh();
+        });
+      } else if (data.type === 'endStats') {
+        const v: EndStats = data.val;
+        const valRed: SideGuiStats = v.red;
+        const valBlue: SideGuiStats = v.blue;
+        this.red.appliedDamage = valRed.appliedDamage;
+        this.red.theoreticalDamage = valRed.theoreticalDamage;
+        this.blue.appliedDamage = valBlue.appliedDamage;
+        this.blue.theoreticalDamage = valBlue.theoreticalDamage;
+        this.redGraphData = valRed.graphData;
+        this.blueGraphData = valBlue.graphData;
+        this.setState({ red: this.red, blue: this.blue });
+      }
+    };
+    worker.onerror = (e) => {
+      console.log(e);
+      console.error(e);
+    };
+    worker.postMessage({
+      type: 'RunSimulation',
+      val: [
+        sideOneShips, sideTwoShips, this.state.simulationSpeed,
+        this.state.initalDistance, ShipDataDisplayManager.dronesEnabled,
+      ],
+    });
   };
   refreshSides = () => {
     if (sideOneShips && sideOneShips.length > 0 &&
@@ -179,7 +255,8 @@ FleetAndCombatSimulatorState
         this.updateFleets();
         this.setState({ simulationState: 'setup' });
       } else {
-        this.red = new Side('red');
+        this.red = new GuiSide('red');
+        this.red.oppSide = this.blue;
         this.red.makeFleet(sideOneShips, this.state.initalDistance);
       }
     }
@@ -194,17 +271,20 @@ FleetAndCombatSimulatorState
         this.updateFleets();
         this.setState({ simulationState: 'setup' });
       } else {
-        this.blue = new Side('blue');
+        this.blue = new GuiSide('blue');
+        this.blue.oppSide = this.red;
         this.blue.makeFleet(sideTwoShips, this.state.initalDistance);
       }
     }
   };
   updateFleets = (updatedDistance: number = 0) => {
-    this.red = new Side('red');
+    this.red = new GuiSide('red');
     this.red.makeFleet(sideOneShips, updatedDistance || this.state.initalDistance);
-    this.blue = new Side('blue');
+    this.blue = new GuiSide('blue');
     this.blue.makeFleet(sideTwoShips, updatedDistance || this.state.initalDistance);
-  }
+    this.red.oppSide = this.blue;
+    this.blue.oppSide = this.red;
+  };
   initalDistanceChange = (e: SyntheticInputEvent) => {
     if (this.state.simulationState === 'setup') {
       this.updateFleets(Number(e.currentTarget.value));
@@ -222,6 +302,9 @@ FleetAndCombatSimulatorState
       this.setState({ simulationSpeed: Number(e.currentTarget.value), simulationState: 'setup' });
     } else {
       this.setState({ simulationSpeed: Number(e.currentTarget.value) });
+      if (this.worker) {
+        this.worker.postMessage({ type: 'changeSimSpeed', val: Number(e.currentTarget.value) });
+      }
     }
   };
   render() {
@@ -366,3 +449,4 @@ FleetAndCombatSimulatorState
 }
 
 export default FleetAndCombatSimulator;
+export type { SimMessageData, SimMessageEvent, ShipUpdate, GuiSide };
