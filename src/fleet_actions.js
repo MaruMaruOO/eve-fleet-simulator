@@ -500,8 +500,6 @@ function setProjections(
   targetVals: ((s: Ship, attr: attrString) => void)[],
   target: Ship,
 ) {
-  // const baseTargetVals =
-  // targetVals.map(val => 'base' + val.charAt(0).toUpperCase() + val.substr(1));
   for (let i = 0; i < attrs.length; i += 1) {
     const attr = attrs[i];
     const oldTarget = ewar.currentTarget;
