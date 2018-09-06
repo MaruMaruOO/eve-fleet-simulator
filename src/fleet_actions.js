@@ -615,37 +615,51 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
     const targetVals = [
       (s: Ship, attr: attrString): void => {
         s.weapons.forEach((w: Weapon) => {
-          w.stats.tracking = NetValue(s.appliedEwar[attr], w.stats.baseTracking);
+          if (w.type === 'Turret' && !w.autonomousMovement) {
+            w.stats.tracking = NetValue(s.appliedEwar[attr], w.stats.baseTracking);
+          }
         });
       },
       (s: Ship, attr: attrString): void => {
         s.weapons.forEach((w: Weapon) => {
-          w.optimal = NetValue(s.appliedEwar[attr], w.baseOptimal);
+          if (w.type === 'Turret' && !w.autonomousMovement) {
+            w.optimal = NetValue(s.appliedEwar[attr], w.baseOptimal);
+          }
         });
       },
       (s: Ship, attr: attrString): void => {
         s.weapons.forEach((w: Weapon) => {
-          w.stats.falloff = NetValue(s.appliedEwar[attr], w.stats.baseFalloff);
+          if (w.type === 'Turret' && !w.autonomousMovement) {
+            w.stats.falloff = NetValue(s.appliedEwar[attr], w.stats.baseFalloff);
+          }
         });
       },
       (s: Ship, attr: attrString): void => {
         s.weapons.forEach((w: Weapon) => {
-          w.stats.sigRadius = NetValue(s.appliedEwar[attr], w.stats.baseSigRadius);
+          if (w.type === 'Missile' && !w.autonomousMovement) {
+            w.stats.sigRadius = NetValue(s.appliedEwar[attr], w.stats.baseSigRadius);
+          }
         });
       },
       (s: Ship, attr: attrString): void => {
         s.weapons.forEach((w: Weapon) => {
-          w.stats.expVelocity = NetValue(s.appliedEwar[attr], w.stats.baseExpVelocity);
+          if (w.type === 'Missile' && !w.autonomousMovement) {
+            w.stats.expVelocity = NetValue(s.appliedEwar[attr], w.stats.baseExpVelocity);
+          }
         });
       },
       (s: Ship, attr: attrString): void => {
         s.weapons.forEach((w: Weapon) => {
-          w.stats.travelVelocity = NetValue(s.appliedEwar[attr], w.stats.baseTravelVelocity);
+          if (w.type === 'Missile' && !w.autonomousMovement) {
+            w.stats.travelVelocity = NetValue(s.appliedEwar[attr], w.stats.baseTravelVelocity);
+          }
         });
       },
       (s: Ship, attr: attrString): void => {
         s.weapons.forEach((w: Weapon) => {
-          w.optimal = NetValue(s.appliedEwar[attr], w.baseOptimal);
+          if (w.type === 'Missile' && !w.autonomousMovement) {
+            w.optimal = NetValue(s.appliedEwar[attr], w.baseOptimal);
+          }
         });
       },
     ];

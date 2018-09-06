@@ -1750,31 +1750,45 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
     var attrs = ['trackingSpeedBonus', 'maxRangeBonus', 'falloffBonus', 'aoeCloudSizeBonus', 'aoeVelocityBonus', 'missileVelocityBonus', 'explosionDelayBonus'];
     var targetVals = [function (s, attr) {
       s.weapons.forEach(function (w) {
-        w.stats.tracking = NetValue(s.appliedEwar[attr], w.stats.baseTracking);
+        if (w.type === 'Turret' && !w.autonomousMovement) {
+          w.stats.tracking = NetValue(s.appliedEwar[attr], w.stats.baseTracking);
+        }
       });
     }, function (s, attr) {
       s.weapons.forEach(function (w) {
-        w.optimal = NetValue(s.appliedEwar[attr], w.baseOptimal);
+        if (w.type === 'Turret' && !w.autonomousMovement) {
+          w.optimal = NetValue(s.appliedEwar[attr], w.baseOptimal);
+        }
       });
     }, function (s, attr) {
       s.weapons.forEach(function (w) {
-        w.stats.falloff = NetValue(s.appliedEwar[attr], w.stats.baseFalloff);
+        if (w.type === 'Turret' && !w.autonomousMovement) {
+          w.stats.falloff = NetValue(s.appliedEwar[attr], w.stats.baseFalloff);
+        }
       });
     }, function (s, attr) {
       s.weapons.forEach(function (w) {
-        w.stats.sigRadius = NetValue(s.appliedEwar[attr], w.stats.baseSigRadius);
+        if (w.type === 'Missile' && !w.autonomousMovement) {
+          w.stats.sigRadius = NetValue(s.appliedEwar[attr], w.stats.baseSigRadius);
+        }
       });
     }, function (s, attr) {
       s.weapons.forEach(function (w) {
-        w.stats.expVelocity = NetValue(s.appliedEwar[attr], w.stats.baseExpVelocity);
+        if (w.type === 'Missile' && !w.autonomousMovement) {
+          w.stats.expVelocity = NetValue(s.appliedEwar[attr], w.stats.baseExpVelocity);
+        }
       });
     }, function (s, attr) {
       s.weapons.forEach(function (w) {
-        w.stats.travelVelocity = NetValue(s.appliedEwar[attr], w.stats.baseTravelVelocity);
+        if (w.type === 'Missile' && !w.autonomousMovement) {
+          w.stats.travelVelocity = NetValue(s.appliedEwar[attr], w.stats.baseTravelVelocity);
+        }
       });
     }, function (s, attr) {
       s.weapons.forEach(function (w) {
-        w.optimal = NetValue(s.appliedEwar[attr], w.baseOptimal);
+        if (w.type === 'Missile' && !w.autonomousMovement) {
+          w.optimal = NetValue(s.appliedEwar[attr], w.baseOptimal);
+        }
       });
     }];
     target = scatterTarget;
