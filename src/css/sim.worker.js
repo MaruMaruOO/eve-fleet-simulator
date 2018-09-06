@@ -1497,7 +1497,8 @@ function calculateDamage(ship, target, wep, side) {
     } else {
       velocity = [getVelocityDelta(ship, target, side, wep)];
     }
-    var bonusMulti = 1 + wep.bonusMulti;
+    var hasDmgRamp = wep.stats.bonusMultiInc ? true : false;
+    var bonusMulti = hasDmgRamp ? (1 + wep.bonusMulti) / (1 + wep.stats.bonusMultiCap) : 1;
     if (wep.stats.bonusMultiInc && wep.bonusMulti < wep.stats.bonusMultiCap) {
       wep.bonusMulti += wep.stats.bonusMultiInc;
     }
