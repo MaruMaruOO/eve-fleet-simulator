@@ -161,11 +161,11 @@ function dataTypeExplanation(data) {
   const name = data[1];
   const description = data.length < 3 ? `blarg standin description for ${name}` : data[2];
   return (
-    <div>
+    <div key={name}>
       <Container
         text
         style={{
-          display: 'flex', width: '100%', alignItems: 'center', marginLeft: 'inherit',
+          display: 'flex', width: '100%', alignItems: 'center', marginLeft: 'inherit', fontSize: 'inherit',
         }}
       >
         <Image
@@ -175,8 +175,14 @@ function dataTypeExplanation(data) {
           size="mini"
           style={{ overflow: 'inherit' }}
         />
-        <div style={{ color: 'var(--high-contrast-font-color)', whiteSpace: 'pre', paddingRight: '0.5em' }}>{name}: </div>
-        <Container text>
+        <div
+          style={{
+            fontSize: 'inherit', color: 'var(--high-contrast-font-color)', whiteSpace: 'pre', paddingRight: '0.5em',
+          }}
+        >
+          {name}:
+        </div>
+        <Container text style={{ fontSize: 'inherit' }}>
           <div>
             {description}
           </div>
@@ -191,7 +197,7 @@ const ShipFaq = [
   {
     key: 'panel-1a1',
     title: 'What are the exactly are the diffrent values?',
-    content: shipTypeDataTypeInfo.map(dataTypeExplanation),
+    content: { content: shipTypeDataTypeInfo.map(dataTypeExplanation), key: 'shipTypeDataTypeInfo' },
   },
   {
     key: 'panel-ba2',
@@ -254,7 +260,7 @@ const FleetSimFaq = [
   {
     key: 'panel-2a1',
     title: 'What are the exactly are the diffrent values?',
-    content: shipFitDataTypeInfo.map(dataTypeExplanation),
+    content: { content: shipFitDataTypeInfo.map(dataTypeExplanation), key: 'shipFitDataTypeInfo' },
   },
   {
     key: 'panel-2b2',
@@ -400,12 +406,12 @@ const FleetSimFaq = [
   {
     key: 'panel-ba19',
     title: 'Is there a time limit on the simulations?',
-    content: 'u',
+    content: 'i',
   },
   {
     key: 'panel-b20',
     title: 'Why is my simulation finishing while both sides have ships left?',
-    content: 'u',
+    content: 'o',
   },
 ];
 
@@ -416,23 +422,15 @@ const FleetSimFaqContent = (
 );
 
 const faq = [
-  { key: 'panel-11', title: 'Genral', content: { content: GenralFaqContent } },
-  { key: 'panel-12', title: 'Ship Data', content: { content: ShipFaqContent } },
-  { key: 'panel-23', title: 'Fleet Simulation', content: { content: FleetSimFaqContent } },
-  { key: 'panel-14', title: 'Custom Fits', content: { content: AddingFitsFaqContent } },
+  { key: 'panel-11', title: 'Genral', content: { content: GenralFaqContent, key: 'GenralFaqContent' } },
+  { key: 'panel-12', title: 'Ship Data', content: { content: ShipFaqContent, key: 'ShipFaqContent' } },
+  { key: 'panel-23', title: 'Fleet Simulation', content: { content: FleetSimFaqContent, key: 'FleetSimFaqContent' } },
+  { key: 'panel-14', title: 'Custom Fits', content: { content: AddingFitsFaqContent, key: 'AddingFitsFaqContent' } },
 ];
 
 function AboutPage() {
   return (
-    <div style={{
-      height: '100%',
-      width: '100%',
-      top: '0%',
-      position: 'fixed',
-      paddingTop: 'calc(0.92857143em * 1.14285714 * 2 + 1.6em + 32.2344px)',
-      overflowY: 'auto',
-    }}
-    >
+    <div className="pageMainContentWrapper">
       <Container className="pageContainer">
         <Header as="h5" attached="top">
           CCP (REPLACE WITH ACTUAL LICENCE)

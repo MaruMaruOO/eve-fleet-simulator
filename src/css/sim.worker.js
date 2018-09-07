@@ -1611,8 +1611,6 @@ function getFocusedEwarTarget(targets, type, multi) {
 }
 
 function setProjections(ewar, distance, attrs, targetVals, target) {
-  // const baseTargetVals =
-  // targetVals.map(val => 'base' + val.charAt(0).toUpperCase() + val.substr(1));
   for (var i = 0; i < attrs.length; i += 1) {
     var _attr = attrs[i];
     var oldTarget = ewar.currentTarget;

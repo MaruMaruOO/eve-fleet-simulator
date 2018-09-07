@@ -383,12 +383,20 @@ body {
 .shipCardHeader >.image >.label.ui {
   background-color: var(--color11);
 }
+.pageMainContentWrapper {
+  height: 100%;
+  width: 100%;
+  top: 0%;
+  position: fixed;
+  padding-top: calc((0.85714286em * 1.14285714 * 2 + 1.5em) ~"+ calc(34.208px - 0.2233px)");
+  overflow-y: auto;
+}
 .pageContainer {
   padding-bottom: 1em;
 }
 .ui.grid>.column.combatAndShipDisplay {
   /* padding-top: 6em; */
-  padding-top: calc((0.92857143em * 1.14285714 * 2 + 1.6em) ~"+ 32.2344px");
+  /* padding-top: calc((0.92857143em * 1.14285714 * 2 + 1.6em) ~"+ 32.2344px"); */
   padding-top: calc((0.85714286em * 1.14285714 * 2 + 1.5em) ~"+ calc(34.208px - 0.2233px)");
   padding-left: 0em;
   max-height: 100%;
@@ -397,8 +405,8 @@ body {
 }
 .ui.grid>.column.sidebarColumn {
   /* Max font size is 16 for header not 14 hence the 1.1428 */
-  padding-top: calc((0.92857143em * 1.14285714 * 2 + 1.6em) ~"+ 32.2344px");
-  padding-top: calc((0.857143em * 1.14285714 * 2 + 1.5em) ~"+ 34.2344px");
+  /* padding-top: calc((0.92857143em * 1.14285714 * 2 + 1.6em) ~"+ 32.2344px"); */
+  /* padding-top: calc((0.857143em * 1.14285714 * 2 + 1.5em) ~"+ 34.2344px"); */
   /* The -0.223 is due to chrome being a special snowflake that rounds in very dumb ways. */
   padding-top: calc((0.85714286em * 1.14285714 * 2 + 1.5em) ~"+ calc(34.208px - 0.2233px)");
   background-color: var(--color3);

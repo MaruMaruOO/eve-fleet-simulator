@@ -105,15 +105,7 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
       fitData, addedFits, parseFailure, localShipData, deleteSelection, deleteAllCheck,
     } = this.state;
     return (
-      <div style={{
-        height: '100%',
-        width: '100%',
-        top: '0%',
-        position: 'fixed',
-        paddingTop: 'calc(0.92857143em * 1.14285714 * 2 + 1.6em + 32.2344px)',
-        overflowY: 'auto',
-      }}
-      >
+      <div className="pageMainContentWrapper">
         <Container className="pageContainer">
           <Header as="h5" attached="top">
             Add Fits
