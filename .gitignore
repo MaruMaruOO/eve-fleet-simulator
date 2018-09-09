@@ -3,6 +3,8 @@ node_modules/
 
 # Distribution
 lib/
+# This is the processed version used to inline the worker. It's not actually source code.
+src/css/sim.worker.js
 
 # Flow type coverage reports
 flow-coverage/
