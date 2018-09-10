@@ -7,30 +7,18 @@ import type { VectorMaxLenThree } from './flow_types';
 import type { Subfleet } from './side_class';
 
 function findNewTarget(targetCaller: Ship, opposingSide: Side): ?Ship {
-  const oppShips = opposingSide.ships;
-  let newTarget;
-  if (targetCaller.maxTargets >= opposingSide.ships.length) {
-    newTarget = opposingSide.ships.find(oppShip =>
-      !oppShip.isShotCaller &&
-      !targetCaller.targets.some(target => target === oppShip) && oppShip.currentEHP > 0);
-    const possibleFcTarget = opposingSide.ships.find(oppShip =>
-      !targetCaller.targets.some(target => target === oppShip) && oppShip.currentEHP > 0);
-    // This should target the fc if it's the last ship left in the group
-    if (!newTarget || (possibleFcTarget && possibleFcTarget.id !== newTarget.id)) {
-      newTarget = possibleFcTarget;
-    }
-  } else {
-    const targetOppFc = s => s.isShotCaller && !targetCaller.targets.some(target => target === s);
-    const oppFcIndex = oppShips.slice(0, targetCaller.maxTargets - 1).findIndex(targetOppFc);
-    const tarLen = targetCaller.targets.length;
-    if (oppFcIndex >= 0 && oppShips.length > tarLen + 1 && tarLen > 0 &&
-        oppShips[oppFcIndex].id !== oppShips[tarLen + 1].id) {
-      newTarget = oppShips[oppFcIndex];
-    } else {
-      newTarget = opposingSide.ships.find(oppShip =>
-        !oppShip.isShotCaller && oppShip.currentEHP > 0 &&
-        !targetCaller.targets.some(target => target === oppShip));
-    }
+  let oppShips = opposingSide.ships;
+  if (oppShips.length > targetCaller.maxTargets) {
+    oppShips = oppShips.slice(0, targetCaller.maxTargets + 1);
+  }
+  let newTarget = oppShips.find(oppShip =>
+    !oppShip.isShotCaller &&
+    !targetCaller.targets.some(target => target === oppShip) && oppShip.currentEHP > 0);
+  const possibleFcTarget = oppShips.find(oppShip =>
+    !targetCaller.targets.some(target => target === oppShip) && oppShip.currentEHP > 0);
+  // This should target the fc if it's the last ship left in the group
+  if (!newTarget || (possibleFcTarget && possibleFcTarget.id !== newTarget.id)) {
+    newTarget = possibleFcTarget;
   }
   return newTarget;
 }
@@ -997,11 +985,13 @@ function RunFleetActions(side: Side, t: number, opposingSide: Side, isSideOneOfT
     for (const s of [side, opposingSide]) {
       for (const subFleet of s.subFleets) {
         const ship = subFleet.fc;
-        if (ship.isShotCaller === true && ship.targets.length < ship.maxTargets) {
+        if (ship.isShotCaller === true) {
           while (ship.targets.length > 0 && ship.targets[0].currentEHP <= 0) {
             ship.targets.shift();
           }
-          getTargets(ship, s.oppSide);
+          if (ship.targets.length < ship.maxTargets) {
+            getTargets(ship, s.oppSide);
+          }
         }
       }
     }
