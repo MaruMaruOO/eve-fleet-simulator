@@ -2,7 +2,7 @@
 node_modules/
 
 # Distribution
-lib/
+lib/**
 !lib/index.html
 # These are processed versions used for inlining. They're not actually source code.
 src/css/sim.worker.js
