@@ -2,8 +2,34 @@ import { shipBaseJSON } from './../src/base_derived_stats';
 //const shipBaseJSON = require('./../src/shipBaseJSON.js');
 //const fs = require('../fs');
 const fs = __non_webpack_require__('fs');
+const process = __non_webpack_require__('process');
 //import fs from 'fs';
-const baseShips = JSON.parse(shipBaseJSON);
+const baseShips = shipBaseJSON;
+
+if (process.argv.length > 2) {
+  if (process.versions.node < '8.5.0') {
+    throw `node 8.5.0+ required to run this script, found ${process.versions.node}`;
+  }
+  let renderSrc = process.argv[2];
+  if (!renderSrc.endsWith('/')) {
+    renderSrc += '/';
+  }
+  let coveredIds = {};
+  for (const ship of baseShips) {
+    if (!coveredIds[ship.typeID]) {
+      coveredIds[ship.typeID] = 1;
+      const fileName = ship.typeID.toString() + '.png';
+      fs.copyFileSync(renderSrc + fileName, './../src/eve_icons/renders/Renders/' + fileName);
+    }
+  }
+}
+if (fs.readdirSync('./../src/eve_icons/renders/Renders/').length < 100) {
+  console.log(fs.readdirSync('./../src/eve_icons/renders/Renders/'));
+  console.error(`Could not find render icons at ./../src/eve_icons/renders/Renders/
+Please supply a render source so the required renders can be copied across.
+(eg node icon_select.js $SOME_PATH/Into_The_Abyss_1.0_Renders/Renders/`);
+  throw 1;
+}
 
 const resizedWidths = ['src', '35', '80'];
 for (const widthBase of resizedWidths) {
