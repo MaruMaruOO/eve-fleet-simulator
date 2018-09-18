@@ -4,7 +4,7 @@
   "description": "simple sim to calculate fleet battle outcomes",
   "main": "lib/index.js",
   "scripts": {
-    "build": "webpack",
+    "build": "node build.js",
     "prepublish": "npm run build",
     "test": "npm run staticChecks",
     "staticChecks": "node node_modules/.bin/eslint src/*.js* src/**/*.js*; node node_modules/flow-coverage-report/bin/flow-coverage-report.js; node node_modules/.bin/flow; "
