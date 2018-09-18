@@ -3,10 +3,14 @@ node_modules/
 
 # Distribution
 lib/
-# This is the processed version used to inline the worker. It's not actually source code.
+!lib/index.html
+# These are processed versions used for inlining. They're not actually source code.
 src/css/sim.worker.js
+src/css/main.css
+src/css/*.eot
+src/css/*.ttf
 
-#Output from it's own webpack, not a source file.
+# Output from it's own webpack, not a source file.
 packaging_scripts/icon_select.js
 
 # Flow type coverage reports
