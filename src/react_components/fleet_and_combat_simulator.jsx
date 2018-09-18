@@ -142,7 +142,7 @@ FleetAndCombatSimulatorState
     };
     if (this.props.narrowScreen) {
       this.currentFontSize = 14;
-      this.XYPlotSize = 140;
+      this.XYPlotSize = 161;
       this.setXYPlotMargin(2);
     } else {
       this.currentFontSize = document.body && document.body.style.fontSize !== '' ?
@@ -360,7 +360,7 @@ FleetAndCombatSimulatorState
                       />
                       <XAxis
                         title="Time (Seconds)"
-                        tickTotal={this.props.narrowScreen ? 3 : 5}
+                        tickTotal={this.props.narrowScreen ? 2 : 4}
                         style={{
                           stroke: 'var(--graph-font-color)',
                           fill: 'var(--graph-font-color)',

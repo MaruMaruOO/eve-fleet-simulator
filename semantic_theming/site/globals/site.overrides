@@ -537,6 +537,12 @@ body {
   padding-left: 0em;
   padding-right: 0em;
 }
+.ui.segment.floated.applicationDisplayNarrow.left {
+  margin-left: 0em;
+}
+.ui.segment.floated.applicationDisplayNarrow.right {
+  margin-right: 0em;
+}
 .ui.table.fleetStateTable {
   max-width: 100%;
   max-height: 100%;
