@@ -6,5 +6,8 @@ lib/
 # This is the processed version used to inline the worker. It's not actually source code.
 src/css/sim.worker.js
 
+#Output from it's own webpack, not a source file.
+packaging_scripts/icon_select.js
+
 # Flow type coverage reports
 flow-coverage/
