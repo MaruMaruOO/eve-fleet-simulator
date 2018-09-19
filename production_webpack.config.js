@@ -1,11 +1,8 @@
 const path = require('path');
-//const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
-
+const ExtractTextPlugin = require('extract-text-webpack-plugin');
 module.exports = [{
-  mode: 'production',
   entry: './src/index.jsx',
-  output: { path: path.join(__dirname, 'src/css'), filename: './../../lib/testWebpack.js' },
+  output: { path: path.join(__dirname, 'src/css'), filename: './../../dist/web/testWebpack.js' },
   resolve: {
     alias: {
         '../../theme.config$': path.join(__dirname, 'semantic_theming/theme.config')
@@ -28,7 +25,6 @@ module.exports = [{
                      },
                      { test: /\.css$/,
                        use: [
-                         { loader: MiniCssExtractPlugin.loader },
                          { loader: "style-loader" },
                          { loader: "css-loader" }
                        ]
@@ -37,15 +33,15 @@ module.exports = [{
                        test: /\.(png|jpg|gif|svg|ico)$/,
                        loader: 'url-loader'
                      },
-                     /*{
+                     {
                        use: ExtractTextPlugin.extract({
                          use: ['css-loader', 'less-loader']
                        }),
                        test: /\.less$/
-                     },*/
+                     },
                      {
                        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                       loader: 'url-loader?limit=10000&mimetype=application/font-woff'
+                       loader: 'url-loader?limit=1000000&mimetype=application/font-woff'
                      },
                      {
                        test: /\.(ttf|eot)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
@@ -59,10 +55,7 @@ module.exports = [{
           },
   plugins: [
     // this handles the bundled .css output file
-    //new ExtractTextPlugin({
-    //  filename: '[name].css',
-    //}),
-    new MiniCssExtractPlugin({
+    new ExtractTextPlugin({
       filename: '[name].css',
     }),
   ]
