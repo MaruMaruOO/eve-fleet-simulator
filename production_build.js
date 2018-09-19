@@ -18,7 +18,7 @@ try {
       ' --out=dist/'
   );
 } catch(e) {
-  console.log(e.Error);
+  console.log(e.error);
 }
 
 let envSettings = '';
@@ -35,13 +35,13 @@ export PATH=$\{PATH\}:$ANDROID_HOME/Sdk/build-tools/28.0.2
 }
 try {
   execSync(
-  `${envSettings}
-cd dist/cordova;
-./../../node_modules/.bin/cordova platform add android`);
+    `${envSettings} ./../../node_modules/.bin/cordova platform add android`,
+    { cwd: __dirname + '/dist/cordova', stdio: 'pipe' }
+  );
 } catch(e) {
+  console.log(e.error);
 }
 
 execSync(
   `${envSettings}
-cd dist/cordova;
-./../../node_modules/.bin/cordova build android --release --device`);
+./../../node_modules/.bin/cordova build android --release --device`, { cwd: __dirname + '/dist/cordova' });
