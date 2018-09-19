@@ -4,6 +4,9 @@ node_modules/
 # Distribution
 lib/**
 !lib/index.html
+dist/Eve Fleet Simulator*
+dist/web
+
 # These are processed versions used for inlining. They're not actually source code.
 src/css/sim.worker.js
 src/css/main.css
