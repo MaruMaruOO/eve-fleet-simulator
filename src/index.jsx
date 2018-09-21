@@ -2,7 +2,6 @@
 /* global */
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './../semantic_theming/semantic.less';
 
 import './css/progress_overides.css';
 
@@ -17,9 +16,8 @@ import AboutPage from './react_components/about_page';
 
 import type { ButtonColors } from './flow_types';
 
-// This is the output from the previous .less file once processed and includes default semantic css
-// Note if the .less file or it's dependencies change webpack will run twice.
-import './css/main.css';
+// Note this includes the default semantic css along with custom EFS styling.
+import './../semantic_theming/semantic.less';
 
 const documentElement: HTMLElement = document.documentElement || document.createElement('div');
 const savedTheme = localStorage.getItem('efsTheme');

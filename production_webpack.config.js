@@ -1,61 +1,94 @@
 const path = require('path');
-const ExtractTextPlugin = require('extract-text-webpack-plugin');
+const MiniCssExtractPlugin = require("mini-css-extract-plugin");
+const UglifyJsPlugin = require("uglifyjs-webpack-plugin");
+const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 module.exports = [{
+  mode: 'production',
   entry: './src/index.jsx',
-  output: { path: path.join(__dirname, 'src/css'), filename: './../../dist/web/testWebpack.js' },
+  output: { path: path.join(__dirname, 'dist/web/'), filename: './testWebpack.js' },
   resolve: {
     alias: {
-        '../../theme.config$': path.join(__dirname, 'semantic_theming/theme.config')
+      '../../theme.config$': path.join(__dirname, 'semantic_theming/theme.config')
     },
     extensions: ['.js', '.jsx'],
   },
-  module: { rules: [
-    {
-      test: /\.worker\.js$/,
-      use: [
-        {
-          loader: 'worker-loader',
-          options: { name: 'sim.worker.js', inline: true }
-        },
-        { loader: 'babel-loader' },
-      ]
-    },
-                     { test: /\.(js|jsx)$/, exclude: [/\.worker\.js$/, /(node_modules|bower_components)/],
-                       use: { loader: 'babel-loader' }
-                     },
-                     { test: /\.css$/,
-                       use: [
-                         { loader: "style-loader" },
-                         { loader: "css-loader" }
-                       ]
-                     },
-                     {
-                       test: /\.(png|jpg|gif|svg|ico)$/,
-                       loader: 'url-loader'
-                     },
-                     {
-                       use: ExtractTextPlugin.extract({
-                         use: ['css-loader', 'less-loader']
-                       }),
-                       test: /\.less$/
-                     },
-                     {
-                       test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                       loader: 'url-loader?limit=1000000&mimetype=application/font-woff'
-                     },
-                     {
-                       test: /\.(ttf|eot)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
-                       loader: 'file-loader'
-                     },
-                     {
-                       test: /\.otf(\?.*)?$/,
-                       use: 'file-loader?name=/fonts/[name].  [ext]&mimetype=application/font-otf'
-                     },
-                   ]
+  optimization: {
+    minimizer: [
+      new UglifyJsPlugin({
+        sourceMap: false,
+        cache: true,
+        parallel: true,
+        uglifyOptions: {
+          warnings: false,
+          parse: {},
+          compress: {
+            drop_console: true,
           },
+          mangle: true,
+          output: null,
+          toplevel: false,
+          nameCache: null,
+          ie8: false,
+          keep_fnames: false,
+        }
+      }),
+      new OptimizeCSSAssetsPlugin({})
+    ]
+  },
+  performance: {
+    // 15MB is an extremely high limit here.
+    // Obviously the web version needs splitting at some point.
+    // Since the warning is rather verbose and obvious we're going to hide it in the mean time.
+    maxEntrypointSize: 15000000,
+    maxAssetSize: 15000000,
+  },
+  module: {
+    rules: [
+      {
+        test: /src\/sim\.worker\.js$/,
+        use: [
+          {
+            loader: 'worker-loader',
+            options: {
+              name: 'sim.worker.js',
+              inline: true,
+              fallback: false,
+            }
+          },
+          { loader: 'babel-loader?cacheDirectory=true' },
+        ]
+      },
+      { test: /\.(js|jsx)$/, exclude: [/\.worker\.js$/, /(node_modules|bower_components)/],
+        use: { loader: 'babel-loader?cacheDirectory=true' }
+      },
+      {
+        test: /\.(png|jpg|gif|svg|ico)$/,
+        loader: 'url-loader'
+      },
+      { test: /\.(css|less)$/,
+        use: [
+          { loader: MiniCssExtractPlugin.loader },
+          { loader: "css-loader" },
+          { loader: 'less-loader', options: { env: 'production' } }
+        ]
+      },
+      {
+        test: /\.woff(2)?(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        loader: 'url-loader?limit=1000000&mimetype=application/font-woff'
+      },
+      {
+        test: /\.(ttf|eot)(\?v=[0-9]\.[0-9]\.[0-9])?$/,
+        loader: 'url-loader'
+      },
+      {
+        test: /\.otf(\?.*)?$/,
+        loader: 'url-loader'
+      },
+    ]
+  },
   plugins: [
     // this handles the bundled .css output file
-    new ExtractTextPlugin({
+    new MiniCssExtractPlugin({
       filename: '[name].css',
     }),
   ]

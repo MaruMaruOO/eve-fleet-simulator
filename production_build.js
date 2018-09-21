@@ -1,13 +1,8 @@
 const { execSync } = require('child_process');
 const fs = require('fs');
 
-try {
-  execSync('node node_modules/.bin/webpack --config production_webpack.config.js');
-} catch(e) {
-} finally {
-  // Always run twice for production builds to make sure they reflect style changes.
-  execSync('node node_modules/.bin/webpack --config production_webpack.config.js');
-}
+execSync('node node_modules/.bin/webpack --config production_webpack.config.js');
+
 var data = fs.readFileSync('lib/index.html', 'utf8');
 fs.writeFileSync('dist/web/index.html', data, 'utf8');
 

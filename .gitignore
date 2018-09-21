@@ -5,7 +5,9 @@ node_modules/
 lib/**
 !lib/index.html
 dist/Eve Fleet Simulator*
-dist/web
+dist/web/*
+!dist/web/index.html
+dist/cordova/platforms
 
 # These are processed versions used for inlining. They're not actually source code.
 src/css/sim.worker.js
