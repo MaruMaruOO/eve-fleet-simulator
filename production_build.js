@@ -3,14 +3,10 @@ const fs = require('fs');
 
 execSync('node node_modules/.bin/webpack --config production_webpack.config.js');
 
-var data = fs.readFileSync('lib/index.html', 'utf8');
-fs.writeFileSync('dist/web/index.html', data, 'utf8');
-
 try {
   execSync(
-    'node_modules/.bin/electron-packager packaging_scripts/electron_wrapper.js "Eve Fleet Simulator" --overwrite --asar --platform=all' +
-      ' --arch=x64' +
-      ' --out=dist/'
+    'node_modules/.bin/electron-packager packaging_scripts/electron_wrapper.js ' +
+      '"Eve Fleet Simulator" --overwrite --asar --platform=all --arch=x64 --out=dist/'
   );
 } catch(e) {
   console.log(e.error);
