@@ -1,3 +1,7 @@
-const { execSync } = require('child_process');
+const spawn = require('child_process').spawnSync;
 
-execSync('node node_modules/.bin/webpack');
+spawn(
+  'node_modules/.bin/webpack',
+  [],
+  { stdio: "inherit", env : { FORCE_COLOR: true } },
+);

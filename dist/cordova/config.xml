@@ -11,7 +11,7 @@
     <preference name="BackgroundColor" value="0x777777" />
     <preference name="InAppBrowserStorageEnabled" value="true" />
     <preference name="LoadingDialog" value="Eve Fleet Simulator" />
-    <content src="./../../web/index.html" />
+    <content src="./www/index.html" />
     <access origin="*" />
     <allow-intent href="http://*/*" />
     <allow-intent href="https://*/*" />

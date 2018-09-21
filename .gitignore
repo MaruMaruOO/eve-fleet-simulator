@@ -8,6 +8,8 @@ dist/Eve Fleet Simulator*
 dist/web/*
 !dist/web/index.html
 dist/cordova/platforms
+dist/cordova/www/*
+!dist/cordova/www/.gitignore
 
 # These are processed versions used for inlining. They're not actually source code.
 src/css/sim.worker.js

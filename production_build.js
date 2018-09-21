@@ -1,38 +1,49 @@
-const { execSync } = require('child_process');
+const spawn = require('child_process').spawnSync;
 const fs = require('fs');
 
-execSync('node node_modules/.bin/webpack --config production_webpack.config.js');
+let showLogs = true;
+if (process.argv.length > 2) {
+  if (process.argv.findIndex((v) => v === '-q') > -1) {
+    showLogs = false;
+  }
+}
 
-try {
-  execSync(
-    'node_modules/.bin/electron-packager packaging_scripts/electron_wrapper.js ' +
-      '"Eve Fleet Simulator" --overwrite --asar --platform=all --arch=x64 --out=dist/'
+async function runBuild() {
+  spawn(
+    'node_modules/.bin/webpack',
+    ['--config=production_webpack.config.js'],
+    { stdio: showLogs ? "inherit" : null, env : { FORCE_COLOR: true } },
   );
-} catch(e) {
-  console.log(e.error);
-}
 
-let envSettings = '';
-if (process.argv.length > 2 && process.argv[2] === '--use-custom-env') {
-  envSettings = `export ANDROID_STD=$\{HOME\}/scripts/android-studio-ide-173.4907809-linux/android-studio
-export ANDROID_HOME=$\{HOME\}/Android/Sdk
-export JAVA_HOME=$ANDROID_STD/jre
-export PATH=$\{PATH\}:$ANDROID_STD/gradle/gradle-4.4/bin
-export PATH=$\{PATH\}:$ANDROID_STD/jre/bin
-export PATH=$\{PATH\}:$ANDROID_HOME/Sdk/tools/bin
-export PATH=$\{PATH\}:$ANDROID_HOME/Sdk/tools
-export PATH=$\{PATH\}:$ANDROID_HOME/Sdk/build-tools/28.0.2
-`;
-}
-try {
-  execSync(
-    `${envSettings} ./../../node_modules/.bin/cordova platform add android`,
-    { cwd: __dirname + '/dist/cordova', stdio: 'pipe' }
+  spawn(
+    'node_modules/.bin/electron-packager',
+    [
+      'packaging_scripts/electron_wrapper.js',
+      'Eve Fleet Simulator', '--overwrite',
+      '--asar', '--platform=all', '--arch=x64',
+      '--out=dist/',
+    ],
+    { stdio: showLogs ? "inherit" : null, env : { FORCE_COLOR: true } },
   );
-} catch(e) {
-  console.log(e.error);
-}
 
-execSync(
-  `${envSettings}
-./../../node_modules/.bin/cordova build android --release --device`, { cwd: __dirname + '/dist/cordova' });
+  const data = fs.readFileSync('dist/web/index.html', 'utf8');
+  fs.writeFileSync('dist/cordova/www/index.html', data, 'utf8');
+  const data2 = fs.readFileSync('dist/web/testWebpack.js', 'utf8');
+  fs.writeFileSync('dist/cordova/www/testWebpack.js', data2, 'utf8');
+  const data3 = fs.readFileSync('dist/web/main.css', 'utf8');
+  fs.writeFileSync('dist/cordova/www/main.css', data3, 'utf8');
+
+  // Note cordova bugs if the env option is used here, hence no color.
+  spawn(
+    __dirname + '/node_modules/.bin/cordova',
+    ['platform', 'add', 'android'],
+    { cwd: __dirname + '/dist/cordova', stdio: showLogs ? "inherit" : null },
+  );
+
+  spawn(
+    __dirname + '/node_modules/.bin/cordova',
+    ['build', 'android', '--release', '--device'],
+    { cwd: __dirname + '/dist/cordova', stdio: showLogs ? "inherit" : null },
+  );
+}
+runBuild();
