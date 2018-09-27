@@ -22,3 +22,6 @@ packaging_scripts/icon_select.js
 
 # Flow type coverage reports
 flow-coverage/
+
+# npm logs
+npm-debug.log
