@@ -6,6 +6,8 @@ import type { SimMessageData, ShipUpdate } from './react_components/fleet_and_co
 
 // Keeping flow happy
 type msgPos = (SimMessageData) => void;
+// This is needed to keep both flow and eslist happy without renaming postMessage.
+// eslint-disable-next-line prefer-destructuring
 const postMessage: msgPos = global.self.postMessage;
 
 class SimWorker {

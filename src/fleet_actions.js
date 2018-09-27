@@ -36,7 +36,7 @@ function getTargets(targetCaller: Ship, opposingSide: Side) {
 /**
   * Returns the first target that would be selected if there were no targets selected
   * and all the ships were alive.
- **/
+  */
 function getDoaTarget(ship: Ship, opposingSide: Side) {
   let prevT: ?Ship;
   for (const t of opposingSide.ships) {
@@ -131,7 +131,7 @@ const DamageRatioFunction = (
  * The return should be functionally equivilent to:
  *   side.ships.filter(s => s.id === ship.id)[Math.floor(shipsInSubFleet.length / 2)];
  * This is a touch more convoluted but runs much faster for large fights.
- **/
+ */
 function getMidShip(side: Side, ship: Ship) {
   const sf: ?Subfleet = side.subFleets.find(f => f.fc === ship.anchor || f.fc === ship);
   if (sf) {
@@ -184,7 +184,7 @@ function innerGetDeltaVelocity(
  * slowly than transversal.
  * Thus for ideal range calculations they should consider that they might get shot when
  * picking their transversal, even if they aren't currently targeted.
-**/
+ */
 function getMirrorVelocityDelta(ship: Ship, target: Ship, side: Side, specificWeapon: ?Weapon) {
   const supTracking = hasHigherEffectiveTracking(ship, target, specificWeapon);
   const mTarget = getMidShip(side.oppSide, target);
@@ -767,7 +767,7 @@ function FindIdealRange(ship: Ship, side: Side): number {
 
 /** Recalcs ewar with the actual distance for ships whose stats may changed
   * within FindIdealRange as it adjusts ewar effects to consider the range being tested.
- **/
+  */
 function UpdateEwarForRepShips(ship: Ship, side: Side) {
   const shipM = getMidShip(side, ship);
   const oppShipS = ship.targets[0];
@@ -785,7 +785,7 @@ function GetUpdatedPreferedDistance(ship: Ship, side: Side) {
     * represent the fleets average ability to hold transversal or apply damage.
     * Leaving it alone for now as that would have to be consistant for both sides
     * and done fairly carefully.
-   **/
+    */
   const oppCurrentPrimary = shipsInSubFleet.length > 1 ? shipsInSubFleet[1] : shipsInSubFleet[0];
 
   UpdateEwarForRepShips(oppCurrentPrimary, side);
@@ -835,7 +835,7 @@ function moveShip(ship: Ship, t: number, side: Side) {
         * small discrepencies from reapplying the ewar after finishing.
         * This could be moved elsewhere to make it cleaner as
         * only each sides first rangeRecalc timer ever actually does anything.
-       **/
+        */
       const newPreferedDistances = [];
       for (const s of [side.oppSide, side]) {
         for (const subFleet of s.subFleets) {
