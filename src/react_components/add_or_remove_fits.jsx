@@ -1,5 +1,6 @@
 // @flow
 import React from 'react';
+import type { Element } from 'react';
 import {
   Form, Message, Divider, Dimmer,
   Container, Segment, Header, Button,
@@ -13,7 +14,7 @@ import type {
 } from './../flow_types';
 
 type UploadFitsState = {
-  fitData: string, addedFits: string, parseFailure: boolean,
+  fitData: string, addedFits: string, parseFailure: boolean, specificParseError: Element<'p'> | '',
   localShipData: { key: number, text: string, value: string }[], deleteSelection: string,
   deleteAllCheck: boolean,
 };
@@ -28,6 +29,7 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
       fitData: '',
       addedFits: '',
       parseFailure: false,
+      specificParseError: '',
       localShipData: this.updateLocalShipDropdown(),
       deleteSelection: '',
       deleteAllCheck: false,
@@ -77,6 +79,24 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
       JSON.parse(localStorage.getItem('efsLocalShipData') || '[]');
     try {
       const submittedArray: ShipData[] = JSON.parse(submittedShipData);
+      const minimumEfsExportVersion = 0.02;
+      for (const newFit of submittedArray) {
+        if (newFit.efsExportVersion && newFit.efsExportVersion < minimumEfsExportVersion) {
+          const oldExportError = (
+            <p>
+              Found one or more fit/s exported using pyfa version {newFit.pyfaVersion} and
+              EFS Export version {newFit.efsExportVersion}.<br />
+              This version of EFS requires EFS export version {minimumEfsExportVersion} or newer
+              to function correctly. <br />
+              Please export the fit/s with a newer version of pyfa and try again.
+            </p>
+          );
+          this.setState({
+            fitData: '', addedFits: '', parseFailure: true, specificParseError: oldExportError,
+          });
+          return;
+        }
+      }
       const newShipData = previousShipData.length > 0 ?
         [...previousShipData, ...submittedArray] : [...submittedArray];
       const newShipDataStr = JSON.stringify(newShipData);
@@ -97,12 +117,15 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
         localShipData: this.updateLocalShipDropdown(),
       });
     } catch (err) {
-      this.setState({ fitData: '', addedFits: '', parseFailure: true });
+      this.setState({
+        fitData: '', addedFits: '', parseFailure: true, specificParseError: '',
+      });
     }
   };
   render() {
     const {
-      fitData, addedFits, parseFailure, localShipData, deleteSelection, deleteAllCheck,
+      fitData, addedFits, parseFailure, specificParseError,
+      localShipData, deleteSelection, deleteAllCheck,
     } = this.state;
     return (
       <div className="pageMainContentWrapper">
@@ -125,7 +148,7 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
               <Message
                 error
                 header="Unable to parse fit information"
-                content="Make sure to use the data exactly as provided by pyfa's efs format."
+                content={specificParseError || "Make sure to use the data exactly as provided by pyfa's efs format."}
               />
               <Form.Button value={fitData} onClick={this.addShipFitData}>
                 Submit

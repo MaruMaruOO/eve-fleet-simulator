@@ -145,6 +145,9 @@ class ShipData {
   mode: '' | 'Defense Mode' | 'Sharpshooter Mode' | 'Propulsion Mode';
   isFit: boolean = false;
 
+  efsExportVersion: number;
+  pyfaVersion: string;
+
   static processing(shipStats: ShipData): void {
     shipStats.id = Math.random();
     const fullNameBreak = shipStats.name.indexOf(':');
