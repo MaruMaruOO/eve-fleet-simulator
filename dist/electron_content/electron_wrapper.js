@@ -18,7 +18,7 @@ function createWindow () {
     backgroundColor: '#555555',
   });
 
-  win.loadFile('./dist/web/index.html');
+  win.loadFile('index.html');
 
   // Emitted when the window is closed.
   win.on('closed', () => {

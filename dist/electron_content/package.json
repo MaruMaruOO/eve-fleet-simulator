@@ -1,0 +1,14 @@
+{
+  "name": "eve_sim",
+  "version": "1.0.0",
+  "description": "simple sim to calculate fleet battle outcomes",
+  "main": "electron_wrapper.js",
+  "scripts": {
+  },
+  "author": "MaruMaruOO",
+  "license": "GPL-3.0",
+  "devDependencies": {
+  },
+  "dependencies": {
+  }
+}

@@ -18,7 +18,7 @@ async function runBuild() {
   spawn(
     'node_modules/.bin/electron-packager',
     [
-      'packaging_scripts/electron_wrapper.js',
+      'dist/web/',
       'Eve Fleet Simulator', '--overwrite',
       '--asar', '--platform=all', '--arch=x64',
       '--out=dist/',
