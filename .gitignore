@@ -7,6 +7,9 @@ lib/**
 dist/Eve Fleet Simulator*
 dist/web/*
 !dist/web/index.html
+dist/electron_content/*
+!dist/electron_content/electron_wrapper.js
+!dist/electron_content/package.json
 dist/cordova/platforms
 dist/cordova/www/*
 !dist/cordova/www/.gitignore

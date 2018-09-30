@@ -15,10 +15,18 @@ async function runBuild() {
     { stdio: showLogs ? "inherit" : null, env : { FORCE_COLOR: true } },
   );
 
+  const data = fs.readFileSync('dist/web/index.html', 'utf8');
+  const data2 = fs.readFileSync('dist/web/testWebpack.js', 'utf8');
+  const data3 = fs.readFileSync('dist/web/main.css', 'utf8');
+
+  fs.writeFileSync('dist/electron_content/index.html', data, 'utf8');
+  fs.writeFileSync('dist/electron_content/testWebpack.js', data2, 'utf8');
+  fs.writeFileSync('dist/electron_content/main.css', data3, 'utf8');
+
   spawn(
     'node_modules/.bin/electron-packager',
     [
-      'dist/web/',
+      'dist/electron_content/',
       'Eve Fleet Simulator', '--overwrite',
       '--asar', '--platform=all', '--arch=x64',
       '--out=dist/',
@@ -26,11 +34,8 @@ async function runBuild() {
     { stdio: showLogs ? "inherit" : null, env : { FORCE_COLOR: true } },
   );
 
-  const data = fs.readFileSync('dist/web/index.html', 'utf8');
   fs.writeFileSync('dist/cordova/www/index.html', data, 'utf8');
-  const data2 = fs.readFileSync('dist/web/testWebpack.js', 'utf8');
   fs.writeFileSync('dist/cordova/www/testWebpack.js', data2, 'utf8');
-  const data3 = fs.readFileSync('dist/web/main.css', 'utf8');
   fs.writeFileSync('dist/cordova/www/main.css', data3, 'utf8');
 
   // Note cordova bugs if the env option is used here, hence no color.
