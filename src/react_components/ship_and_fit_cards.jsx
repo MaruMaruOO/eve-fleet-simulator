@@ -5,13 +5,25 @@ import { SidebarShipNode, dataConst, ships, baseShips } from './sidebar_ship_dis
 import { sideOneShips, sideTwoShips, UIRefresh } from './../index';
 import ShipDataDisplayManager from './../ship_data_display_manager';
 
+import webIcon from './../eve_icons/12_64_6.png';
+import weaponDisruptorIcon from './../eve_icons/5_64_7.png';
+import scramIcon from './../eve_icons/76_64_1.png';
+import targetPainterIcon from './../eve_icons/56_64_1.png';
+import sensorDampenerIcon from './../eve_icons/4_64_11.png';
+import remoteShieldIcon from './../eve_icons/1_64_16.png';
+import remoteArmorIcon from './../eve_icons/remote_armor_repair.png';
+import ecmIcon from './../eve_icons/4_64_12.png';
+import nosIcon from './../eve_icons/1_64_3.png';
+import neutIcon from './../eve_icons/1_64_1.png';
+import mjdIcon from './../eve_icons/108_64_22.png';
+
 import ShipData from './../ship_data_class';
-import type { SyntheticInputEvent } from './../flow_types';
+import type { SyntheticInputEvent, ProjectionTypeString } from './../flow_types';
 
 // uncomment line to include all ship render icons in webpack (roughly 6.3MB for W80).
 import renderIconsW80Imp from '../eve_icons/renders/renderIconsW80';
 
-let renderIconsW80;
+let renderIconsW80: ?{[string]: string};
 try {
   renderIconsW80 = renderIconsW80Imp;
 } catch (e) {
@@ -74,6 +86,60 @@ const FitInfoPopup = (props: { fitdata: ShipData }) => {
   );
 };
 
+function shipTypeAndEffectIcons(fitData: ShipData) {
+  const ewarIcons: {[ProjectionTypeString]: [string, boolean]} = {
+    'Stasis Web': [webIcon, true],
+    'Weapon Disruptor': [weaponDisruptorIcon, true],
+    'Warp Scrambler': [scramIcon, true],
+    'Target Painter': [targetPainterIcon, true],
+    'Sensor Dampener': [sensorDampenerIcon, true],
+    'Remote Shield Booster': [remoteShieldIcon, true],
+    'Remote Armor Repairer': [remoteArmorIcon, true],
+    // The rest of these aren't implemented and the icon should make that clear.
+    ECM: [ecmIcon, false],
+    'Energy Nosferatu': [nosIcon, false],
+    'Energy Neutralizer': [neutIcon, false],
+    'Burst Jammer': [ecmIcon, false],
+    'Micro Jump Drive': [mjdIcon, false],
+  };
+  const projSet: {[ProjectionTypeString]: number} = {};
+  for (const p of fitData.projections) {
+    if (p.type) {
+      if (Object.keys(projSet).includes(p.type)) {
+        projSet[p.type] += 1;
+      } else {
+        projSet[p.type] = 1;
+      }
+    }
+  }
+
+  const mapData = Object.keys(projSet).sort((k1, k2) => projSet[k2] - projSet[k1]).map(p => (
+    projSet[p] > 1 ? (
+      <div>
+        <Image
+          src={ewarIcons[p][0]}
+          disabled={!ewarIcons[p][1]}
+          inline
+          centered={false}
+          circular
+          size="mini"
+        />
+        {projSet[p].toString()}
+      </div>
+    ) : (
+      <Image
+        src={ewarIcons[p][0]}
+        disabled={!ewarIcons[p][1]}
+        inline
+        centered={false}
+        circular
+        size="mini"
+      />
+    )
+  ));
+  return mapData;
+}
+
 class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}> {
   getFitNode = (fitData: ShipData) => {
     const redDefaultVal = (sideOneShips.find(s => s.ship.id === fitData.id) || { n: null }).n;
@@ -97,7 +163,11 @@ class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}
           <Card.Description className="shipCardBody">
             { ShipDataDisplayManager.ShipFitBarVisuals(fitData) }
           </Card.Description>
-          <Card.Meta content={fitData.shipType} className="shipCardMeta" />
+          <Card.Meta className="shipCardMeta">
+            { fitData.shipType }
+            <br />
+            { shipTypeAndEffectIcons(fitData) }
+          </Card.Meta>
           <Card.Content extra>
             <Input
               style={{ maxWidth: '40%', marginRight: '2em' }}

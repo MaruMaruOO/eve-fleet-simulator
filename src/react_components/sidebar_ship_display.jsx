@@ -15,7 +15,7 @@ import ShipDataDisplayManager from './../ship_data_display_manager';
 // uncomment line to include all ship render icons in webpack (roughly 2.5MB for W35).
 import renderIconsW35Imp from '../eve_icons/renders/renderIconsW35';
 
-let renderIconsW35;
+let renderIconsW35: ?{[string]: string};
 try {
   renderIconsW35 = renderIconsW35Imp;
 } catch (e) {

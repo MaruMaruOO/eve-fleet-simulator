@@ -1,5 +1,5 @@
 // @flow
-import type { Hp, Resonance, WeaponData, ShipSize, Subsystem } from './flow_types';
+import type { Hp, Resonance, WeaponData, ShipSize, Subsystem, ProjectionTypeString } from './flow_types';
 
 class ShipData {
   static getMaxShieldEHP(shipData: ShipData): number {
@@ -105,7 +105,7 @@ class ShipData {
   midSlots: number;
   turretSlots: number;
   moduleNames: string[];
-  projections: { type: string, [string]: number }[];
+  projections: { type: ProjectionTypeString, [string]: number }[];
   projectedModules: { string: number | string }[];
   rigSize: number;
   effectiveDroneBandwidth: number;

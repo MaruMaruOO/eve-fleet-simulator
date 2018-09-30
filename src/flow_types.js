@@ -44,6 +44,21 @@ class WeaponData {
   damageMultiplierBonusMax: number;
 }
 
+type ProjectionTypeString =
+  'Stasis Web' |
+  'Weapon Disruptor' |
+  'Warp Scrambler' |
+  'Target Painter' |
+  'Sensor Dampener' |
+  'Remote Shield Booster' |
+  'Remote Armor Repairer' |
+  // These don't have implemented effects yet.
+  'ECM' |
+  'Energy Nosferatu' |
+  'Energy Neutralizer' |
+  'Burst Jammer' |
+  'Micro Jump Drive';
+
 type ModuleQualityValue = 1 | 2 | 3 | 4;
 type VectorMaxLenThree = [number] | [number, number] | [number, number, number];
 
@@ -65,5 +80,5 @@ export type {
   WeaponAbility, ShipSize, ModuleQualityValue, VectorMaxLenThree,
   SyntheticInputEvent, SyntheticButtonEvent, SyntheticDropdownEvent,
   SimulationState, GenericSyntheticTransitionEvent, ButtonColors,
-  Subsystem, SubsystemType, SideShipInfo,
+  Subsystem, SubsystemType, SideShipInfo, ProjectionTypeString,
 };

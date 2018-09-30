@@ -1,7 +1,7 @@
 // @flow
 import Ship from './ship_class';
 import ShipData from './ship_data_class';
-import type { SideShipInfo } from './flow_types';
+import type { SideShipInfo, ProjectionTypeString } from './flow_types';
 
 type Subfleet = {fc: Ship, ewar: {
   currentTarget: Ship | null,
@@ -20,7 +20,7 @@ n: number,
 };
 function mapProjection(
   subfleet: Subfleet,
-  projection: {type: string, [string]: number},
+  projection: {type: ProjectionTypeString, [string]: number},
   ship: Ship,
 ) {
   if ([
