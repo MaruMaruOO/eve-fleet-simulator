@@ -395,7 +395,7 @@ FleetAndCombatSimulatorState
             </Dimmer.Dimmable>
             <Button.Group attached="bottom" widths="3">
               <Button as="div" className={this.props.buttonColors[5]} inverted={this.props.buttonColors[0]}>
-                Fleet Starting Distance {this.state.initalDistance.toPrecision(6).toString()}m
+                Starting Distance {this.state.initalDistance.toPrecision(6).toString()}m
                 <br />
                 <input
                   className="inlineButtonSlider"
