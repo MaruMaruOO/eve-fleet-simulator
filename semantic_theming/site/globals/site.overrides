@@ -39,6 +39,7 @@
   --input-text-color-focused: rgba(12, 12, 13, 0.93);
   --inverse-color: rgb(0, 0, 0);
 
+  --faded-stock-font-color: rgba(12, 12, 13, 0.15);
   --weak-stock-font-color: rgba(12, 12, 13, 0.15);
   /*--stock-font-color: rgba(24, 25, 26, 1);
   --high-contrast-font-color: rgba(41, 46, 51, 1);
@@ -103,6 +104,8 @@
   --inverse-color: rgb(255, 255, 255);
   --input-text-color: var(--stock-font-color);
   --input-text-color-focused: rgba(143,161,178,0.93);
+
+  --faded-stock-font-color: rgba(143, 161, 178, 0.6);
   --weak-stock-font-color: rgba(143, 161, 178, 0.15);
 
   --color3: var(--color6);
@@ -136,6 +139,8 @@
   --inverse-color: rgb(0, 0, 0);
   --input-text-color: var(--stock-font-color);
   --input-text-color-focused: rgba(24,25,26,0.93);
+
+  --faded-stock-font-color: rgba(24, 25, 26, 0.15);
   --weak-stock-font-color: rgba(24, 25, 26, 0.15);
 
   --color3: var(--color6);
@@ -723,8 +728,14 @@ td >.shipStatBarDiv >.shipSimBar >.bar {
   width: ~"calc(100% + 2px)";
   max-width: ~"calc(100% + 2px)";
   box-shadow: none;
-  border: 1px solid #D4D4D5;
+  border: 1px solid rgb(212, 212, 213);
+  /*border: 1px solid var(--faded-stock-font-color);*/
 }
+
+/*
+.ui.attached.segment, .ui.attached.header {
+  border-color: var(--faded-stock-font-color);
+}*/
 
 .accordion >.content >div >.container.text {
   display: flex;
@@ -739,4 +750,27 @@ td >.shipStatBarDiv >.shipSimBar >.bar {
 
 .ui.attached:not(.message) + .ui.attached.accordion:not(.top) {
     border-top: none;
+}
+
+.ui.styled.accordion, .ui.styled.accordion .accordion {
+    background-color: var(--color9);
+    box-shadow: none;
+    border: 1px solid rgb(212, 212, 213);
+    /*border: 1px solid var(--faded-stock-font-color);*/
+}
+
+.ui.styled.accordion .title:hover,
+.ui.styled.accordion .accordion .title:hover {
+    color: var(--stock-font-color);
+}
+
+.ui.styled.accordion .title, .ui.styled.accordion .accordion .title {
+    color: var(--input-text-color-focused);
+    border-top: 1px solid rgb(212, 212, 213);
+    /*border-top: 1px solid var(--faded-stock-font-color);*/
+}
+
+.ui.styled.accordion .active.title,
+.ui.styled.accordion .accordion .active.title {
+    color: var(--high-contrast-font-color);
 }
