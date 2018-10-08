@@ -1,5 +1,5 @@
-const {app, BrowserWindow} = require('electron')
-
+const {app, BrowserWindow} = require('electron');
+const path = require('path');
 // Keep a global reference of the window object, if you don't, the window will
 // be closed automatically when the JavaScript object is garbage collected.
 let win;
@@ -18,8 +18,11 @@ function createWindow () {
     backgroundColor: '#555555',
   });
 
-  win.loadFile('index.html');
+  if (process.platform === 'linux') {
+    win.setIcon(path.join(__dirname,'page_icon.png'));
+  }
 
+  win.loadFile('index.html');
   // Emitted when the window is closed.
   win.on('closed', () => {
     // Dereference the window object, usually you would store windows

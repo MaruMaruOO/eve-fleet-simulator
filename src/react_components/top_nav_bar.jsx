@@ -6,7 +6,7 @@ import {
   Container, Dropdown,
 } from 'semantic-ui-react';
 
-import mainRifterIcon from './../eve_icons/tabFittingsHorizontal.png';
+import mainRifterIcon from './../eve_icons/mainRifterIcon.png';
 
 import ShipDataDisplayManager from './../ship_data_display_manager';
 import { UIRefresh } from './../index';

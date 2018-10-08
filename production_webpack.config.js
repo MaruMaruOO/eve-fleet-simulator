@@ -5,7 +5,7 @@ const OptimizeCSSAssetsPlugin = require("optimize-css-assets-webpack-plugin");
 module.exports = [{
   mode: 'production',
   entry: './src/index.jsx',
-  output: { path: path.join(__dirname, 'dist/web/'), filename: './testWebpack.js' },
+  output: { path: path.join(__dirname, 'dist/web/'), filename: './efs.js' },
   resolve: {
     alias: {
       '../../theme.config$': path.join(__dirname, 'semantic_theming/theme.config')

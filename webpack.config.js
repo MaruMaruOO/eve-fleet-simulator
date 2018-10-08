@@ -3,7 +3,7 @@ module.exports = [{
   mode: 'development',
   entry: './src/index.jsx',
   devtool: "source-map",
-  output: { path: path.join(__dirname, 'lib'), filename: './testWebpack.js' },
+  output: { path: path.join(__dirname, 'lib'), filename: './efs.js' },
   resolve: {
     alias: {
       '../../theme.config$': path.join(__dirname, 'semantic_theming/theme.config')
