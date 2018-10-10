@@ -8,6 +8,7 @@ if (process.argv.length > 2) {
   }
 }
 
+// Requires node version 7.6+ due to async function use.
 async function runBuild() {
   spawn(
     'node_modules/.bin/webpack',

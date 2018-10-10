@@ -115,7 +115,7 @@ function shipTypeAndEffectIcons(fitData: ShipData) {
 
   const mapData = Object.keys(projSet).sort((k1, k2) => projSet[k2] - projSet[k1]).map(p => (
     projSet[p] > 1 ? (
-      <div>
+      <div key={p}>
         <Image
           src={ewarIcons[p][0]}
           disabled={!ewarIcons[p][1]}
@@ -128,6 +128,7 @@ function shipTypeAndEffectIcons(fitData: ShipData) {
       </div>
     ) : (
       <Image
+        key={p}
         src={ewarIcons[p][0]}
         disabled={!ewarIcons[p][1]}
         inline
