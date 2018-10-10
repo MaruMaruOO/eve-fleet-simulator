@@ -34,7 +34,7 @@ const GenralFaq = [
     key: 'panel-bas',
     title: 'Do effective hp and damage calculations consider damage types?',
     content: 'Not at this time. Effectively all damage is treated as being omni damage ' +
-    '(equal parts electro magnetic, thermal, kinetic and explosive)',
+    '(equal parts electromagnetic, thermal, kinetic and explosive)',
   },
 ];
 
@@ -52,25 +52,25 @@ const AddingFitsFaq = [
   },
   {
     key: 'panel-baw',
-    title: 'Are you going to steal my secret squirel elite pvp fits?',
+    title: 'Are you going to steal my secret squirrel elite pvp fits?',
     content: 'No, custom fits and settings are stored locally in the browser and not sent anywhere',
   },
   {
     key: 'panel-bae',
     title: 'Is there a limit to how many fits I can add?',
     content: 'Yes, the browser will have a limit on local storage. \n' +
-    'The exact number will depend on the exact fits along with your browser but it should always be atleast sevral hundred.',
+    'The exact number will depend on the exact fits along with your browser but it should always be at least several hundred.',
   },
   {
     key: 'panel-bar',
     title: 'Why do I have to use pyfa to add fits?',
     content: 'EFS can\'t independently calculate everything pyfa can. \n' +
-    'Creating another fitting tool would be a large duplication of effort and would increase maintainance significantly',
+    'Creating another fitting tool would be a large duplication of effort and would increase maintenance significantly',
   },
   {
     key: 'panel-bat',
     title: 'Why pyfa rather than eft or both?',
-    content: 'pyfa was selected for it\'s consistancy in quickly updating to match Eve over several years. \n' +
+    content: 'pyfa was selected for it\'s consistency in quickly updating to match Eve over several years. \n' +
     'Exporting has only been added to pyfa for now as the work required to export EFS\'s data is non-trivial.',
   },
 ];
@@ -88,8 +88,8 @@ const shipTypeDataTypeInfo = [
   ],
   [
     velocityIconMWD, 'MWD Max Velocity',
-    'Maximum velocity of the hull with a T2 Micro Warp Drive(MWD) equiped without any other modules, rigs, implants or boosters. \n' +
-      'The MWD will be undersized or absent if the hull has insufficent base fitting or no med slots. \n' +
+    'Maximum velocity of the hull with a T2 Micro Warp Drive(MWD) equipped without any other modules, rigs, implants or boosters. \n' +
+      'The MWD will be undersized or absent if the hull has insufficient base fitting or no med slots. \n' +
       'In all other cases it will be correctly sized based off the rigs used by the hull.',
   ],
   [
@@ -109,30 +109,30 @@ const shipTypeDataTypeInfo = [
   ],
   [
     shieldIcon, 'Max Shield EHP',
-    'The maximum total effective hitpoints atainable by the hull when fit for a shield tank.' +
+    'The maximum total effective hitpoints attainable by the hull when fit for a shield tank.' +
       'The pool of modules tested will depend on the module quality setting and wether active tanks are enabled.' +
-      'Will use all avalible med/rig slots along with a damage control. ' +
+      'Will use all available med/rig slots along with a damage control. ' +
       'Doesn\'t require any fitting room to be left for non-tank options so may fit combinations what wouldn\'t normally be practical.' +
       'For example fitting two T2 1600mm plates to an onerios leaving it with very little powergrid for remote repairers' +
       'Will not use power diagnostic systems as it\'s very rarely sensible to fit them purely for tank reasons.',
   ],
   [
     armorIcon, 'Max Armor EHP',
-    'The maximum total effective hitpoints atainable by the hull when fit for a shield tank.' +
+    'The maximum total effective hitpoints attainable by the hull when fit for a shield tank.' +
       'The pool of modules tested will depend on the module quality setting and wether active tanks are enabled.' +
-      'Will use all avalible low/rig slots.' +
+      'Will use all available low/rig slots.' +
       'Doesn\'t require any fitting room to be left for non-tank options so may fit combinations what wouldn\'t normally be practical.' +
       'For example fitting two T2 1600mm plates to an onerios leaving it with very little powergrid for remote repairers',
   ],
   [
     hullIcon, 'Max Hull EHP',
-    'The maximum total effective hitpoints atainable by the hull when fit for a hull tank.' +
+    'The maximum total effective hitpoints attainable by the hull when fit for a hull tank.' +
       'The pool of modules tested will depend on the module quality setting.' +
-      'Will use all avalible low/rig slots.',
+      'Will use all available low/rig slots.',
   ],
   [
     powerIcon, 'Power Grid',
-    'The hulls total avalible power grid without any modules, rigs, implants or boosters.',
+    'The hulls total available power grid without any modules, rigs, implants or boosters.',
   ],
   [
     cpuIcon, 'CPU',
@@ -144,15 +144,15 @@ const shipTypeDataTypeInfo = [
   ],
   [
     highSlotIcon, 'High Slots',
-    'The number of avalible high power module slots',
+    'The number of available high power module slots',
   ],
   [
     midSlotIcon, 'Mid Slots',
-    'The number of avalible medium power module slots',
+    'The number of available medium power module slots',
   ],
   [
     lowSlotIcon, 'Low Slots',
-    'The number of avalible low power module slots',
+    'The number of available low power module slots',
   ],
 ];
 
@@ -240,7 +240,7 @@ const shipFitDataTypeInfo = [
   ],
   [
     velocityIconAB, 'Max Velocity without MWD',
-    'Maximum velocity of the ship with any micro warp drives truned off to the signature radius increase.' +
+    'Maximum velocity of the ship with any micro warp drives turned off to the signature radius increase.' +
       'This will still include any speed bonuses from after burners as they don\'t impact signature radius.',
   ],
   [
@@ -251,7 +251,7 @@ const shipFitDataTypeInfo = [
   ],
   [
     sigRadiusIcon, 'Signature Radius',
-    'The fits signature radius including any increases from mircro warp drives.' +
+    'The fits signature radius including any increases from micro warp drives.' +
       'For default fits micro jump drives and cynosural field generators are considered inactive.',
   ],
 ];
@@ -266,8 +266,8 @@ const FleetSimFaq = [
     key: 'panel-2b2',
     title: 'Are any weapon systems unimplemented or partially implemented?',
     content: 'Area of effect doomsday weapons (lance, bfg, reaper) are unimplemented.' +
-      'Single target doomsday weapons are impleneted but will incorrectly fire with ' +
-      'very poor application uppon subcaps if they\'re targeted.' +
+      'Single target doomsday weapons are implemented but will incorrectly fire with ' +
+      'very poor application upon subcaps if they\'re targeted.' +
       'Bomb launchers and smart bombs only damage a single target.' +
       'As this somewhat implies missiles and bombs not take damage.' +
       'The micro bomb launchers on long ranger heavy fighter bombers are unimplemented.' +
@@ -282,7 +282,7 @@ const FleetSimFaq = [
   {
     key: 'panel-ba3',
     title: 'How is ewar implemented?',
-    content: 'Ewar can either be scattered or focuesed.' +
+    content: 'Ewar can either be scattered or focused.' +
       'Scattered ewar will spread evenly across the opposing fleet.' +
       'For example if one side has 150 ships with 1 tracking disruptor(TD) each and the other' +
       'side has 100 ships then the second side would have 2 TDs applied to 50 of it\'s ships ' +
@@ -292,7 +292,7 @@ const FleetSimFaq = [
       'Please see "Which ewar systems are implemented?" if you wish to see which ewar systems are focused and which are scattered.' +
       'Note that although ewar does factor in the distance to the target it only adjust to any changes in the range' +
       'when either the effects impacting the target change or the ewar module completes a cycle.' +
-      'The practical impact of this is expected to be nearly zero outside of very contrived and neiche situations.',
+      'The practical impact of this is expected to be nearly zero outside of very contrived and niche situations.',
   },
   {
     key: 'panel-ba4',
@@ -302,7 +302,7 @@ const FleetSimFaq = [
       'Target Painters (focused),' +
       'Sensor Dampeners (scattered),' +
       'Tracking Disruptors (scattered),' +
-      'Missle Guidence Disruptors (scattered) and ' +
+      'Missile Guidance Disruptors (scattered) and ' +
       'Warp Scramblers (scattered).' +
       'Note that drone, fighter or burst projector based variants are not implemented.',
   },
@@ -315,11 +315,11 @@ const FleetSimFaq = [
   {
     key: 'panel-ba6',
     title: 'How are remote repairs implemented?',
-    content: 'Ships broadcast for repairs upon taking damage, causeing logistics (logi) to start locking them.' +
+    content: 'Ships broadcast for repairs upon taking damage, causing logistics (logi) to start locking them.' +
       'Repairs are cycled after the finishes locking them.' +
       'At this point the repairs are applied instantly for shields.' +
       'For armor they are applied if the target isn\'t dead at the end of the cycle.' +
-      'The ship will continute to be repaired for as long as it lives and takes damage.' +
+      'The ship will continue to be repaired for as long as it lives and takes damage.' +
       'It\'s assumed that logistics is able to stay in range and not cap itself out.' +
       'Note logistics is used as a shorthand for any ship with shield or armor remote repair modules fitted.' +
       'The implementation is not limited specifically to logistics ships.',
@@ -329,10 +329,10 @@ const FleetSimFaq = [
     title: 'How do I change which ships are targeted first?',
     content: 'Both sides will first attack opposing ships with priority 1.' +
       'If present they will move on to ships with priority 2 and so on after priority 1 ships are all dead.' +
-      'After adding multiple diffrent fits to one side you can drag the table rows to rearange them.' +
+      'After adding multiple different fits to one side you can drag the table rows to rearrange them.' +
       'The first row is always priority 1, the second row priority 2 and so on.' +
       'Ships will not change targets even if they are unable to break a target.' +
-      'This is mostly to prevent the AI making it much harder to test aproxamations of known situations.',
+      'This is mostly to prevent the AI making it much harder to test approximations of known situations.',
   },
   {
     key: 'panel-ba8',
@@ -340,21 +340,21 @@ const FleetSimFaq = [
     content: 'Sentry drones are glued to their ship.' +
       'Light, Medium and Heavy scout drones do not have movement or lock time delays,' +
       'provided they are faster than the target.' +
-      'They do model tracking although it may not fully reflect quirky behaviour related to rapidly' +
+      'They do model tracking although it may not fully reflect quirky behavior related to rapidly' +
       'dropping in and out of travel mode (mwd) against fast targets.' +
       'Drone control range is considered.' +
       'Ewar and combat utility drones are not implemented.' +
       'Fighters have a delay based off distance however their positioning isn\'t directly modeled.' +
-      'In theory they shouldn\'t have any meaningful travel time after the inital target.' +
+      'In theory they shouldn\'t have any meaningful travel time after the initial target.' +
       'In practice however the current implementation gives more realistic results until' +
-      'the abbility to kill them is implemented.',
+      'the ability to kill them is implemented.',
   },
   {
     key: 'panel-ba9',
     title: 'How is ship movement implemented?',
     content: 'The grid is 300km across and ships cannot warp or move outside it.' +
       'Each ship will try to position itself to apply the maximum possible damage to the ' +
-      'target while taking as litte damage as possible.' +
+      'target while taking as little damage as possible.' +
       'It\'s position is always relative to it\'s current target.' +
       'The faster ships, after considering ewar, will effectively dictate range.' +
       'Keep in mind that in reality unless they are heavily tackled' +
@@ -363,8 +363,8 @@ const FleetSimFaq = [
   {
     key: 'panel-ba11',
     title: 'Do ships try and match transversal?',
-    content: 'Yes if it\'s in their benifit to do so.' +
-      'This means often the transversal will be zero unless the faster ship sees some benifit in maintaining it.' +
+    content: 'Yes if it\'s in their benefit to do so.' +
+      'This means often the transversal will be zero unless the faster ship sees some benefit in maintaining it.' +
       'Typically this is fairly on point. It doesn\'t consider agility however so it can create slightly off results' +
       'when the faster ship has far worse agility and far worse tracking (eg Ragnarocks shooting unproped armor Abbadons).',
   },
@@ -422,7 +422,7 @@ const FleetSimFaqContent = (
 );
 
 const faq = [
-  { key: 'panel-11', title: 'Genral', content: { content: GenralFaqContent, key: 'GenralFaqContent' } },
+  { key: 'panel-11', title: 'General', content: { content: GenralFaqContent, key: 'GenralFaqContent' } },
   { key: 'panel-12', title: 'Ship Data', content: { content: ShipFaqContent, key: 'ShipFaqContent' } },
   { key: 'panel-23', title: 'Fleet Simulation', content: { content: FleetSimFaqContent, key: 'FleetSimFaqContent' } },
   { key: 'panel-14', title: 'Custom Fits', content: { content: AddingFitsFaqContent, key: 'AddingFitsFaqContent' } },
@@ -441,10 +441,7 @@ function AboutPage() {
         </Header>
         <Segment attached>
           Bug reporting and feature requests should be done via the
-          <a link="(github url)">
-            projects github page
-          </a>
-          .
+          <a href="(github url)"> projects github page</a>.
           The developers can also be reached by sending emails to evefleetsim@gmail.com.
         </Segment>
         <Header as="h5" attached="top">
@@ -452,14 +449,9 @@ function AboutPage() {
         </Header>
         <Segment attached>
           Eve Fleet Simulator is released under the
-          <a link="(link to license file)" type="license">
-            GNU Affero GPL license
-          </a>
-          and it's
-          <a link="(github url)">
-            source is available here
-          </a>
-          .
+          <a href="(link to license file)" type="license"> GNU Affero GPL license </a>
+          and it&apos;s
+          <a href="(github url)"> source is available here</a>.
         </Segment>
         <Header as="h5" attached="top">
           CCP Copyright Notice

@@ -61,14 +61,14 @@ type DamageRatioArgs = [
   DamageApplicationFunction, DamageApplicationFunction, DamageApplicationArgs, DamageApplicationArgs
 ];
 
-const MissleApplication = (distance: number, [
+const MissileApplication = (distance: number, [
   sigRatio, targetVelocity, expVelocity, optimal, missileDamageReductionFactor,
 ]: DamageApplicationArgs) => {
   if (optimal < distance) {
     return 0.0001;
   }
   if (Array.isArray(sigRatio)) {
-    console.error('MissleApplication recived incorrect argments and will return 0');
+    console.error('MissileApplication received incorrect argments and will return 0');
     return 0;
   }
   const reducedVelocity = targetVelocity.reduce((s, v) => s + (v * v * v), 0);
@@ -127,8 +127,8 @@ const DamageRatioFunction = (
 };
 
 /**
- * Used to get a typical representitive of the ships subfleet.
- * The return should be functionally equivilent to:
+ * Used to get a typical representative of the ships subfleet.
+ * The return should be functionally equivalent to:
  *   side.ships.filter(s => s.id === ship.id)[Math.floor(shipsInSubFleet.length / 2)];
  * This is a touch more convoluted but runs much faster for large fights.
  */
@@ -143,7 +143,7 @@ function getMidShip(side: Side, ship: Ship) {
     }
     const mIndex = Math.floor(sf.initalStartInd + ((sf.n / 2) - ds));
     // If the entire subfleet is dead give the mid ship for the next subfleet.
-    // This should be extremely rare and only occur when calculating prefered range.
+    // This should be extremely rare and only occur when calculating preferred range.
     if (mIndex === 0 && ship.id !== side.ships[mIndex].id) {
       return getMidShip(side, side.ships[0]);
     }
@@ -244,7 +244,7 @@ function getApplicationArgs(ship: Ship, target: Ship, side: Side): ApplicationAr
     if (wep.autonomousMovement) {
       effectiveOptimal = 300000;
     }
-    const damageFunction = MissleApplication;
+    const damageFunction = MissileApplication;
     const sigRatio = target.sigRadius / wep.stats.sigRadius;
     const oppVelocity = [target.velocity];
     const args: DamageApplicationArgs = [sigRatio, oppVelocity, wep.stats.expVelocity,
@@ -252,7 +252,7 @@ function getApplicationArgs(ship: Ship, target: Ship, side: Side): ApplicationAr
     maxRange = Math.min(conservativeMaxTargetRange, effectiveOptimal - noFalloffComp);
     return ([damageFunction, args, [minRange, maxRange]]: ApplicationArgArray);
   }
-  const damageFunction = MissleApplication;
+  const damageFunction = MissileApplication;
   const args: DamageApplicationArgs = [0, [0], 0, 0, 0];
   return ([damageFunction, args, [0, 0]]: ApplicationArgArray);
 }
@@ -365,7 +365,7 @@ function calculateDamage(ship: Ship, target: Ship, wep: Weapon, side: Side): num
     if (wep.autonomousMovement) {
       effectiveOptimal = 300000;
     }
-    return wep.damage * MissleApplication(ship.distanceFromTarget, [
+    return wep.damage * MissileApplication(ship.distanceFromTarget, [
       target.sigRadius / wep.stats.sigRadius,
       [target.velocity], wep.stats.expVelocity,
       effectiveOptimal, wep.stats.damageReductionFactor]);
@@ -383,7 +383,7 @@ function calculateDamage(ship: Ship, target: Ship, wep: Weapon, side: Side): num
         distance = wep.optimal;
       }
       // Drone orbit velocity isn't really v/5 but it's close enough.
-      // In practice drones have all sorts of funkyness that's not practical to model.
+      // In practice drones have all sorts of funkiness that's not practical to model.
       velocity = [Math.abs((wep.stats.travelVelocity / 5) - target.velocity)];
     } else {
       velocity = [getVelocityDelta(ship, target, side, wep)];
@@ -464,7 +464,7 @@ function ewarFalloffCalc(baseMulti: number, ewar, distance: number) {
 }
 
 function getFocusedEwarTarget(targets: Ship[], type: 'tps' | 'webs', multi: number) {
-  // Targets.length > 1 not 0 beacuse a single target often indicates a forced target
+  // Targets.length > 1 not 0 because a single target often indicates a forced target
   // When it doesn't targeting a dead ship shouldn't cause any issues anyway.
   while (targets.length > 1 && targets[0].currentEHP <= 0) {
     targets.shift();
@@ -685,7 +685,7 @@ function RecalcEwarForDistance(ship: Ship, posDistanceOveride: ?number = null) {
   ];
   const impactedAttrs = attrs.filter(at => ship.appliedEwar[at].length > 0);
   for (const att of impactedAttrs) {
-    // Note ApplyEwar often sorts appliedEwar values so the spread opperator is needed.
+    // Note ApplyEwar often sorts appliedEwar values so the spread operator is needed.
     for (const ewarApp of [...ship.appliedEwar[att]]) {
       const ewar = ewarApp[2];
       const originalTimeLeftInCycle = ewar.currentDuration;
@@ -783,7 +783,7 @@ function GetUpdatedPreferedDistance(ship: Ship, side: Side) {
     * Note this selection will be heavily targeted by opposing ewar.
     * Something like shipsInSubFleet[Math.floor(shipsInSubFleet.length / 2)] would be better to
     * represent the fleets average ability to hold transversal or apply damage.
-    * Leaving it alone for now as that would have to be consistant for both sides
+    * Leaving it alone for now as that would have to be consistent for both sides
     * and done fairly carefully.
     */
   const oppCurrentPrimary = shipsInSubFleet.length > 1 ? shipsInSubFleet[1] : shipsInSubFleet[0];
@@ -811,7 +811,7 @@ function moveShip(ship: Ship, t: number, side: Side) {
   if (!ship.isAnchor && anchor) {
     ship.preferedDistance = anchor.preferedDistance;
     const gap = Math.abs(ship.dis - anchor.pendingDis);
-    // We only calculate the location seprately if it's slower or has a > 0.1 second gap.
+    // We only calculate the location separately if it's slower or has a > 0.1 second gap.
     if (ship.velocity < anchor.velocity || gap > (ship.velocity / 10)) {
       const travelDistance = (ship.velocity * t) / 1000;
       if (gap > travelDistance) {
@@ -831,8 +831,8 @@ function moveShip(ship: Ship, t: number, side: Side) {
   if (ship.preferedDistance > -1) {
     if (ship.rangeRecalc <= 0) {
       /**
-        * Recalc the prefered range for all fc's at once to prevent
-        * small discrepencies from reapplying the ewar after finishing.
+        * Recalc the preferred range for all fc's at once to prevent
+        * small discrepancies from reapplying the ewar after finishing.
         * This could be moved elsewhere to make it cleaner as
         * only each sides first rangeRecalc timer ever actually does anything.
         */
@@ -860,7 +860,7 @@ function moveShip(ship: Ship, t: number, side: Side) {
     const travelDistance = (ship.velocity * t) / 1000;
     ship.distanceFromTarget = Math.abs(ship.dis - ship.targets[0].dis);
     // This is to prevent overshoots, which can cause mirrors to chase each other.
-    // (That's a problem as it causes application diffrences)
+    // (That's a problem as it causes application differences)
     if (Math.abs(ship.distanceFromTarget - ship.preferedDistance) < travelDistance) {
       if (ship.preferedDistance > ship.distanceFromTarget) {
         if (ship.dis < ship.targets[0].dis) {
