@@ -433,6 +433,35 @@ function AboutPage() {
     <div className="pageMainContentWrapper">
       <Container className="pageContainer">
         <Header as="h5" attached="top">
+          FAQ
+        </Header>
+        <Accordion panels={faq} styled fluid className="attached" />
+        <Header as="h5" attached="top">
+          Contact
+        </Header>
+        <Segment attached>
+          Bug reporting and feature requests should be done via the
+          <a link="(github url)">
+            projects github page
+          </a>
+          .
+          The developers can also be reached by sending emails to evefleetsim@gmail.com.
+        </Segment>
+        <Header as="h5" attached="top">
+          License
+        </Header>
+        <Segment attached>
+          Eve Fleet Simulator is released under the
+          <a link="(link to license file)" type="license">
+            GNU Affero GPL license
+          </a>
+          and it's
+          <a link="(github url)">
+            source is available here
+          </a>
+          .
+        </Segment>
+        <Header as="h5" attached="top">
           CCP Copyright Notice
         </Header>
         <Segment attached>
@@ -449,10 +478,6 @@ function AboutPage() {
           CCP is in no way responsible for the content on or functioning of this
           website, nor can it be liable for any damage arising from the use of this website.
         </Segment>
-        <Header as="h5" attached="top">
-          FAQ
-        </Header>
-        <Accordion panels={faq} styled fluid className="attached" />
       </Container>
     </div>
   );
