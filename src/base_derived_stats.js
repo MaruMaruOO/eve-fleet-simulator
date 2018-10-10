@@ -15,7 +15,7 @@ function getOmniResMod(type: TankType, quality: number, isActive: boolean): numb
     if (quality <= 2) {
       return 0.3;
     } else if (quality === 3) {
-      return 0.406; // pithc
+      return 0.406; // Pith-C
     } else if (quality === 4) {
       return 0.469;
     }
@@ -35,7 +35,7 @@ function getOmniResMod(type: TankType, quality: number, isActive: boolean): numb
   return 0;
 }
 function getSingleResMod(type: TankType, quality: number, isActive: boolean): number {
-  // q1 = t2, q2 = pith c deadspace, q3+ = pithx
+  // q1 = t2, q2 = Pith-C (deadspace), q3+ = Pith-X
   let n = 0;
   if (type === 'shield') {
     if (quality === 1) {

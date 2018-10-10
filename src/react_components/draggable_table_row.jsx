@@ -56,7 +56,7 @@ export default class DraggableTableRow extends React.Component<DraggableTableRow
     } = this.props;
     const side: GuiSide = sidestr === 'red' ? parent.red : parent.blue;
     const shipInfo = shipinfo;
-    // Don't get this from shipinfo.iconColor, as it's used for persistance and often undefined.
+    // Don't get this from shipinfo.iconColor, as it's used for persistence and often undefined.
     const matchingShip = side.ships.find(s => s.id === shipInfo.ship.id);
     const shipIconColor = (matchingShip || { iconColor: 'grey' }).iconColor;
     const iconCellStyle = {

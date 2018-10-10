@@ -1,5 +1,5 @@
 /* Additional Button colors,
- * should be refrenced via className="added-color" rather than color="added-color"
+ * should be referenced via className="added-color" rather than color="added-color"
  * These were the default variables during color creation.
  * No need to overwrite changes by setting them but should they change then changes may be needed.
   @textShadow: none;

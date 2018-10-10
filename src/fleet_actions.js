@@ -68,7 +68,7 @@ const MissileApplication = (distance: number, [
     return 0.0001;
   }
   if (Array.isArray(sigRatio)) {
-    console.error('MissileApplication received incorrect argments and will return 0');
+    console.error('MissileApplication received incorrect arguments and will return 0');
     return 0;
   }
   const reducedVelocity = targetVelocity.reduce((s, v) => s + (v * v * v), 0);
@@ -83,7 +83,7 @@ const HitChanceFunction = (
   [velocity, oppVelocity, trackingFactor, optimal, falloff]: DamageApplicationArgs,
 ) => {
   if (!Array.isArray(velocity)) {
-    console.error('HitChanceFunction recived incorrect argments and will return 0');
+    console.error('HitChanceFunction received incorrect arguments and will return 0');
     return 0;
   }
   const netVector = velocity.map((v, i) => v + oppVelocity[i]);
@@ -179,7 +179,7 @@ function innerGetDeltaVelocity(
 }
 
 /**
- * Get's the velocity delta when the target is assumed to be targeting the ship.
+ * Gets the velocity delta when the target is assumed to be targeting the ship.
  * Useful for theoretical situations as ships typically adjust range far more
  * slowly than transversal.
  * Thus for ideal range calculations they should consider that they might get shot when
@@ -213,7 +213,7 @@ function getVelocityDelta(ship: Ship, target: Ship, side: Side, specificWeapon: 
 
 function getApplicationArgs(ship: Ship, target: Ship, side: Side): ApplicationArgArray {
   let minRange = (Math.min(1000, ship.sigRadius) * 2) + Math.min(1000, target.sigRadius);
-  // min range is a rearange of 2 * v * align / 0.75 == 2 * PI * minRange
+  // min range is a rearrange of 2 * v * align / 0.75 == 2 * PI * minRange
   minRange = Math.max(minRange, (ship.velocity * ship.alignTime) / 2.35619);
   let maxRange;
   // Ship movement isn't exact so reduce max values very slightly when they have no falloff.

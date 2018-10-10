@@ -1,9 +1,6 @@
 import { shipBaseJSON } from './../src/base_derived_stats';
-//const shipBaseJSON = require('./../src/shipBaseJSON.js');
-//const fs = require('../fs');
 const fs = __non_webpack_require__('fs');
 const process = __non_webpack_require__('process');
-//import fs from 'fs';
 const baseShips = shipBaseJSON;
 
 if (process.argv.length > 2) {

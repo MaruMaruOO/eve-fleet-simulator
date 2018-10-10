@@ -436,7 +436,7 @@ body {
   margin-top: 0em;
   display: block;
   width: 100%;
-  /* this is to compensate for inconsistant rendering between browsers */
+  /* this is to compensate for inconsistent rendering between browsers */
   border-top-width: 2px;
   border-color: var(--stock-font-color);
 }

@@ -110,7 +110,7 @@ const shipTypeDataTypeInfo = [
   [
     shieldIcon, 'Max Shield EHP',
     'The maximum total effective hitpoints attainable by the hull when fit for a shield tank.' +
-      'The pool of modules tested will depend on the module quality setting and wether active tanks are enabled.' +
+      'The pool of modules tested will depend on the module quality setting and whether active tanks are enabled.' +
       'Will use all available med/rig slots along with a damage control. ' +
       'Doesn\'t require any fitting room to be left for non-tank options so may fit combinations what wouldn\'t normally be practical.' +
       'For example fitting two T2 1600mm plates to an onerios leaving it with very little powergrid for remote repairers' +
@@ -119,7 +119,7 @@ const shipTypeDataTypeInfo = [
   [
     armorIcon, 'Max Armor EHP',
     'The maximum total effective hitpoints attainable by the hull when fit for a shield tank.' +
-      'The pool of modules tested will depend on the module quality setting and wether active tanks are enabled.' +
+      'The pool of modules tested will depend on the module quality setting and whether active tanks are enabled.' +
       'Will use all available low/rig slots.' +
       'Doesn\'t require any fitting room to be left for non-tank options so may fit combinations what wouldn\'t normally be practical.' +
       'For example fitting two T2 1600mm plates to an onerios leaving it with very little powergrid for remote repairers',
@@ -196,7 +196,7 @@ function dataTypeExplanation(data) {
 const ShipFaq = [
   {
     key: 'panel-1a1',
-    title: 'What are the exactly are the diffrent values?',
+    title: 'What are the exactly are the different values?',
     content: { content: shipTypeDataTypeInfo.map(dataTypeExplanation), key: 'shipTypeDataTypeInfo' },
   },
   {
@@ -265,7 +265,7 @@ const FleetSimFaq = [
   {
     key: 'panel-2b2',
     title: 'Are any weapon systems unimplemented or partially implemented?',
-    content: 'Area of effect doomsday weapons (lance, bfg, reaper) are unimplemented.' +
+    content: 'Area of effect doomsday weapons (lance, BFG, reaper) are unimplemented.' +
       'Single target doomsday weapons are implemented but will incorrectly fire with ' +
       'very poor application upon subcaps if they\'re targeted.' +
       'Bomb launchers and smart bombs only damage a single target.' +

@@ -148,7 +148,7 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
               <Message
                 error
                 header="Unable to parse fit information"
-                content={specificParseError || "Make sure to use the data exactly as provided by pyfa's efs format."}
+                content={specificParseError || "Make sure to use the data exactly as provided by pyfa's EFS format."}
               />
               <Form.Button value={fitData} onClick={this.addShipFitData}>
                 Submit
