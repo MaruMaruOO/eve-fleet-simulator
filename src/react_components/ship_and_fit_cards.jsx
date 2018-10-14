@@ -45,6 +45,12 @@ function updateSideShips(sideNum: SyntheticInputEvent, sideN: number, fitind: nu
   } else {
     side = sideTwoShips;
   }
+  const input = Number(sideNum.currentTarget.value);
+  if (input < sideNum.currentTarget.min) {
+    sideNum.currentTarget.value = sideNum.currentTarget.min;
+  } else if (input > sideNum.currentTarget.max) {
+    sideNum.currentTarget.value = sideNum.currentTarget.max;
+  }
   const n = Number(sideNum.currentTarget.value);
   const overallInd = fitind;
   const fit: ShipData = ships[overallInd];
@@ -175,6 +181,7 @@ class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}
               fitname={fitData.name}
               type="number"
               min="0"
+              max="50000"
               onChange={(e: SyntheticInputEvent) => updateSideShips(e, 1, ships.indexOf(fitData))}
               onBlur={trimInputZeros}
               label={{ color: 'red' }}
@@ -186,6 +193,7 @@ class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}
               fitname={fitData.name}
               type="number"
               min="0"
+              max="50000"
               onChange={(e: SyntheticInputEvent) => updateSideShips(e, 2, ships.indexOf(fitData))}
               onBlur={trimInputZeros}
               label={{ color: 'blue' }}
