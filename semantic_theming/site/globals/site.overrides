@@ -38,6 +38,10 @@
   --input-text-color: var(--stock-font-color);
   --input-text-color-focused: rgba(12, 12, 13, 0.93);
   --inverse-color: rgb(0, 0, 0);
+  --inverse-color1: rgba(0, 0, 0, 0.1);
+  --inverse-color15: rgba(0, 0, 0, 0.15);
+  --inverse-color25: rgba(0, 0, 0, 0.25);
+  --inverse-color35: rgba(0, 0, 0, 0.35);
 
   --faded-stock-font-color: rgba(12, 12, 13, 0.15);
   --weak-stock-font-color: rgba(12, 12, 13, 0.15);
@@ -102,6 +106,10 @@
   --stock-font-color: rgba(143, 161, 178, 1);
   --high-contrast-font-color: rgba(169, 186, 203, 1);
   --inverse-color: rgb(255, 255, 255);
+  --inverse-color1: rgba(255, 255, 255, 0.1);
+  --inverse-color15: rgba(255, 255, 255, 0.15);
+  --inverse-color25: rgba(255, 255, 255, 0.25);
+  --inverse-color35: rgba(255, 255, 255, 0.35);
   --input-text-color: var(--stock-font-color);
   --input-text-color-focused: rgba(143,161,178,0.93);
 
@@ -137,6 +145,10 @@
   --stock-font-color: rgba(24, 25, 26, 1);
   --high-contrast-font-color: rgba(41, 46, 51, 1);
   --inverse-color: rgb(0, 0, 0);
+  --inverse-color1: rgba(0, 0, 0, 0.1);
+  --inverse-color15: rgba(0, 0, 0, 0.15);
+  --inverse-color25: rgba(0, 0, 0, 0.25);
+  --inverse-color35: rgba(0, 0, 0, 0.35);
   --input-text-color: var(--stock-font-color);
   --input-text-color-focused: rgba(24,25,26,0.93);
 
@@ -168,6 +180,26 @@
 :root.defaultThemeUnused {
   --graph-font-color: white;
 }
+
+/* Styling for scrollbars, mostly for chrome as semantic styles them by default. */
+body>#root ::-webkit-scrollbar-track {
+  background: var(--inverse-color1);
+}
+body>#root ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.25);
+  background: var(--inverse-color25);
+}
+body>#root ::-webkit-scrollbar-thumb:window-inactive {
+  background: rgba(0, 0, 0, 0.15);
+  background: var(--inverse-color15);
+}
+/* Stock light theme highlight looks nicer for blue tinted themes (including dark ones)*/
+body>#root ::-webkit-scrollbar-thumb:hover {
+  background: rgba(128, 135, 139, 0.8);
+  /*background: var(--inverse-color35);*/
+}
+
+
 .ui.toggle.checkbox .box:before, .ui.toggle.checkbox label:before {
   background: rgba(128,128,128,.15);
 }
