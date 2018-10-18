@@ -2,7 +2,7 @@
 import React from 'react';
 import { Icon, Grid } from 'semantic-ui-react';
 
-import ShipAndFitCards from './ship_and_fit_cards';
+import { ShipAndFitCards } from './ship_and_fit_cards';
 import { SidebarShipDisplay } from './sidebar_ship_display';
 import SidebarShipDisplaySettings from './sidebar_ship_display_settings';
 import FleetAndCombatSimulator from './fleet_and_combat_simulator';

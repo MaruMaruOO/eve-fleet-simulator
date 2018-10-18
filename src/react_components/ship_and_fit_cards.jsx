@@ -1,5 +1,5 @@
 // @flow
-import React from 'react';
+import * as React from 'react';
 import { Card, Image, Input, Popup, Label } from 'semantic-ui-react';
 import { SidebarShipNode, dataConst, ships, baseShips } from './sidebar_ship_display';
 import { sideOneShips, sideTwoShips, UIRefresh } from './../index';
@@ -37,7 +37,13 @@ function trimInputZeros(e: SyntheticInputEvent) {
   e.currentTarget.value = num === 0 ? '' : String(num);
 }
 
-function updateSideShips(sideNum: SyntheticInputEvent, sideN: number, fitind: number) {
+function updateSideShips(
+  sideNum: SyntheticInputEvent,
+  sideN: number,
+  fitind: number,
+  inputValSet: ?{ [number]: number },
+  idsNeedingInputRf: ?number[],
+) {
   const s = sideN;
   let side;
   if (s === 1) {
@@ -46,14 +52,20 @@ function updateSideShips(sideNum: SyntheticInputEvent, sideN: number, fitind: nu
     side = sideTwoShips;
   }
   const input = Number(sideNum.currentTarget.value);
-  if (input < sideNum.currentTarget.min) {
+  if (input < Number(sideNum.currentTarget.min)) {
     sideNum.currentTarget.value = sideNum.currentTarget.min;
-  } else if (input > sideNum.currentTarget.max) {
+  } else if (input > Number(sideNum.currentTarget.max)) {
     sideNum.currentTarget.value = sideNum.currentTarget.max;
   }
   const n = Number(sideNum.currentTarget.value);
   const overallInd = fitind;
   const fit: ShipData = ships[overallInd];
+  if (inputValSet && idsNeedingInputRf) {
+    inputValSet[fit.id] = n;
+    if (!idsNeedingInputRf.includes(fit.id)) {
+      idsNeedingInputRf.push(fit.id);
+    }
+  }
   const ind = side.findIndex(si => si.ship.id === fit.id);
   if (ind >= 0) {
     side[ind] = { n, ship: fit, iconColor: side[ind].iconColor || undefined };
@@ -147,10 +159,21 @@ function shipTypeAndEffectIcons(fitData: ShipData) {
   return mapData;
 }
 
-class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}> {
+type ShipAndFitCardsProps = {
+  transitionPadding: boolean,
+  children: React.ChildrenArray<React.Element<typeof Card>>,
+};
+class ShipAndFitCards extends React.Component<ShipAndFitCardsProps, {}> {
+  static defaultProps = { children: [] };
   getFitNode = (fitData: ShipData) => {
-    const redDefaultVal = (sideOneShips.find(s => s.ship.id === fitData.id) || { n: null }).n;
-    const blueDefaultVal = (sideTwoShips.find(s => s.ship.id === fitData.id) || { n: null }).n;
+    const redDefaultVal = (sideOneShips.find(s => s.ship.id === fitData.id) || { n: '' }).n;
+    const blueDefaultVal = (sideTwoShips.find(s => s.ship.id === fitData.id) || { n: '' }).n;
+    if (redDefaultVal) {
+      this.shipInputVals.red[fitData.id] = redDefaultVal;
+    }
+    if (blueDefaultVal) {
+      this.shipInputVals.blue[fitData.id] = blueDefaultVal;
+    }
     const iconSrc = renderIconsW80 ?
       renderIconsW80[`i${fitData.typeID.toString()}`] :
       `./Renders/w80/${fitData.typeID.toString()}.png`;
@@ -182,11 +205,19 @@ class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}
               type="number"
               min="0"
               max="50000"
-              onChange={(e: SyntheticInputEvent) => updateSideShips(e, 1, ships.indexOf(fitData))}
+              onChange={(e: SyntheticInputEvent) => (
+                updateSideShips(
+                  e,
+                  1,
+                  ships.indexOf(fitData),
+                  this.shipInputVals.red,
+                  this.idsNeedingInputRf,
+                )
+              )}
               onBlur={trimInputZeros}
               label={{ color: 'red' }}
               placeholder="Red"
-              defaultValue={redDefaultVal}
+              value={redDefaultVal}
             />
             <Input
               style={{ maxWidth: '40%' }}
@@ -194,11 +225,19 @@ class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}
               type="number"
               min="0"
               max="50000"
-              onChange={(e: SyntheticInputEvent) => updateSideShips(e, 2, ships.indexOf(fitData))}
+              onChange={(e: SyntheticInputEvent) => (
+                updateSideShips(
+                  e,
+                  2,
+                  ships.indexOf(fitData),
+                  this.shipInputVals.blue,
+                  this.idsNeedingInputRf,
+                )
+              )}
               onBlur={trimInputZeros}
               label={{ color: 'blue' }}
               placeholder="Blue"
-              defaultValue={blueDefaultVal}
+              value={blueDefaultVal}
             />
           </Card.Content>
         </Card.Content>
@@ -313,7 +352,9 @@ class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}
   };
   shipSelection: ShipData[] = [];
   displaySettings = [];
-  shipSet: React$Node = (<Card.Group centered />);
+  shipSet: React.Element<typeof ShipAndFitCards> = (<Card.Group centered />);
+  shipInputVals: { red: { [number]: number }, blue: { [number]: number } } = { red: {}, blue: {} };
+  idsNeedingInputRf: number[] = [];
   render() {
     const sddm = ShipDataDisplayManager;
     const sidebarMatchesMode = dataConst[2].isFitInitalValue === sddm.isDisplayModeFit;
@@ -373,6 +414,36 @@ class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}
     sddm.SetFitBarMaximums(...commonSetBarMaximumArgs, ships);
     const cardFitData = this.getCardFitData(fitsSelected).sort(this.sortCardData);
     const fitDisplayData = sddm.shipFitDataTypes.filter(d => d.visable).map(d => d.name);
+    for (const col of Object.keys(this.shipInputVals)) {
+      for (const idKeyStr of Object.keys(this.shipInputVals[col])) {
+        const idKey: number = Number(idKeyStr);
+        const colShips = col === 'red' ? sideOneShips : sideTwoShips;
+        if (colShips && this.shipInputVals[col][idKey] !== (colShips.find(s => s.ship.id === idKey) || { n: '' }).n) {
+          if (!this.idsNeedingInputRf.includes(idKey)) {
+            this.idsNeedingInputRf.push(Number(idKey));
+          }
+        }
+      }
+    }
+    if (this.idsNeedingInputRf.length > 0) {
+      const s: React.Element<typeof ShipAndFitCards> = this.shipSet;
+      const pr: React.ElementProps<typeof ShipAndFitCards> = s.props;
+      const cards = pr.children && pr.children.length ? pr.children : [pr.children];
+      const updatedCards = cards.slice();
+      for (const id of this.idsNeedingInputRf) {
+        const indC = cards.findIndex(c => c.key && c.key === id.toString());
+        const dataC = cardFitData.find(c => c.id === id);
+        if (dataC && indC >= 0) {
+          updatedCards[indC] = this.getFitNode(dataC);
+        }
+      }
+      this.idsNeedingInputRf = [];
+      this.shipSet = (
+        <Card.Group centered>
+          { updatedCards }
+        </Card.Group>
+      );
+    }
     if (this.shipSelection.length !== cardFitData.length ||
         this.displaySettings.length !== fitDisplayData.length ||
         this.shipSelection.some((s, i) => s !== cardFitData[i]) ||
@@ -389,4 +460,4 @@ class ShipAndFitCards extends React.Component<{ transitionPadding: boolean }, {}
   }
 }
 
-export default ShipAndFitCards;
+export { ShipAndFitCards, updateSideShips, trimInputZeros };

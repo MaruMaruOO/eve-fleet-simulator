@@ -1,17 +1,20 @@
 // @flow
 import React from 'react';
-import { Table, Image, Popup, Label, Progress } from 'semantic-ui-react';
+import { Table, Image, Popup, Label, Progress, Input } from 'semantic-ui-react';
 import type {
   DraggableProvided,
   DraggableStateSnapshot,
 } from 'react-beautiful-dnd';
-import type { SideShipInfo } from './../flow_types';
+import { ships } from './sidebar_ship_display';
+import { updateSideShips, trimInputZeros } from './ship_and_fit_cards';
+import type { SideShipInfo, SyntheticInputEvent } from './../flow_types';
 import type { GuiSide } from './fleet_and_combat_simulator';
 import FleetAndCombatSimulator from './fleet_and_combat_simulator';
 import renderIconsW80 from '../eve_icons/renders/renderIconsW80';
 
 type shipBasicVisBarProps = {
-  label: string, val: number, max: number, color: string, icon: string
+  label: string, val: number, max: number,
+  color: string, icon: string, shipid: number, siden: number,
 };
 const ShipBasicVisualBar = (props: shipBasicVisBarProps) => {
   let labelStr = props.label ? props.label : '';
@@ -23,6 +26,17 @@ const ShipBasicVisualBar = (props: shipBasicVisBarProps) => {
   } else {
     label = props.val.toString() + (capStart ? ` ${labelStr}` : labelStr);
   }
+  label = (
+    <Input
+      type="number"
+      min="0"
+      max="50000"
+      onBlur={trimInputZeros}
+      onChange={(e: SyntheticInputEvent) =>
+        updateSideShips(e, props.siden, ships.findIndex(s => s.id === props.shipid))}
+      value={props.val.toString()}
+    />
+  );
   const ele = (
     <div
       width="50%"
@@ -98,6 +112,8 @@ export default class DraggableTableRow extends React.Component<DraggableTableRow
       max: shipInfo.n,
       color: shipIconColor,
       icon: '',
+      shipid: shipInfo.ship.id,
+      siden: sidestr === 'red' ? 1 : 2,
     }) : '';
     const priority = index + 1;
     const isDraggingStyle = snapshot.isDragging ? 'draggingRow' : '';

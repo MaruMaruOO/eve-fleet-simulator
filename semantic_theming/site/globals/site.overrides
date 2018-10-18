@@ -710,6 +710,53 @@ td >.shipStatBarDiv >.shipSimBar >.bar {
   min-width: 10%;
 }
 
+td>.shipStatBarDiv>.ui.progress>.label {
+  margin: 0em;
+  /* -1px to compensate for the border and keep consistant with other progress labels */
+  margin-top: ~"calc(0.2em - 1px)";
+  padding: 0px;
+  background: transparent;
+}
+td>.shipStatBarDiv>.ui.progress>.label input {
+  background-color: var(--color9);
+  text-align: center;
+  padding-right: 0px;
+  padding-bottom: 0px;
+  padding-top: 0px;
+  line-height: 1.4285rem;
+  font-weight: 700;
+  width: 100%;
+  padding: 0px;
+  border-color: transparent;
+  /* border-color: var(--inverse-color1); */
+}
+td>.shipStatBarDiv>.ui.progress>.label input:focus {
+  border-color: rgb(133, 183, 217);;
+}
+td>.shipStatBarDiv>.ui.progress>.label input::-webkit-inner-spin-button {
+  display: none;
+}
+td>.shipStatBarDiv>.ui.progress>.label input:enabled:read-write:hover::-webkit-inner-spin-button,
+td>.shipStatBarDiv>.ui.progress>.label input:enabled:read-write:focus::-webkit-inner-spin-button {
+  display: inline-block;
+}
+td>.shipStatBarDiv>.ui.progress>.label input[type=number] {
+  -moz-appearance: textfield;
+}
+td>.shipStatBarDiv>.ui.progress>.label input[type=number]:enabled:hover,
+td>.shipStatBarDiv>.ui.progress>.label input[type=number]:enabled:focus {
+  -moz-appearance: number-input;
+  overflow: hidden;
+}
+
+input[type=number] {
+  -moz-appearance: textfield;
+}
+input[type=number]:enabled:hover,
+input[type=number]:enabled:focus {
+  -moz-appearance: number-input;
+}
+
 .tableCellWithTooltip >div.cornerTooltipWrapper {
   position: relative;
   width: 4em;
