@@ -121,6 +121,15 @@ function getApplicationString(appliedDamage: number, theoreticalDamage: number) 
   return `${((appliedDamage / theoreticalDamage) * 100).toPrecision(4)}%`;
 }
 
+function enforceInputMinMax(e: SyntheticInputEvent) {
+  const input = Number(e.currentTarget.value);
+  if (input < Number(e.currentTarget.min)) {
+    e.currentTarget.value = e.currentTarget.min;
+  } else if (input > Number(e.currentTarget.max)) {
+    e.currentTarget.value = e.currentTarget.max;
+  }
+}
+
 type FleetAndCombatSimulatorState = {
   initalDistance: number, simulationSpeed: number,
   red: GuiSide, blue: GuiSide, simulationState: SimulationState,
@@ -286,6 +295,7 @@ FleetAndCombatSimulatorState
     this.blue.oppSide = this.red;
   };
   initalDistanceChange = (e: SyntheticInputEvent) => {
+    enforceInputMinMax(e);
     if (this.state.simulationState === 'setup') {
       this.updateFleets(Number(e.currentTarget.value));
       this.setState({ initalDistance: Number(e.currentTarget.value) });
@@ -297,6 +307,7 @@ FleetAndCombatSimulatorState
     }
   };
   simulationSpeedChange = (e: SyntheticInputEvent) => {
+    enforceInputMinMax(e);
     if (this.state.simulationState === 'finished') {
       this.updateFleets();
       this.setState({ simulationSpeed: Number(e.currentTarget.value), simulationState: 'setup' });
@@ -308,6 +319,37 @@ FleetAndCombatSimulatorState
     }
   };
   render() {
+    const inlineDisStyle = { display: 'inline-block' };
+    const unpaddedWrapperStyle = {
+      display: 'inline-block',
+      maxWidth: '100%',
+    };
+    const simSpeedLen = this.state.simulationSpeed.toString().length;
+    const simSpeedStyle = {
+      width: `calc(${simSpeedLen}ch + 8px)`,
+    };
+    const simSpeedPadding = (4 - simSpeedLen) / 2;
+    const simSpeedWrapperStyle = this.props.narrowScreen ? unpaddedWrapperStyle : {
+      display: 'inline-block',
+      paddingLeft: `calc(${simSpeedPadding}ch + 4px)`,
+      paddingRight: `calc(${simSpeedPadding}ch + 4px)`,
+      maxWidth: '100%',
+    };
+    const simSpeedInputWrapperStyle = this.props.narrowScreen ? { } : inlineDisStyle;
+
+    const iDisLen = this.state.initalDistance.toString().length;
+    const initalDisStyle = {
+      width: `calc(${iDisLen}ch + 8px)`,
+    };
+    const iDisPadding = (6 - iDisLen) / 2;
+    const iDisWrapperStyle = this.props.narrowScreen ? unpaddedWrapperStyle : {
+      display: 'inline-block',
+      paddingLeft: `calc(${iDisPadding}ch + 4px)`,
+      paddingRight: `calc(${iDisPadding}ch + 4px)`,
+      maxWidth: '100%',
+    };
+    const iDisInputWrapperStyle = this.props.narrowScreen ? { } : inlineDisStyle;
+
     return (
       <div className="fleetSim" style={{ height: this.totalHeight, maxHeight: this.totalHeight }}>
         <Grid>
@@ -316,7 +358,6 @@ FleetAndCombatSimulatorState
               celled
               className="fleetStateTable"
               compact={this.props.narrowScreen ? 'very' : true}
-              size={this.props.narrowScreen ? 'small' : null}
             >
               {(<FleetInfoDnDTable
                 ships={sideOneShips || []}
@@ -395,7 +436,20 @@ FleetAndCombatSimulatorState
             </Dimmer.Dimmable>
             <Button.Group attached="bottom" widths="3">
               <Button as="div" className={this.props.buttonColors[5]} inverted={this.props.buttonColors[0]}>
-                Starting Distance {this.state.initalDistance.toPrecision(6).toString()}m
+                <div style={iDisWrapperStyle}>
+                  {"Starting Distance "}
+                  <div style={iDisInputWrapperStyle}>
+                    <input
+                      type="number"
+                      onChange={this.initalDistanceChange}
+                      min={0}
+                      max={300000}
+                      value={this.state.initalDistance.toString()}
+                      style={initalDisStyle}
+                    />
+                    m
+                  </div>
+                </div>
                 <br />
                 <input
                   className="inlineButtonSlider"
@@ -403,7 +457,7 @@ FleetAndCombatSimulatorState
                   onChange={this.initalDistanceChange}
                   min={0}
                   max={300000}
-                  defaultValue={this.state.initalDistance}
+                  value={this.state.initalDistance}
                 />
               </Button>
               <Button
@@ -414,7 +468,20 @@ FleetAndCombatSimulatorState
                 Simulate Battle!
               </Button>
               <Button as="div" className={this.props.buttonColors[5]} inverted={this.props.buttonColors[0]}>
-                Simulation Speed {this.state.simulationSpeed.toPrecision(4).toString()}x
+                <div style={simSpeedWrapperStyle} >
+                  {"Simulation Speed "}
+                  <div style={simSpeedInputWrapperStyle}>
+                    <input
+                      type="number"
+                      onChange={this.simulationSpeedChange}
+                      min={1}
+                      max={1000}
+                      value={this.state.simulationSpeed.toString()}
+                      style={simSpeedStyle}
+                    />
+                    x
+                  </div>
+                </div>
                 <br />
                 <input
                   className="inlineButtonSlider"
@@ -422,7 +489,7 @@ FleetAndCombatSimulatorState
                   onChange={this.simulationSpeedChange}
                   min={1}
                   max={1000}
-                  defaultValue={this.state.simulationSpeed}
+                  value={this.state.simulationSpeed}
                 />
               </Button>
             </Button.Group>
@@ -432,7 +499,6 @@ FleetAndCombatSimulatorState
               celled
               className="fleetStateTable"
               compact={this.props.narrowScreen ? 'very' : true}
-              size={this.props.narrowScreen ? 'small' : null}
             >
               <FleetInfoDnDTable
                 ships={sideTwoShips || []}
