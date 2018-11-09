@@ -6,13 +6,13 @@ import type { SideShipInfo, ProjectionTypeString } from './flow_types';
 type Subfleet = {fc: Ship, ewar: {
   currentTarget: Ship | null,
   attachedShip: Ship,
-  type: string,
+  type: ProjectionTypeString,
   [string]: number
 }[],
 remoteRepair: {
   currentTarget: Ship | null,
   attachedShip: Ship,
-  type: string,
+  type: ProjectionTypeString,
   [string]: number
 }[],
 initalStartInd: number,
@@ -32,6 +32,7 @@ function mapProjection(
     ewar.currentTarget = null;
     ewar.attachedShip = ship;
     subfleet.ewar.push(ewar);
+    return ewar;
   } else if ([
     'Remote Shield Booster', 'Remote Armor Repairer',
   ].some(type => type === projection.type)) {
@@ -41,7 +42,9 @@ function mapProjection(
     rr.scanRes = ship.scanRes;
     rr.attachedShip = ship;
     subfleet.remoteRepair.push(rr);
+    return rr;
   }
+  return null;
 }
 
 class Side {
@@ -103,9 +106,13 @@ class Side {
           console.log(localShip);
         }
         for (const projection of shipStats.projections) {
-          mapProjection(this.subFleets[this.uniqueFitCount - 1], projection, localShip);
+          const p = mapProjection(this.subFleets[this.uniqueFitCount - 1], projection, localShip);
+          if (p) {
+            localShip.outgoingEffects.push(p);
+          }
         }
         localShip.iconColor = iconColor;
+        localShip.baseIconColor = iconColor;
         localShip.dis = this.color === 'red' ? 0.5 * initalDistance : -0.5 * initalDistance;
         localShip.pendingDis = localShip.dis;
         this.ships.push(localShip);

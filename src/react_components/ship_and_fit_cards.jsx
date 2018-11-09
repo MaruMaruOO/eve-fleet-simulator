@@ -16,6 +16,7 @@ import ecmIcon from './../eve_icons/4_64_12.png';
 import nosIcon from './../eve_icons/1_64_3.png';
 import neutIcon from './../eve_icons/1_64_1.png';
 import mjdIcon from './../eve_icons/108_64_22.png';
+import pointIcon from './../eve_icons/4_64_9.png';
 
 import ShipData from './../ship_data_class';
 import type { SyntheticInputEvent, ProjectionTypeString } from './../flow_types';
@@ -119,14 +120,17 @@ function shipTypeAndEffectIcons(fitData: ShipData) {
     'Energy Neutralizer': [neutIcon, false],
     'Burst Jammer': [ecmIcon, false],
     'Micro Jump Drive': [mjdIcon, false],
+    'Warp Disruptor': [pointIcon, false],
   };
   const projSet: {[ProjectionTypeString]: number} = {};
   for (const p of fitData.projections) {
     if (p.type) {
-      if (Object.keys(projSet).includes(p.type)) {
-        projSet[p.type] += 1;
+      const isNotPoint = p.type !== 'Warp Scrambler' || p.activationBlockedStrenght > 0;
+      const t = isNotPoint ? p.type : 'Warp Disruptor';
+      if (Object.keys(projSet).includes(t)) {
+        projSet[t] += 1;
       } else {
-        projSet[p.type] = 1;
+        projSet[t] = 1;
       }
     }
   }

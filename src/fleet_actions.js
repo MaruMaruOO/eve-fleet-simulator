@@ -3,7 +3,7 @@ import { Weapon, PendingAttack } from './weapon_classes';
 import Ship from './ship_class';
 import type { Ewar } from './ship_class';
 import Side from './side_class';
-import type { VectorMaxLenThree } from './flow_types';
+import type { VectorMaxLenThree, ProjectionTypeString } from './flow_types';
 import type { Subfleet } from './side_class';
 
 function findNewTarget(targetCaller: Ship, opposingSide: Side): ?Ship {
@@ -120,7 +120,7 @@ const DamageRatioFunction = (
   let damageApplication = damageFunction(overrideDroneDistance || distance, args);
   let oppApplication = oppDamageFunction(oppOverrideDroneDistance || distance, oppArgs);
   if (damageApplication < 0.3) {
-    damageApplication -= 1;
+    damageApplication *= 0.001;
     oppApplication += 0.001;
   }
   return -1 * (damageApplication / oppApplication);
@@ -164,18 +164,46 @@ function hasHigherEffectiveTracking(ship: Ship, target: Ship, specificWeapon: ?W
   return false;
 }
 
+/**
+ * Returns the transversal that corresponds to hitting 25% of the time at optimal +  1.33 * falloff
+ * This reduces range selection issues for ships that always have sub 30% application at
+ * full transversal, typically due to their own mwd speed.
+ * The value is very conservative to prevent it impacting ships kiting at long range.
+ */
+function getSpeedCap(w: Weapon, t: Ship): number {
+  return ((w.stats.tracking * t.sigRadius) / 80000) * (w.optimal + (w.stats.falloff * 1.33));
+}
+
 function innerGetDeltaVelocity(
   ship: Ship, vForTransversal: number, target: Ship,
-  mTarget: Ship, isEffTrackingBetter: boolean,
+  mTarget: Ship, isEffTrackingBetter: boolean, specificWeapon: ?Weapon,
 ) {
   const tv = target.velocity;
   const mtv = mTarget.velocity;
-  if (vForTransversal > Math.max(tv, mtv)) {
-    return isEffTrackingBetter ? Math.abs(vForTransversal - Math.max(tv, mtv)) : 0;
+  const wep = specificWeapon || ship.weapons.sort((a, b) => b.dps - a.dps)[0];
+  const oppWep = target.weapons.sort((a, b) => b.dps - a.dps)[0];
+  if (isEffTrackingBetter && vForTransversal > Math.max(tv, mtv)) {
+    const maxTransversal = Math.abs(vForTransversal - Math.max(tv, mtv));
+    if (wep.type !== 'Turret') {
+      return maxTransversal;
+    }
+    const speedCap = getSpeedCap(wep, target);
+    return Math.min(maxTransversal, speedCap);
   } else if (ship.velocity >= tv) {
     return 0;
   }
-  return isEffTrackingBetter ? 0 : Math.abs(ship.velocity - tv);
+  // Target using a turret with worse tracking.
+  if (isEffTrackingBetter) {
+    return 0;
+  }
+  // Target not using a turret.
+  const maxTransversal = Math.abs(ship.velocity - tv);
+  if (!oppWep || oppWep.type !== 'Turret') {
+    return maxTransversal;
+  }
+  // Target using a turret with better tracking.
+  const speedCap = getSpeedCap(oppWep, ship);
+  return Math.min(maxTransversal, speedCap);
 }
 
 /**
@@ -205,7 +233,7 @@ function getVelocityDelta(ship: Ship, target: Ship, side: Side, specificWeapon: 
   let vForTransversal = ship.velocity;
   // Note we can't care if the target's target is alive without
   // causing the run order to impact the results.
-  const oppEffectiveTarget = getDoaTarget(target, side.oppSide);
+  const oppEffectiveTarget = getDoaTarget(target, side);
   vForTransversal = Math.min(vForTransversal, oppEffectiveTarget.velocity);
   const deltaVelocity = innerGetDeltaVelocity(ship, vForTransversal, target, mTarget, supTracking);
   return deltaVelocity;
@@ -213,7 +241,7 @@ function getVelocityDelta(ship: Ship, target: Ship, side: Side, specificWeapon: 
 
 function getApplicationArgs(ship: Ship, target: Ship, side: Side): ApplicationArgArray {
   let minRange = (Math.min(1000, ship.sigRadius) * 2) + Math.min(1000, target.sigRadius);
-  // min range is a rearrange of 2 * v * align / 0.75 == 2 * PI * minRange
+  // minRange is a rearrange of 2 * v * align / 0.75 == 2 * PI * minRange.
   minRange = Math.max(minRange, (ship.velocity * ship.alignTime) / 2.35619);
   let maxRange;
   // Ship movement isn't exact so reduce max values very slightly when they have no falloff.
@@ -254,7 +282,7 @@ function getApplicationArgs(ship: Ship, target: Ship, side: Side): ApplicationAr
   }
   const damageFunction = MissileApplication;
   const args: DamageApplicationArgs = [0, [0], 0, 0, 0];
-  return ([damageFunction, args, [0, 0]]: ApplicationArgArray);
+  return ([damageFunction, args, [minRange, conservativeMaxTargetRange]]: ApplicationArgArray);
 }
 
 function sign(x) {
@@ -265,7 +293,7 @@ function sign(x) {
 function getMin(
   func: (number, [Ship, Side]) => number,
   x1, x2, args: [Ship, Side], xatol = 1e-5, maxfun = 500,
-): number {
+): [number, number] {
   const sqrtEps = Math.sqrt(2.2e-16);
   const goldenMean = 0.5 * (3.0 - Math.sqrt(5.0));
   let [a, b] = [x1, x2];
@@ -282,7 +310,7 @@ function getMin(
 
   while (Math.abs(xf - xm) > (tol2 - (0.5 * (b - a)))) {
     let golden = 1;
-    // Check for parabolic fit
+    // Check for parabolic fit.
     if (Math.abs(e) > tol1) {
       golden = 0;
       let r = (xf - nfc) * (fx - ffulc);
@@ -294,7 +322,7 @@ function getMin(
       r = e;
       e = rat;
 
-      // Check for acceptability of parabola
+      // Check for acceptability of parabola.
       if ((Math.abs(p) < Math.abs(0.5 * q * r)) && (p > q * (a - xf)) &&
           (p < q * (b - xf))) {
         rat = (p + 0.0) / q;
@@ -304,11 +332,11 @@ function getMin(
           const si = sign(xm - xf) + ((xm - xf) === 0);
           rat = tol1 * si;
         }
-      } else { // do a golden section step
+      } else { // Do a golden section step.
         golden = 1;
       }
     }
-    if (golden) { // Do a golden-section step
+    if (golden) {
       if (xf >= xm) {
         e = a - xf;
       } else {
@@ -351,7 +379,8 @@ function getMin(
     }
   }
   const result = xf;
-  return result;
+  const ratio = fx * -1;
+  return [result, ratio];
 }
 
 function calculateDamage(ship: Ship, target: Ship, wep: Weapon, side: Side): number {
@@ -512,20 +541,49 @@ function setProjections(
   }
 }
 
-function NoScramsInRange(t: Ship) {
+function NoScramsInRange(t: Ship, forcedDistance: ?number = null, scramSourceId: ?number = null) {
   const inRange =
-    s => Math.abs(s[2].attachedShip.dis - (s[2].currentTarget || t).dis) <= s[2].optimal;
+        s => (
+          forcedDistance && scramSourceId === s[2].attachedShip.id ?
+            forcedDistance :
+            Math.abs(s[2].attachedShip.dis - (s[2].currentTarget || t).dis)
+        ) <= s[2].optimal;
   if (t.appliedEwar.scrams.some(inRange)) {
     return false;
   }
   return true;
 }
 
-function ApplyEwar(ewar, targets, distance, scatterTarget) {
+const TargetTypes = {
+  focused: 0,
+  scattered: 1,
+};
+type EwarTargetTypeMap = {
+  [ProjectionTypeString]: typeof TargetTypes.focused | typeof TargetTypes.scattered,
+};
+const ewarTargetType: EwarTargetTypeMap = {
+  'Stasis Web': TargetTypes.focused,
+  'Weapon Disruptor': TargetTypes.scattered,
+  'Warp Scrambler': TargetTypes.scattered,
+  'Target Painter': TargetTypes.focused,
+  'Sensor Dampener': TargetTypes.scattered,
+  /* Unimplemented EWAR that's in the data export.
+     ECM: 'scattered',
+     'Energy Nosferatu': TBD,
+     'Energy Neutralizer': TBD,
+     'Burst Jammer': AoE,
+     'Micro Jump Drive': N/A,
+  */
+};
+
+function ApplyEwar(ewar, targets, distanceOveride: number | null = null) {
   let target = targets[0];
+  let distance = distanceOveride;
   if (ewar.type === 'Stasis Web') {
-    const getInitalVel = t =>
-      (NoScramsInRange(t) ? t.baseVelocity : t.unpropedVelocity);
+    const getInitalVel = t => (
+      NoScramsInRange(t, distanceOveride, ewar.attachedShip.id) ?
+        t.baseVelocity : t.unpropedVelocity
+    );
     const oldTarget = ewar.currentTarget;
     if (oldTarget) {
       const pullIndex = oldTarget.appliedEwar.webs.findIndex(e => e[2] === ewar);
@@ -536,6 +594,7 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
       }
     }
     const baseMulti = ewar.speedFactor / 100;
+    distance = distance || Math.abs(ewar.attachedShip.dis - target.dis);
     const multi = ewarFalloffCalc(baseMulti, ewar, distance);
     target = getFocusedEwarTarget(targets, 'webs', multi);
     target.appliedEwar.webs.push([multi, baseMulti, ewar]);
@@ -545,8 +604,10 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
     }
     target.velocity = NetValue(target.appliedEwar.webs, getInitalVel(target));
   } else if (ewar.type === 'Target Painter') {
-    const getInitalSig = t =>
-      (NoScramsInRange(t) ? t.baseSigRadius : t.unpropedSigRadius);
+    const getInitalSig = t => (
+      NoScramsInRange(t, distanceOveride, ewar.attachedShip.id) ?
+        t.baseSigRadius : t.unpropedSigRadius
+    );
     const oldTarget = ewar.currentTarget;
     if (oldTarget) {
       const pullIndex = oldTarget.appliedEwar.tps.findIndex(e => e[2] === ewar);
@@ -557,6 +618,7 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
       }
     }
     const baseMulti = ewar.signatureRadiusBonus / 100;
+    distance = distance || Math.abs(ewar.attachedShip.dis - target.dis);
     const multi = ewarFalloffCalc(baseMulti, ewar, distance);
     target = getFocusedEwarTarget(targets, 'tps', multi);
     target.appliedEwar.tps.push([multi, baseMulti, ewar]);
@@ -566,7 +628,6 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
     }
     target.sigRadius = NetValue(target.appliedEwar.tps, getInitalSig(target));
   } else if (ewar.type === 'Sensor Dampener') {
-    target = scatterTarget;
     for (const attr of ['maxTargetRangeBonus', 'scanResolutionBonus']) {
       const oldTarget = ewar.currentTarget;
       if (oldTarget) {
@@ -583,6 +644,7 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
         }
       }
       const baseMulti = ewar[attr] / 100;
+      distance = distance || Math.abs(ewar.attachedShip.dis - target.dis);
       const multi = ewarFalloffCalc(baseMulti, ewar, distance);
       target.appliedEwar[attr].push([multi, baseMulti, ewar]);
       target.appliedEwar[attr].sort((a, b) => Math.abs(b[0]) - Math.abs(a[0]));
@@ -651,14 +713,17 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
         });
       },
     ];
-    target = scatterTarget;
+    distance = distance || Math.abs(ewar.attachedShip.dis - target.dis);
     setProjections(ewar, distance, attrs, targetVals, target);
   } else if (ewar.type === 'Warp Scrambler' && ewar.activationBlockedStrenght > 0) {
-    target = scatterTarget;
-    const getInitalVel = t =>
-      (NoScramsInRange(t) ? t.baseVelocity : t.unpropedVelocity);
-    const getInitalSig = t =>
-      (NoScramsInRange(t) ? t.baseSigRadius : t.unpropedSigRadius);
+    const getInitalVel = t => (
+      NoScramsInRange(t, distanceOveride, ewar.attachedShip.id) ?
+        t.baseVelocity : t.unpropedVelocity
+    );
+    const getInitalSig = t => (
+      NoScramsInRange(t, distanceOveride, ewar.attachedShip.id) ?
+        t.baseSigRadius : t.unpropedSigRadius
+    );
     const oldTarget = ewar.currentTarget;
     if (oldTarget) {
       const pullIndex = oldTarget.appliedEwar.scrams.findIndex(e => e[2] === ewar);
@@ -668,6 +733,7 @@ function ApplyEwar(ewar, targets, distance, scatterTarget) {
     }
     // Note the scram is intentionally added even when it's out of range.
     target.appliedEwar.scrams.push([0, 0, ewar]);
+    distance = distance || Math.abs(ewar.attachedShip.dis - target.dis);
     if (distance <= ewar.optimal) {
       target.velocity = NetValue(target.appliedEwar.webs, getInitalVel(target));
       target.sigRadius = NetValue(target.appliedEwar.tps, getInitalSig(target));
@@ -691,12 +757,13 @@ function RecalcEwarForDistance(ship: Ship, posDistanceOveride: ?number = null) {
       const originalTimeLeftInCycle = ewar.currentDuration;
       let distance = posDistanceOveride;
       const ewarSrc = ewar.attachedShip;
+      const realDis = Math.abs(ewarSrc.dis - ship.dis);
       if (distance) {
         // The distance arg is replaced if we can't reasonably
         // expect to dictate range to the ewar's source
         if (ewarSrc.velocity > ship.velocity) {
-          if (distance > ewarSrc.distanceFromTarget) {
-            distance = ewarSrc.distanceFromTarget;
+          if (distance > realDis) {
+            distance = realDis;
           } else if (distance > ewar.optimal && distance > ewarSrc.preferedDistance) {
             if ((ewarSrc.velocity - ship.velocity) * 5 > distance - ewarSrc.preferedDistance) {
               distance = ewarSrc.preferedDistance;
@@ -704,8 +771,8 @@ function RecalcEwarForDistance(ship: Ship, posDistanceOveride: ?number = null) {
           }
         }
       }
-      const d = distance || ewarSrc.distanceFromTarget;
-      ApplyEwar(ewar, [ship], d, ship);
+      const d = distance || realDis;
+      ApplyEwar(ewar, [ship], d);
       ewar.currentDuration = originalTimeLeftInCycle;
     }
   }
@@ -759,14 +826,66 @@ const SetArgsFunction = (distance: number, [ship, side]: [Ship, Side]): number =
 function FindIdealRange(ship: Ship, side: Side): number {
   const target = ship.targets[0];
   const damageFunctionAndArgs = getApplicationArgs(ship, target, side);
-  const min = damageFunctionAndArgs[2][0];
-  const max = damageFunctionAndArgs[2][1];
-  const idealRange = getMin(SetArgsFunction, min, max, [ship, side]);
+  const resData = [];
+
+  const remoteReps = ship.outgoingEffects.filter(e =>
+    e.type === 'Remote Shield Booster' || e.type === 'Remote Armor Repairer');
+  const outgoingEwar = ship.outgoingEffects.filter(e =>
+    e.type !== 'Remote Shield Booster' && e.type !== 'Remote Armor Repairer');
+  let logiShip = false;
+  // Logistics should position to avoid damage while staying in rep range.
+  if (remoteReps.length > 0) {
+    let totalRepPerSecond = 0;
+    let rrRange = 300000;
+    for (const rr of remoteReps) {
+      rrRange = Math.min(rrRange, rr.optimal);
+      if (rr.type === 'Remote Shield Booster') {
+        totalRepPerSecond += (rr.shieldBonus / rr.duration) * 1000;
+      } else if (rr.type === 'Remote Armor Repairer') {
+        totalRepPerSecond += (rr.armorDamageAmount / rr.duration) * 1000;
+      }
+    }
+    const dps = ship.weapons.reduce((t, v) => t + v.dps, 0);
+    if (totalRepPerSecond > dps) {
+      const repTarget = side.ships.find(s => s.rrDelayTimer > 0 && s.currentEHP > 0);
+      if (repTarget) {
+        logiShip = true;
+        let lMin = damageFunctionAndArgs[2][0];
+        let lMax = damageFunctionAndArgs[2][1];
+        const isFaster = repTarget.velocity > target.velocity;
+        const expectedDis = isFaster ? repTarget.preferedDistance : repTarget.distanceFromTarget;
+        lMin = Math.max(lMin, expectedDis - rrRange);
+        lMax = Math.min(expectedDis, 300000) + rrRange;
+        const resPair = getMin(SetArgsFunction, lMin, lMax, [ship, side]);
+        resData.push(resPair);
+      }
+    }
+  }
+  // Additional min/max values must be considered for ewar as it can
+  // have no impact even at 5-10% of the full max range (which getMin can skip entirely).
+  if (logiShip === false) {
+    const ewarRanges = [];
+    const conservativeOffset = (0.1 * (ship.baseVelocity + target.baseVelocity));
+    for (const ewar of outgoingEwar) {
+      const ewarOF = (ewar.optimal + (2 * ewar.falloff)) - conservativeOffset;
+      if (ewarRanges.findIndex(n => n === ewarOF) === -1) {
+        ewarRanges.push(ewarOF);
+      }
+    }
+    const min = damageFunctionAndArgs[2][0];
+    for (const max of [...ewarRanges, damageFunctionAndArgs[2][1]]) {
+      const resPair = getMin(SetArgsFunction, min, max, [ship, side]);
+      resData.push(resPair);
+    }
+  }
+  resData.sort((a, b) => b[1] - a[1]);
+  const [idealRange] = (resData[0]: [number, number]);
+
   return idealRange;
 }
 
-/** Recalcs ewar with the actual distance for ships whose stats may changed
-  * within FindIdealRange as it adjusts ewar effects to consider the range being tested.
+/** Recalculates ewar with the actual distance for ships whose stats may have changed
+  * within FindIdealRange when it adjusted ewar effects to consider each tested range.
   */
 function UpdateEwarForRepShips(ship: Ship, side: Side) {
   const shipM = getMidShip(side, ship);
@@ -793,7 +912,7 @@ function GetUpdatedPreferedDistance(ship: Ship, side: Side) {
 
   if (newPreferedDistance !== ship.preferedDistance) {
     console.log(
-      side.color, ship.name, ' Best Ratio updated to: ', newPreferedDistance,
+      side.color, ship.name, ship.shipType, ' Best Ratio updated to: ', newPreferedDistance,
       'From: ', ship.preferedDistance,
     );
   }
@@ -803,13 +922,108 @@ function GetUpdatedPreferedDistance(ship: Ship, side: Side) {
   return newPreferedDistance;
 }
 
+function updateProjectionTargets(ship, ewar = null) {
+  if (ewar && ewar.currentTarget) {
+    const eTarg = ewar.currentTarget;
+    ship.projTargets = ship.projTargets.filter(([a, e]) =>
+      e.currentTarget && e.currentTarget.currentEHP > 0 && a === e.currentTarget);
+
+    if (!ship.projTargets.some(e => e[0] === eTarg && e[1] === ewar)) {
+      ship.projTargets.push([eTarg, ewar]);
+    }
+  }
+  ship.projTargets = ship.projTargets.filter(([a, e]) =>
+    e.currentTarget && e.currentTarget.currentEHP > 0 && a === e.currentTarget);
+
+  const v10 = ship.velocity / 10;
+  ship.projTargets.sort(([, a], [, b]) => {
+    const act = a.currentTarget;
+    const bct = b.currentTarget;
+    if (act && bct) {
+      // It might be worth changing this to sort based off the distance relative
+      // to the optimal not the absolute distance (though the expected impact is tiny).
+      const va = Math.abs(ship.dis - act.dis);
+      const vb = Math.abs(ship.dis - bct.dis);
+      const da = Math.abs(act.dis - bct.dis);
+      const isAssOrder = (va > v10 + a.optimal && vb > v10 + b.optimal) ||
+        (da > a.optimal + b.optimal + (2 * v10));
+      if (isAssOrder) {
+        return va - vb;
+      }
+      return vb - va;
+    }
+    console.error(`${JSON.stringify(ship)} is unexpectedly missing currentTarget data`
+                  + `for ${JSON.stringify(a)} or ${JSON.stringify(b)}`);
+    return -1;
+  });
+}
+
+function updateProjTargetsIfNeeded(ship, v10) {
+  if (ship.projTargets.length > 1) {
+    const e0 = Math.abs(ship.dis - ship.projTargets[0][0].dis);
+    const e1 = Math.abs(ship.dis - ship.projTargets[1][0].dis);
+    const da = Math.abs(ship.projTargets[0][0].dis - ship.projTargets[1][0].dis);
+    const isAssOrder =
+      (e0 > ship.projTargets[0][1].optimal + v10 && e1 > ship.projTargets[1][1].optimal + v10)
+      || (da > ship.projTargets[0][1].optimal + ship.projTargets[1][1].optimal + (2 * v10));
+    if (e1 > e0 && !isAssOrder) {
+      updateProjectionTargets(ship);
+    } else if (e1 < e0 && isAssOrder) {
+      updateProjectionTargets(ship);
+    }
+  }
+}
+
 function moveShip(ship: Ship, t: number, side: Side) {
   if (ship.targets.length <= 0) {
+    return;
+  }
+  if (ship.isSupportShip && ship.projTargets.length > 0 && ship.projTargets[0][0].currentEHP < 0) {
+    ship.projTargets.shift();
+    moveShip(ship, t, side);
     return;
   }
   const { anchor } = ship;
   if (!ship.isAnchor && anchor) {
     ship.preferedDistance = anchor.preferedDistance;
+
+    if (ship.isSupportShip) {
+      // Note projTargets does not include remote repair effects
+      // as they only target a single primary and target friendly ships.
+      if (ship.isSupportShip && ship.projTargets.length > 0) {
+        const v10 = ship.velocity / 10;
+        updateProjTargetsIfNeeded(ship, v10);
+        const projTargetsStill = anchor.projTargets.length > 0;
+        const positioningTarget = projTargetsStill ? anchor.projTargets[0][0] : anchor.targets[0];
+        const gapSize = ship.projTargets.length <= anchor.projTargets.length ? Math.max(
+          Math.abs(ship.dis - anchor.pendingDis),
+          Math.abs(ship.projTargets[0][0].dis - positioningTarget.dis),
+        ) : Math.max(
+          Math.abs(ship.dis - anchor.pendingDis),
+          ...ship.projTargets.map(([a]) => Math.abs(a.dis - positioningTarget.dis)),
+        );
+        if (gapSize > v10) {
+          const e0 = Math.abs(ship.dis - ship.projTargets[0][0].dis);
+          const travelDistance = (ship.velocity * t) / 1000;
+          if (gapSize > travelDistance) {
+            if (ship.dis > ship.projTargets[0][0].dis) {
+              if (e0 > ship.preferedDistance) {
+                ship.pendingDis -= travelDistance;
+              } else {
+                ship.pendingDis += travelDistance;
+              }
+            } else if (ship.dis < ship.projTargets[0][0].dis) {
+              if (e0 > ship.preferedDistance) {
+                ship.pendingDis += travelDistance;
+              } else {
+                ship.pendingDis -= travelDistance;
+              }
+            }
+            return;
+          }
+        }
+      }
+    }
     const gap = Math.abs(ship.dis - anchor.pendingDis);
     // We only calculate the location separately if it's slower or has a > 0.1 second gap.
     if (ship.velocity < anchor.velocity || gap > (ship.velocity / 10)) {
@@ -820,18 +1034,16 @@ function moveShip(ship: Ship, t: number, side: Side) {
         } else {
           ship.pendingDis += travelDistance;
         }
-        ship.distanceFromTarget = Math.abs(ship.dis - ship.targets[0].dis);
         return;
       }
     }
-    ship.distanceFromTarget = anchor.distanceFromTarget;
     ship.pendingDis = anchor.pendingDis;
     return;
   }
   if (ship.preferedDistance > -1) {
     if (ship.rangeRecalc <= 0) {
       /**
-        * Recalc the preferred range for all fc's at once to prevent
+        * Recalculate the preferred range for all fc's at once to prevent
         * small discrepancies from reapplying the ewar after finishing.
         * This could be moved elsewhere to make it cleaner as
         * only each sides first rangeRecalc timer ever actually does anything.
@@ -858,35 +1070,41 @@ function moveShip(ship: Ship, t: number, side: Side) {
     }
     ship.rangeRecalc -= t;
     const travelDistance = (ship.velocity * t) / 1000;
-    ship.distanceFromTarget = Math.abs(ship.dis - ship.targets[0].dis);
+    if (ship.isSupportShip && ship.projTargets.length > 1) {
+      // Always update for anchors as the length can impact the subfleets movement.
+      updateProjectionTargets(ship);
+    }
+    const useProjTarget = ship.isSupportShip && ship.projTargets.length > 0;
+    const positioningTarget = useProjTarget ? ship.projTargets[0][0] : ship.targets[0];
+    ship.distanceFromTarget = Math.abs(ship.dis - positioningTarget.dis);
     // This is to prevent overshoots, which can cause mirrors to chase each other.
     // (That's a problem as it causes application differences)
     if (Math.abs(ship.distanceFromTarget - ship.preferedDistance) < travelDistance) {
       if (ship.preferedDistance > ship.distanceFromTarget) {
-        if (ship.dis < ship.targets[0].dis) {
-          ship.pendingDis = ship.targets[0].dis - ship.preferedDistance;
+        if (ship.dis < positioningTarget.dis) {
+          ship.pendingDis = positioningTarget.dis - ship.preferedDistance;
         } else {
-          ship.pendingDis = ship.targets[0].dis + ship.preferedDistance;
+          ship.pendingDis = positioningTarget.dis + ship.preferedDistance;
         }
       } else if (ship.preferedDistance < ship.distanceFromTarget) {
-        if (ship.dis < ship.targets[0].dis) {
-          ship.pendingDis = ship.targets[0].dis - ship.preferedDistance;
+        if (ship.dis < positioningTarget.dis) {
+          ship.pendingDis = positioningTarget.dis - ship.preferedDistance;
         } else {
-          ship.pendingDis = ship.targets[0].dis + ship.preferedDistance;
+          ship.pendingDis = positioningTarget.dis + ship.preferedDistance;
         }
       }
       ship.distanceFromTarget = ship.preferedDistance;
     } else {
       if (ship.preferedDistance > ship.distanceFromTarget) {
         // Move closer based off relative positions (dis)
-        if (ship.dis > ship.targets[0].dis) {
+        if (ship.dis > positioningTarget.dis) {
           ship.pendingDis += travelDistance;
         } else {
           ship.pendingDis -= travelDistance;
         }
       } else if (ship.preferedDistance < ship.distanceFromTarget) {
         // Move away based off relative positions (dis)
-        if (ship.dis < ship.targets[0].dis) {
+        if (ship.dis < positioningTarget.dis) {
           ship.pendingDis += travelDistance;
         } else {
           ship.pendingDis -= travelDistance;
@@ -920,19 +1138,38 @@ function ApplyRemoteEffects(side: Side, t: number, opposingSide: Side) {
     if (subfleet.fc.targets.length > 0) {
       let i = 0;
       for (const ewar of subfleet.ewar) {
-        i += 1;
+        if (ewarTargetType[ewar.type] === TargetTypes.scattered) {
+          i += 1;
+        }
         if (ewar.currentDuration <= 0) {
           if (ewar.attachedShip.currentEHP <= 0) {
             // Apply to the dead ship with an effectively infinite duration.
             // This will purge it from the previous target.
             ewar.duration = 100000000;
-            ApplyEwar(ewar, [ewar.attachedShip], 900000, ewar.attachedShip);
+            ApplyEwar(ewar, [ewar.attachedShip], 900000);
             ewar.type = 'Dead Host';
           } else {
-            ApplyEwar(
-              ewar, subfleet.fc.targets, ewar.attachedShip.distanceFromTarget,
-              opposingSide.ships[i % oppShipLen],
-            );
+            let scatterTarget = null;
+            if (ewarTargetType[ewar.type] === TargetTypes.scattered) {
+              const n = i % oppShipLen;
+              // Don't target the subfleets anchor initially.
+              // Instead target it when the rest of the subfleet has
+              // been targeted before starting on the next subfleet.
+              if (!opposingSide.ships[n].isAnchor) {
+                scatterTarget = opposingSide.ships[n];
+              } else {
+                // Get the scatter target for the previous i value.
+                const prevShip = n > 0 ?
+                  opposingSide.ships[n - 1] : opposingSide.ships[oppShipLen - 1];
+                // Target prevShip's anchor if it has one.
+                // Otherwise it must be an anchor and was skipped over with the previous i value.
+                scatterTarget = prevShip.anchor || prevShip;
+              }
+            }
+            ApplyEwar(ewar, scatterTarget ? [scatterTarget] : subfleet.fc.targets);
+            if (ewar.attachedShip.isSupportShip) {
+              updateProjectionTargets(ewar.attachedShip, ewar);
+            }
           }
         }
         ewar.currentDuration -= t;
@@ -950,11 +1187,13 @@ function ApplyRemoteEffects(side: Side, t: number, opposingSide: Side) {
             rr.type = 'Dead Host';
           } else if (rr.type === 'Remote Shield Booster') {
             const target = logiLockedShips.find(s => s.currentEHP > 0 && s.tankType === 'shield'
-              && s.rrDelayTimer > s.lockTimeConstant / rr.scanRes);
+              && s.rrDelayTimer > s.lockTimeConstant / rr.scanRes
+              && s !== rr.attachedShip);
             if (target) {
               const postRepEhp = target.currentEHP + (rr.shieldBonus / target.meanResonance);
               target.currentEHP = Math.min(postRepEhp, target.EHP);
               rr.currentDuration = rr.duration;
+              rr.currentTarget = target;
             }
           } else if (rr.type === 'Remote Armor Repairer') {
             const target = rr.currentTarget;
@@ -964,7 +1203,8 @@ function ApplyRemoteEffects(side: Side, t: number, opposingSide: Side) {
               target.currentEHP = Math.min(postRepEhp, target.EHP);
             }
             const newTarget = logiLockedShips.find(s => s.currentEHP > 0 && s.tankType === 'armor'
-              && s.rrDelayTimer > s.lockTimeConstant / rr.scanRes);
+              && s.rrDelayTimer > s.lockTimeConstant / rr.scanRes
+              && s !== rr.attachedShip);
             if (newTarget) {
               rr.currentTarget = newTarget;
               rr.currentDuration = rr.duration;
@@ -1015,6 +1255,17 @@ function RunFleetActions(side: Side, t: number, opposingSide: Side, isSideOneOfT
 
   const initalDamage = side.appliedDamage;
   for (const ship of side.ships) {
+    // This will somewhat fade meaningfully scrammed or webbed ships.
+    // Ideally at some point a more robust and broad system should be
+    // implemented to show various states and projected effects.
+    if (ship.velocity < ship.baseVelocity / 2) {
+      if (ship.iconColor === ship.baseIconColor) {
+        const rgb = ship.iconColor.slice(4, -1).split(', ');
+        ship.iconColor = `rgba(${rgb[0]}, ${rgb[1]}, ${rgb[2]}, 0.7)`;
+      }
+    } else {
+      ship.iconColor = ship.baseIconColor;
+    }
     for (const wep of ship.weapons) {
       if (ship.targets.length > 0) {
         dealDamage(ship, t, wep, side);

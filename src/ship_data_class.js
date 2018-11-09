@@ -1,6 +1,38 @@
 // @flow
 import type { Hp, Resonance, WeaponData, ShipSize, Subsystem, ProjectionTypeString } from './flow_types';
 
+function isDamageDealerShip(ship) {
+  const transportGroupIDs = [28, 380, 513, 902, 1202];
+  const eWarGroupIDs = [833, 893, 894, 906];
+  const fcGroupIDs = [1972];
+  const remoteRepGroupIDs = [832, 1527, 1538];
+  const suppGroupIDs = [...transportGroupIDs, ...eWarGroupIDs, ...fcGroupIDs, ...remoteRepGroupIDs];
+  if (suppGroupIDs.includes(ship.groupID)) {
+    return false;
+  }
+  // typeIDs for t1 support ships by size
+  // Scorpion
+  const bsSuppIDs = [640];
+  // Osprey, Augoror, Arbitrator, Bellicose,
+  // Scythe, Blackbird, Celestis, Exequror,
+  // Opux Luxury Yacht,
+  const cruiserSuppIDs = [
+    640, 625, 628, 630,
+    631, 632, 633, 634,
+    635,
+  ];
+  // Crucifier, Inquisitor, Bantam, Griffin,
+  // Maulus, Navitas, Burst, Vigil
+  const frigSuppIDs = [
+    2161, 590, 582, 584,
+    609, 592, 599, 3766,
+  ];
+  if ([...bsSuppIDs, ...cruiserSuppIDs, ...frigSuppIDs].includes(ship.typeID)) {
+    return false;
+  }
+  return true;
+}
+
 class ShipData {
   static getMaxShieldEHP(shipData: ShipData): number {
     return shipData.maxShieldEHP;
@@ -144,7 +176,7 @@ class ShipData {
   subsystems: Subsystem;
   mode: '' | 'Defense Mode' | 'Sharpshooter Mode' | 'Propulsion Mode';
   isFit: boolean = false;
-
+  isSupportShip: boolean = false;
   efsExportVersion: number;
   pyfaVersion: string;
 
@@ -156,6 +188,15 @@ class ShipData {
       shipStats.name = baseName.slice(fullNameBreak + 2);
       shipStats.shipType = baseName.slice(0, fullNameBreak);
       shipStats.isFit = true;
+      // isSupportShip is fairly conservative in it's labeling.
+      // This could be changed or allowed an explicit toggle in the future.
+      const dps = shipStats.weapons.reduce((t, v) => t + v.dps, 0);
+      if (!isDamageDealerShip(shipStats) && shipStats.projections.length > 0) {
+        const ehp = shipStats.ehp.shield + shipStats.ehp.armor + shipStats.ehp.hull;
+        if (dps < 200 || dps < ehp / 1200) {
+          shipStats.isSupportShip = true;
+        }
+      }
     } else {
       shipStats.shipType = undefined;
       shipStats.isFit = false;

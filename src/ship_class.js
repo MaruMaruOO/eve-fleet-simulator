@@ -1,11 +1,13 @@
 // @flow
 import { Weapon, PendingAttack } from './weapon_classes';
+import type { ProjectionTypeString } from './flow_types';
 import ShipData from './ship_data_class';
 
 class Ship {
   name: string;
   id: number;
   iconColor: string;
+  baseIconColor: string;
   shipType: string;
   shipGroup: string;
   EHP: number;
@@ -24,6 +26,7 @@ class Ship {
   damageDelay: number;
   isAnchor: boolean;
   isShotCaller: boolean;
+  isSupportShip: boolean;
   shotCaller: ?Ship;
   anchor: ?Ship;
   targets: Ship[];
@@ -35,6 +38,7 @@ class Ship {
   droneControlRange: number;
   preferedDistance: number = -1;
   pendingDamage: PendingAttack[];
+  // Ewar applied to this ship.
   appliedEwar: {
     webs: [number, number, Ewar][], tps: [number, number, Ewar][],
     scrams: [number, number, Ewar][],
@@ -58,6 +62,10 @@ class Ship {
     explosionDelayBonus: [],
   };
   appliedRR: { armor: [number, number][], shield: [number, number][] } = { armor: [], shield: [] };
+  // Possible outgoing effects this ship could provide.
+  outgoingEffects: Ewar[] = [];
+  // Target effect pairs for outgoing effects this ship is currently applying.
+  projTargets: [Ship, Ewar][] = [];
   tankType: 'armor' | 'shield';
   meanResonance: number;
   rrDelayTimer: number = 0;
@@ -81,6 +89,7 @@ class Ship {
       this.shipGroup = shipStats.shipGroup;
       this.name = shipStats.name;
       this.id = shipStats.id;
+      this.isSupportShip = shipStats.isSupportShip;
       this.EHP = shipStats.ehp.shield + shipStats.ehp.armor + shipStats.ehp.hull;
       if (shipStats.ehp.armor > shipStats.ehp.shield) {
         this.tankType = 'armor';
@@ -145,7 +154,7 @@ class Ship {
 type Ewar = {
   currentTarget: Ship | null,
   attachedShip: Ship,
-  type: string,
+  type: ProjectionTypeString,
   [string]: number
 };
 export type { Ewar };

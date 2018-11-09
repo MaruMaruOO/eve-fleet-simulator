@@ -437,7 +437,7 @@ FleetAndCombatSimulatorState
             <Button.Group attached="bottom" widths="3">
               <Button as="div" className={this.props.buttonColors[5]} inverted={this.props.buttonColors[0]}>
                 <div style={iDisWrapperStyle}>
-                  {"Starting Distance "}
+                  {'Starting Distance '}
                   <div style={iDisInputWrapperStyle}>
                     <input
                       type="number"
@@ -469,7 +469,7 @@ FleetAndCombatSimulatorState
               </Button>
               <Button as="div" className={this.props.buttonColors[5]} inverted={this.props.buttonColors[0]}>
                 <div style={simSpeedWrapperStyle} >
-                  {"Simulation Speed "}
+                  {'Simulation Speed '}
                   <div style={simSpeedInputWrapperStyle}>
                     <input
                       type="number"

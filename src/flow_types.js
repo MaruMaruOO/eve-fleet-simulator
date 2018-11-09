@@ -52,8 +52,10 @@ type ProjectionTypeString =
   'Sensor Dampener' |
   'Remote Shield Booster' |
   'Remote Armor Repairer' |
+  'Dead Host' | // Used when the source is dead.
   // These don't have implemented effects yet.
   'ECM' |
+  'Warp Disruptor' |
   'Energy Nosferatu' |
   'Energy Neutralizer' |
   'Burst Jammer' |

@@ -82,12 +82,13 @@ const shipGroupIDNamePair: { [string]: number } = {
   Logistics_Frigate: 1527,
   Command_Destroyer: 1534,
   Force_Auxiliary: 1538,
+  Flag_Cruiser: 1972,
 };
 
 const shipSubCatagories: { [string]: number[] } = {
   Frigate: [25, 31, 237, 324, 830, 831, 834, 893, 1283, 1527],
   Destroyer: [420, 541, 1305, 1534],
-  Cruiser: [26, 358, 832, 833, 894, 906, 963],
+  Cruiser: [26, 358, 832, 833, 894, 906, 963, 1972],
   Battlecruiser: [419, 540, 1201],
   Battleship: [27, 381, 898, 900],
   Capital: [30, 485, 513, 547, 659, 883, 902, 1538],
