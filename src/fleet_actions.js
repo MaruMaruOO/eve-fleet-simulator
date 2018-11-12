@@ -65,7 +65,7 @@ const MissileApplication = (distance: number, [
   sigRatio, targetVelocity, expVelocity, optimal, missileDamageReductionFactor,
 ]: DamageApplicationArgs) => {
   if (optimal < distance) {
-    return 0.0001;
+    return 10E-128;
   }
   if (Array.isArray(sigRatio)) {
     console.error('MissileApplication received incorrect arguments and will return 0');
@@ -120,8 +120,10 @@ const DamageRatioFunction = (
   let damageApplication = damageFunction(overrideDroneDistance || distance, args);
   let oppApplication = oppDamageFunction(oppOverrideDroneDistance || distance, oppArgs);
   if (damageApplication < 0.3) {
-    damageApplication *= 0.001;
-    oppApplication += 0.001;
+    // JS min value is ~5E-324, using 10E-127/128 should give some leway while maintaining accuracy.
+    damageApplication = Math.max(damageApplication, 10E-127);
+    oppApplication = Math.max(oppApplication, 10E-127);
+    damageApplication *= 10E-128;
   }
   return -1 * (damageApplication / oppApplication);
 };
@@ -865,7 +867,11 @@ function FindIdealRange(ship: Ship, side: Side): number {
   // have no impact even at 5-10% of the full max range (which getMin can skip entirely).
   if (logiShip === false) {
     const ewarRanges = [];
-    const conservativeOffset = (0.1 * (ship.baseVelocity + target.baseVelocity));
+    let conservativeOffset = (0.1 * (ship.baseVelocity + target.baseVelocity));
+    // Slightly increase the leway when the target can be caught but only slowly.
+    if (ship.baseVelocity > target.baseVelocity) {
+      conservativeOffset *= ship.baseVelocity / (ship.baseVelocity - target.baseVelocity);
+    }
     for (const ewar of outgoingEwar) {
       const ewarOF = (ewar.optimal + (2 * ewar.falloff)) - conservativeOffset;
       if (ewarRanges.findIndex(n => n === ewarOF) === -1) {
