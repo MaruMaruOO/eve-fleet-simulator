@@ -114,11 +114,11 @@ const TurretApplication = (distance: number, hitChanceArgs: DamageApplicationArg
 const DamageRatioFunction = (
   distance: number,
   [damageFunction, oppDamageFunction, args, oppArgs]: DamageRatioArgs,
-  overrideDroneDistance: ?number,
-  oppOverrideDroneDistance: ? number,
+  overrideDistance: ?number,
+  oppOverrideDistance: ? number,
 ) => {
-  let damageApplication = damageFunction(overrideDroneDistance || distance, args);
-  let oppApplication = oppDamageFunction(oppOverrideDroneDistance || distance, oppArgs);
+  let damageApplication = damageFunction(overrideDistance || distance, args);
+  let oppApplication = oppDamageFunction(oppOverrideDistance || distance, oppArgs);
   if (damageApplication < 0.3) {
     // JS min value is ~5E-324, using 10E-127/128 should give some leway while maintaining accuracy.
     damageApplication = Math.max(damageApplication, 10E-127);
@@ -780,6 +780,23 @@ function RecalcEwarForDistance(ship: Ship, posDistanceOveride: ?number = null) {
   }
 }
 
+function GetOffsetDistance(distance: number, ship: Ship, shipM: Ship, target: Ship) {
+  if (ship.dis === shipM.dis) {
+    return null;
+  }
+  const ds = Math.abs(target.dis - ship.dis);
+  const dm = Math.abs(target.dis - shipM.dis);
+  const db = Math.abs(ship.dis - shipM.dis);
+  const g = dm - ds;
+  const qg = Math.abs(g - db);
+  // A value non trivially over 0 would imply shipM is closer to the target than ship.
+  // No offset is used in that situation as it suggests shipM isn't representative.
+  if (qg < 1) {
+    return distance + db;
+  }
+  return null;
+}
+
 const SetArgsFunction = (distance: number, [ship, side]: [Ship, Side]): number => {
   const shipS = ship;
   const shipM = getMidShip(side, ship);
@@ -804,24 +821,26 @@ const SetArgsFunction = (distance: number, [ship, side]: [Ship, Side]): number =
   if (distance < min || distance > max) {
     return -1 * (-2 / 1);
   }
+  // Adjust the distance if the bulk of the subfleet (thus damage) is located behind shipS.
+  // This commonly occurs when shipS is tackled.
+  let overrideDistance: number | null = GetOffsetDistance(distance, shipS, shipM, oppShipS);
   // Need to fix the ships distance for calculations if the primary wep is drones
-  let overrideDroneDistance = null;
   const wep = ship.weapons.sort((a, b) => b.dps - a.dps)[0];
   if (wep && wep.type === 'Turret' && wep.autonomousMovement) {
     if (wep.stats.travelVelocity > Math.max(target.velocity, 10)) {
-      overrideDroneDistance = wep.optimal;
+      overrideDistance = wep.optimal;
     }
   }
-  let oppOverrideDroneDistance = null;
+  let oppOverrideDistance: number | null = GetOffsetDistance(distance, oppShipS, oppShipM, shipS);
   const oppWep = target.weapons.sort((a, b) => b.dps - a.dps)[0];
   if (oppWep && oppWep.type === 'Turret' && oppWep.autonomousMovement) {
     if (oppWep.stats.travelVelocity > Math.max(ship.velocity, 10)) {
-      oppOverrideDroneDistance = oppWep.optimal;
+      oppOverrideDistance = oppWep.optimal;
     }
   }
   return DamageRatioFunction(
     distance, combinedArgs,
-    overrideDroneDistance, oppOverrideDroneDistance,
+    overrideDistance, oppOverrideDistance,
   );
 };
 
