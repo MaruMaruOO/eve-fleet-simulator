@@ -184,6 +184,9 @@ function GetMaxEHP(
   const skillBufferMulti = 1.25; // shield management and hull upgrades
   bufferModHP *= commandBufferMulti * skillBufferMulti;
   let slotsLeft = tankType === 'shield' ? fit.midSlots : fit.lowSlots;
+  if (fit.cpuOutput < 10 && tankType === 'shield') {
+    slotsLeft = 0;
+  }
   const resBase = getBaseRes(fit.resonance[tankType]);
   let fullResBaseObj = {
     shield: fit.resonance.shield, armor: fit.resonance.armor, hull: fit.resonance.hull,
@@ -199,7 +202,7 @@ function GetMaxEHP(
   const multiMod = getMultiMod(tankType, quality);
   const dcuResMod = { shield: 0.125, armor: 0.15, hull: 0.4 };
   let dcuApplied = false;
-  if (tankType === 'shield') {
+  if (tankType === 'shield' && fit.lowSlots > 0) {
     const newFullResBaseObj = {};
     for (const hpType of Object.keys(fullResBaseObj)) {
       newFullResBaseObj[hpType] = {};
