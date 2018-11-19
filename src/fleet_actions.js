@@ -821,9 +821,7 @@ const SetArgsFunction = (distance: number, [ship, side]: [Ship, Side]): number =
   if (distance < min || distance > max) {
     return -1 * (-2 / 1);
   }
-  // Adjust the distance if the bulk of the subfleet (thus damage) is located behind shipS.
-  // This commonly occurs when shipS is tackled.
-  let overrideDistance: number | null = GetOffsetDistance(distance, shipS, shipM, oppShipS);
+  let overrideDistance: number | null = null;
   // Need to fix the ships distance for calculations if the primary wep is drones
   const wep = ship.weapons.sort((a, b) => b.dps - a.dps)[0];
   if (wep && wep.type === 'Turret' && wep.autonomousMovement) {
@@ -831,6 +829,8 @@ const SetArgsFunction = (distance: number, [ship, side]: [Ship, Side]): number =
       overrideDistance = wep.optimal;
     }
   }
+  // Adjust the distance if the bulk of the subfleet (thus damage) is located behind oppShipS.
+  // This commonly occurs when oppShipS is tackled.
   let oppOverrideDistance: number | null = GetOffsetDistance(distance, oppShipS, oppShipM, shipS);
   const oppWep = target.weapons.sort((a, b) => b.dps - a.dps)[0];
   if (oppWep && oppWep.type === 'Turret' && oppWep.autonomousMovement) {
