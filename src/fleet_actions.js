@@ -893,7 +893,8 @@ function FindIdealRange(ship: Ship, side: Side): number {
     }
     for (const ewar of outgoingEwar) {
       const ewarOF = (ewar.optimal + (2 * ewar.falloff)) - conservativeOffset;
-      if (ewarRanges.findIndex(n => n === ewarOF) === -1) {
+      const hardMaxTargetRange = Math.max(ship.maxTargetRange, ship.baseMaxTargetRange);
+      if (ewarOF < hardMaxTargetRange && ewarRanges.findIndex(n => n === ewarOF) === -1) {
         ewarRanges.push(ewarOF);
       }
     }
