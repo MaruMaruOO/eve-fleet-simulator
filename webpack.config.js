@@ -37,6 +37,33 @@ module.exports = [{
         use: [
           { loader: "style-loader" },
           { loader: "css-loader" },
+          // Changes text selection to the browsers defaults.
+          // Never setting the values to start with is the only way to achive this
+          // without setting it at runtime via JS.
+          // CSS 4's revert may fix that in the furture but currently lacks implementation.
+          { loader: 'string-replace-loader',
+            options: {
+              multiple: [
+                {
+                  search: `
+textarea::selection, input::selection .
+  background-color: rgba.100, 100, 100, 0.4.;
+  color: rgba.0, 0, 0, 0.87.;
+.`.replace(/( |\n)/g, '\\s*').replace(/selection/g, '+(-moz-)?selection'),
+                  replace: '',
+                  flags: 'g',
+                }, {
+                  search: `
+::selection .
+  background-color: #CCE2FF;
+  color: rgba.0, 0, 0, 0.87.;
+.`.replace(/( |\n)/g, '\\s*').replace(/selection/g, '+(-moz-)?selection'),
+                  replace: '',
+                  flags: 'g',
+                }
+              ]
+            }
+          },
           { loader: 'less-loader' }
         ]
       },

@@ -69,6 +69,30 @@ module.exports = [{
         use: [
           { loader: MiniCssExtractPlugin.loader },
           { loader: "css-loader" },
+// Restore default text selection behaviour.
+          { loader: 'string-replace-loader',
+            options: {
+              multiple: [
+                {
+                  search: `
+textarea::selection, input::selection .
+  background-color: rgba.100, 100, 100, 0.4.;
+  color: rgba.0, 0, 0, 0.87.;
+.`.replace(/( |\n)/g, '\\s*').replace(/selection/g, '+(-moz-)?selection'),
+                  replace: '',
+                  flags: 'g',
+                }, {
+                  search: `
+::selection .
+  background-color: #CCE2FF;
+  color: rgba.0, 0, 0, 0.87.;
+.`.replace(/( |\n)/g, '\\s*').replace(/selection/g, '+(-moz-)?selection'),
+                  replace: '',
+                  flags: 'g',
+                }
+              ]
+            }
+          },
           { loader: 'less-loader', options: { env: 'production' } }
         ]
       },
