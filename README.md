@@ -1,5 +1,5 @@
 # Eve Fleet Simulator
-[![EFS]()]()
+[![EFS](resources/BasicExample.gif)](resources/BasicExample.gif)
 Eve Fleet Simulator(EFS) is an analysis tool for Eve Online.
 
 Detailed Fleet PvP: EFS makes it easy to simulate PvP by using dynamic AI that mimics real player behavior alongside a wide range of weapons and effect implementations.
@@ -14,7 +14,7 @@ Use the [EFS website]() to get all the features of EFS without needing to instal
 If you prefer native applications, want to work offline or want to make sure you don't delete your custom fits from browser storage you can find EFS for Windows, OSX and Linux in the [releases section]().
 
 ## Getting started:
-TODO: Write this.
+Quick examples of how to use EFS can be found in the [quickstart guide](resources/QUICKSTART.md)
 
 ## Building Eve Fleet Simulator:
 
