@@ -1,24 +1,24 @@
 # Eve Fleet Simulator
-[![EFS](resources/BasicExample.gif)](resources/BasicExample.gif)
+[![EFS](resources/BasicExample.gif)](https://www.github.com/MaruMaruOO/eve-fleet-simulator/blob/master/resources/BasicExample.gif)
 Eve Fleet Simulator(EFS) is an analysis tool for Eve Online.
 
 Detailed Fleet PvP: EFS makes it easy to simulate PvP by using dynamic AI that mimics real player behavior alongside a wide range of weapons and effect implementations.
 
-Accessibility and Versatility: Over 1000 PvP fits are periodically scraped from [zkill]() and packaged with EFS. These represent some of the best preforming fits from the last 3-6 months. If you need something more specific however you can easily export your own fits from ![pyfa](). This makes it easy to test new ideas along with things like wormhole effects or exact skills and implants.
+Accessibility and Versatility: Over 1000 PvP fits are periodically scraped from [zkill](https://www.zkillboard.com) and packaged with EFS. These represent some of the best preforming fits from the last 3-6 months. If you need something more specific however you can easily export your own fits from ![pyfa](https://www.github.com/pyfa-org/Pyfa). This makes it easy to test new ideas along with things like wormhole effects or exact skills and implants.
 
 Hull Comparison: In ship mode you can quickly and easily select and sort every ship and subsystem configuration in Eve. This includes information about the hull once fitted, for example effective hitpoints when armor brick tanked or max velocity with a T2 MWD.
 
 ## Installation
 
 Use the [EFS website]() to get all the features of EFS without needing to install anything.
-If you prefer native applications, want to work offline or want to make sure you don't delete your custom fits from browser storage you can find EFS for Windows, OSX and Linux in the [releases section]().
+If you prefer native applications, want to work offline or want to make sure you don't delete your custom fits from browser storage you can find EFS for Windows, OSX and Linux in the [releases section](https://www.github.com/MaruMaruOO/eve-fleet-simulator/releases).
 
 ## Getting started:
-Quick examples of how to use EFS can be found in the [quickstart guide](resources/QUICKSTART.md)
+Quick examples of how to use EFS can be found in the [quickstart guide](https://www.github.com/MaruMaruOO/eve-fleet-simulator/blob/master/resources/QUICKSTART.md)
 
 ## Building Eve Fleet Simulator:
 
-Clone the repo: `git clone [EFS GITHUB URL HERE](...)`
+Clone the repo: `git clone https://www.github.com/MaruMaruOO/eve-fleet-simulator`
 `cd eve_fleet_simulator`
 Install EFS: `npm install`
 
@@ -29,7 +29,7 @@ Running `production_build.js` will create the production builds for each platfor
 The development build can be updated to reflect local changes by running either `build.js` or webpack.
 
 ## License
-Eve Fleet Simulator is released under the [GNU Affero GPL license](link to license file) and it's [source is available here](github url).
+Eve Fleet Simulator is released under the [GNU Affero GPL license](https://www.github.com/MaruMaruOO/eve-fleet-simulator/blob/master/LICENSE) and it's [source is available here](https://www.github.com/MaruMaruOO/eve-fleet-simulator).
 
 ## Contact
 Bug reporting and feature requests should be done via the (projects github page)[].
