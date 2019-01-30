@@ -4,7 +4,7 @@ const process = __non_webpack_require__('process');
 const baseShips = shipBaseJSON;
 
 if (process.argv.length > 2) {
-  if (process.versions.node < '8.5.0') {
+  if (process.versions.node < '8.5.0' && Number(process.versions.node.split('.')[0]) < 9) {
     throw `node 8.5.0+ required to run this script, found ${process.versions.node}`;
   }
   let renderSrc = process.argv[2];

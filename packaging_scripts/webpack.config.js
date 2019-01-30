@@ -1,4 +1,5 @@
 module.exports = {
+  mode: 'development',
   entry: './icon_select_src.js',
   output: { path: __dirname, filename: './icon_select.js' },
   resolve: {
