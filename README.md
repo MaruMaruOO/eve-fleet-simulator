@@ -10,7 +10,7 @@ Hull Comparison: In ship mode you can quickly and easily select and sort every s
 
 ## Installation
 
-Use the [EFS website]() to get all the features of EFS without needing to install anything.
+Use the [EFS website](https://www.evefleetsimulator.com) to get all the features of EFS without needing to install anything.
 If you prefer native applications, want to work offline or want to make sure you don't delete your custom fits from browser storage you can find EFS for Windows, OSX and Linux in the [releases section](https://www.github.com/MaruMaruOO/eve-fleet-simulator/releases).
 
 ## Getting started:
@@ -19,7 +19,7 @@ Quick examples of how to use EFS can be found in the [quickstart guide](https://
 ## Building Eve Fleet Simulator:
 
 Clone the repo: `git clone https://www.github.com/MaruMaruOO/eve-fleet-simulator`
-`cd eve_fleet_simulator`
+`cd eve-fleet-simulator`
 Install EFS: `npm install`
 
 The development build should now be in the `lib/` directory.
@@ -32,7 +32,7 @@ The development build can be updated to reflect local changes by running either 
 Eve Fleet Simulator is released under the [GNU Affero GPL license](https://www.github.com/MaruMaruOO/eve-fleet-simulator/blob/master/LICENSE) and it's [source is available here](https://www.github.com/MaruMaruOO/eve-fleet-simulator).
 
 ## Contact
-Bug reporting and feature requests should be done via the (projects github page)[].
+Bug reporting and feature requests should be done via the [projects github page](https://www.github.com/MaruMaruOO/eve-fleet-simulator).
 * MaruMaruOO
     * GitHub: @MaruMaruOO
     * Email: evefleetsim@gmail.com
