@@ -19,11 +19,13 @@
 - Single Target Doomsday Weapons<sup>4</sup>
 - Unscripted Warp Disruption Field Generators<sup>2</sup>
 - Smart Bombs<sup>2</sup>
+- Mutadaptive Remote Armor Repairers<sup>5</sup>
 
 1: Modules that are partially implemented because they export from pyfa in a fixed state are listed further down.<br />
 2: Only applies to a single target, not as an AoE.<br />
 3: Non-damage effects do not apply.<br />
-4: Incorrectly able to target subcaps. Deals reduced damage when used this way.
+4: Incorrectly able to target subcaps. Deals reduced damage when used this way.<br />
+5: Repair amount does not spool up.
 
 ### Unimplemented Effects and Behaviors:
 - Damage Types<sup>1</sup>
