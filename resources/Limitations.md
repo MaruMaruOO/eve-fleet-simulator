@@ -34,6 +34,7 @@
 - Capacitor
 - Full 3D positioning and movement.<sup>2</sup>
 - Missile and Bomb destructibility.
+- Ewar resistance or immunity.
 
 1: Repairs factor in resistance but all damage is treated as omni damage (25% from each type).<br />
 2: The ability to do so is considered for transversal calculations and the like.

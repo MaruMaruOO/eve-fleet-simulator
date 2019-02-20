@@ -2,11 +2,11 @@
 [![EFS](resources/BasicExample.gif)](https://www.github.com/MaruMaruOO/eve-fleet-simulator/blob/master/resources/BasicExample.gif)
 Eve Fleet Simulator(EFS) is an analysis tool for Eve Online.
 
-Detailed Fleet PvP: EFS makes it easy to simulate PvP by using dynamic AI that mimics real player behavior alongside a wide range of weapons and effect implementations.
+**Detailed Fleet PvP:** EFS makes it easy to simulate PvP by using dynamic AI that mimics real player behavior alongside a wide range of weapons and effect implementations.
 
-Accessibility and Versatility: Over 1000 PvP fits are periodically scraped from [zkill](https://www.zkillboard.com) and packaged with EFS. These represent some of the best preforming fits from the last 3-6 months. If you need something more specific however you can easily export your own fits from ![pyfa](https://www.github.com/pyfa-org/Pyfa). This makes it easy to test new ideas along with things like wormhole effects or exact skills and implants.
+**Accessibility and Versatility:** Over 1000 PvP fits are periodically scraped from [zkill](https://www.zkillboard.com) and packaged with EFS. These represent some of the best preforming fits from the last 3-6 months. If you need something more specific however you can easily export your own fits from [pyfa](https://www.github.com/pyfa-org/Pyfa). This makes it easy to test new ideas along with things like wormhole effects or exact skills and implants.
 
-Hull Comparison: In ship mode you can quickly and easily select and sort every ship and subsystem configuration in Eve. This includes information about the hull once fitted, for example effective hitpoints when armor brick tanked or max velocity with a T2 MWD.
+**Hull Comparison:** In ship mode you can quickly and easily select and sort every ship and subsystem configuration in Eve. For example you could find the fastest cruiser when fit with a T2 MWD or compare the EHP of brick tanked battlecruisers.
 
 ## Installation
 
