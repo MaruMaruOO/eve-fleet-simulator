@@ -50,18 +50,3 @@ information purposes on its website but does not endorse, and is not in any
 way affiliated with, Eve Fleet Simulator.
 CCP is in no way responsible for the content on or functioning of this
 website, nor can it be liable for any damage arising from the use of this website.
-
-<style type='text/css'>
-body {
-max-width: 1040px;
-padding-right: 40px;
-padding-left: 40px;
-padding-bottom: 40px;
-margin-right: auto;
-margin-left: auto;
-box-sizing: border-box;
-}
-img {
-max-width: 100%;
-}
-</style>
