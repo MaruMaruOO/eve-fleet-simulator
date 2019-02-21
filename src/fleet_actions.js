@@ -258,10 +258,11 @@ function getApplicationArgs(ship: Ship, target: Ship, side: Side): ApplicationAr
     let velocity;
     const oppVelocity = [0];
     if (wep.autonomousMovement) {
+      const conservativeDcr = ship.droneControlRange - noFalloffComp;
       if (wep.stats.travelVelocity > Math.max(target.velocity, 10)) {
-        maxRange = Math.min(ship.droneControlRange, conservativeMaxTargetRange);
+        maxRange = Math.min(conservativeDcr, conservativeMaxTargetRange);
       } else {
-        maxRange = Math.min(ship.droneControlRange, maxRange);
+        maxRange = Math.min(conservativeDcr, maxRange);
       }
       velocity = [Math.abs((wep.stats.travelVelocity / 5) - target.velocity)];
     } else {
