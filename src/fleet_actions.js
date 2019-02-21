@@ -253,7 +253,8 @@ function getApplicationArgs(ship: Ship, target: Ship, side: Side): ApplicationAr
   if (wep && wep.type === 'Turret') {
     const damageFunction = TurretApplication;
     const trackingFactor = wep.stats.tracking * target.sigRadius;
-    maxRange = Math.min(conservativeMaxTargetRange, wep.optimal + (wep.stats.falloff * 3));
+    // Optimal + 2.5 * falloff gives a 1.31% hit rate with perfect tracking.
+    maxRange = Math.min(conservativeMaxTargetRange, wep.optimal + (wep.stats.falloff * 2.5));
     let velocity;
     const oppVelocity = [0];
     if (wep.autonomousMovement) {
