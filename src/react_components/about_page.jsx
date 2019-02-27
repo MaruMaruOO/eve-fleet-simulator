@@ -32,7 +32,7 @@ const faqAnswer3 = (
     With this in mind Eve Fleet Simulator is a partial implementation with an
     ongoing effort to more closely match in game behavior.<br />
     A list of mechanics and behaviors that have yet to be implemented can be
-    found <a href="https://www.github.com/MaruMaruOO/eve-fleet-simulator/blob/master/resources/Limitations.md">here</a>.
+    found <a href="https://github.com/MaruMaruOO/eve-fleet-simulator/blob/master/resources/Limitations.md">here</a>.
   </div>
 );
 
@@ -43,7 +43,7 @@ const faqAnswer4 = (
     The fits details will include the module regardless but it can be helpful to know at a glance
     that a fit has nuets or a MJD, even if EFS doesn&apos;t yet simulate it&apos;s impact.<br />
     For more implementation information please see the
-    <a href="https://www.github.com/MaruMaruOO/eve-fleet-simulator/blob/master/resources/Limitations.md"> list of known limitations </a>
+    <a href="https://github.com/MaruMaruOO/eve-fleet-simulator/blob/master/resources/Limitations.md"> list of known limitations </a>
     and the answer to &quot;What are Eve Fleet Simulator&apos;s limitations?&quot;.
   </div>
 );
@@ -51,21 +51,21 @@ const faqAnswer4 = (
 const faqAnswer5 = (
   <div>
     A quickstart guide can be found
-    <a href="https://www.github.com/MaruMaruOO/eve-fleet-simulator/blob/master/resources/QUICKSTART.md"> here </a>
+    <a href="https://github.com/MaruMaruOO/eve-fleet-simulator/blob/master/resources/QUICKSTART.md"> here </a>
     and the readme is located
-    <a href="https://www.github.com/MaruMaruOO/eve-fleet-simulator/blob/master/README.md"> here</a>.
+    <a href="https://github.com/MaruMaruOO/eve-fleet-simulator/blob/master/README.md"> here</a>.
   </div>
 );
 
 const faqAnswer6 = (
   <div>
     Make sure you check the
-    <a href="https://www.github.com/MaruMaruOO/eve-fleet-simulator/blob/master/README.md"> readme</a>,
-    <a href="https://www.github.com/MaruMaruOO/eve-fleet-simulator/blob/master/resources/QUICKSTART.md"> quickstart guide </a>
+    <a href="https://github.com/MaruMaruOO/eve-fleet-simulator/blob/master/README.md"> readme</a>,
+    <a href="https://github.com/MaruMaruOO/eve-fleet-simulator/blob/master/resources/QUICKSTART.md"> quickstart guide </a>
     and
-    <a href="https://www.github.com/MaruMaruOO/eve-fleet-simulator/blob/master/resources/Limitations.md"> List of known limitations</a>.<br />
+    <a href="https://github.com/MaruMaruOO/eve-fleet-simulator/blob/master/resources/Limitations.md"> List of known limitations</a>.<br />
     If your question is still unanswered consider
-    <a href="https://www.github.com/MaruMaruOO/eve-fleet-simulator/issues"> opening a github issue </a>
+    <a href="https://github.com/MaruMaruOO/eve-fleet-simulator/issues"> opening a github issue </a>
     if it&apos;s a bug or contacting the developer so it can be added to the FAQ or documentation.`
   </div>
 );
@@ -121,7 +121,7 @@ function AboutPage() {
         </Header>
         <Segment attached>
           Bug reporting and feature requests should be done via the
-          <a href="https://www.github.com/MaruMaruOO/eve-fleet-simulator"> projects github page</a>.
+          <a href="https://github.com/MaruMaruOO/eve-fleet-simulator"> projects github page</a>.
           The developers can also be reached by sending emails to evefleetsim@gmail.com.
         </Segment>
         <Header as="h5" attached="top">
@@ -129,9 +129,9 @@ function AboutPage() {
         </Header>
         <Segment attached>
           Eve Fleet Simulator is released under the
-          <a href="https://www.github.com/MaruMaruOO/eve-fleet-simulator/blob/master/LICENSE" type="license"> GNU Affero GPL license </a>
+          <a href="https://github.com/MaruMaruOO/eve-fleet-simulator/blob/master/LICENSE" type="license"> GNU Affero GPL license </a>
           and it&apos;s
-          <a href="https://www.github.com/MaruMaruOO/eve-fleet-simulator"> source is available here</a>.
+          <a href="https://github.com/MaruMaruOO/eve-fleet-simulator"> source is available here</a>.
         </Segment>
         <Header as="h5" attached="top">
           CCP Copyright Notice
