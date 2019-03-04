@@ -1,4 +1,4 @@
 {
-  "presets": ["flow", "react", "env"],
+  "presets": ["flow", "react", ["env", { useBuiltIns: 'entry' }]],
   "plugins": ["transform-class-properties"]
 }

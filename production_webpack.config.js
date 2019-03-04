@@ -68,7 +68,8 @@ module.exports = [{
       { test: /\.(css|less)$/,
         use: [
           { loader: MiniCssExtractPlugin.loader },
-          { loader: "css-loader" },
+          { loader: "css-loader", options: { importLoaders: 1 } },
+          { loader: "postcss-loader" },
 // Restore default text selection behaviour.
           { loader: 'string-replace-loader',
             options: {

@@ -36,7 +36,8 @@ module.exports = [{
       { test: /\.(css|less)$/,
         use: [
           { loader: "style-loader" },
-          { loader: "css-loader" },
+          { loader: "css-loader", options: { importLoaders: 1 } },
+          { loader: "postcss-loader" },
           // Changes text selection to the browsers defaults.
           // Never setting the values to start with is the only way to achive this
           // without setting it at runtime via JS.

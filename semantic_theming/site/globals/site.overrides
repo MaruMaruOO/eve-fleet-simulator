@@ -1,3 +1,42 @@
+// Default values to pollyfill for browsers that don't support css vars.
+:root {
+  --color2: rgba(37,44,51,1);
+  --color9: rgba(17,19,21,1);
+  --color6: rgba(24,29,32,1);
+  --stock-font-color: rgba(143, 161, 178, 1);
+  --high-contrast-font-color: rgba(169, 186, 203, 1);
+  --inverse-color: rgb(255, 255, 255);
+  --inverse-color1: rgba(255, 255, 255, 0.1);
+  --inverse-color15: rgba(255, 255, 255, 0.15);
+  --inverse-color25: rgba(255, 255, 255, 0.25);
+  --inverse-color35: rgba(255, 255, 255, 0.35);
+  --input-text-color: var(--stock-font-color);
+  --input-text-color-focused: rgba(143,161,178,0.93);
+
+  --faded-stock-font-color: rgba(143, 161, 178, 0.6);
+  --weak-stock-font-color: rgba(143, 161, 178, 0.15);
+
+  --color3: var(--color6);
+  --color4: rgba(0,0,0,1);
+  --color5: rgba(52,60,69,1);
+  --color6h: var(--color5);
+  --color6a: var(--color2);
+  --color10: var(--color6);
+  /*--color11: var(--color9);*/
+  --color11: var(--color2);
+  --color7: var(--color6);
+  --color7t: rgba(24,29,32,0.85);
+
+  /*--button-opacity:0.82;*/
+  --button-opacity:1;
+  --semantic-invert-buttons:false;
+  --semantic-button-color-one:pale-blue;
+  --semantic-button-color-two:pale-blue;
+  --semantic-button-color-three:pale-blue;
+  --semantic-button-color-four:grey;
+  --semantic-button-color-five-no-button-groups:grey-blue;
+}
+
 :root.defaultTheme.unused {
   --color0: rgba(0, 0, 0, 0);
   --color1: rgb(0, 0, 0);
@@ -425,7 +464,9 @@ body {
   width: 100%;
   top: 0%;
   position: fixed;
-  padding-top: calc((0.85714286em * 1.14285714 * 2 + 1.5em) ~"+ calc(34.208px - 0.2233px)");
+  /* The earlier format is clearer but can't be used with older browsers */
+  /* padding-top: calc((0.85714286em * 1.14285714 * 2 + 1.5em) ~"+ calc(34.208px - 0.2233px)"); */
+  padding-top: ~"calc(3.459183675em + 33.9847px)";
   overflow-y: auto;
 }
 .pageContainer {
@@ -434,18 +475,24 @@ body {
 .ui.grid>.column.combatAndShipDisplay {
   /* padding-top: 6em; */
   /* padding-top: calc((0.92857143em * 1.14285714 * 2 + 1.6em) ~"+ 32.2344px"); */
-  padding-top: calc((0.85714286em * 1.14285714 * 2 + 1.5em) ~"+ calc(34.208px - 0.2233px)");
+  /* The earlier format is clearer but can't be used with older browsers */
+  /* padding-top: calc((0.85714286em * 1.14285714 * 2 + 1.5em) ~"+ calc(34.208px - 0.2233px)"); */
+  padding-top: ~"calc(3.459183675em + 33.9847px)";
   padding-left: 0em;
   max-height: 100%;
   bottom: 0px;
   top: 0px;
+  /* Line required by old browsers and google's crawler. */
+  left: 0px;
 }
 .ui.grid>.column.sidebarColumn {
   /* Max font size is 16 for header not 14 hence the 1.1428 */
   /* padding-top: calc((0.92857143em * 1.14285714 * 2 + 1.6em) ~"+ 32.2344px"); */
   /* padding-top: calc((0.857143em * 1.14285714 * 2 + 1.5em) ~"+ 34.2344px"); */
   /* The -0.223 is due to chrome being a special snowflake that rounds in very dumb ways. */
-  padding-top: calc((0.85714286em * 1.14285714 * 2 + 1.5em) ~"+ calc(34.208px - 0.2233px)");
+  /* The earlier format is clearer but can't be used with older browsers */
+  /* padding-top: calc((0.85714286em * 1.14285714 * 2 + 1.5em) ~"+ calc(34.208px - 0.2233px)"); */
+  padding-top: ~"calc(3.459183675em + 33.9847px)";
   background-color: var(--color3);
   max-height: 100%;
 }
@@ -697,9 +744,12 @@ td >.ui.fluid.image >img {
   border-style: solid;
 }
 td >.ui.fluid.image >.ui.corner.label .icon {
-  --size-multi: calc(2.8 / 4);
-  top: ~"calc(calc(0.64285714em * var(--size-multi)) * var(--size-multi))";
-  left: ~"calc(0.78571429em * var(--size-multi))";
+  /* Reformatted for compatibility with older browsers. */
+  /* --size-multi: calc(2.8 / 4); (0.7) */
+  /* top: ~"calc(calc(0.64285714em * var(--size-multi)) * var(--size-multi))"; */
+  /* left: ~"calc(0.78571429em * var(--size-multi))"; */
+  top: 0.64285714em * 0.49;
+  left: 0.78571429em * 0.7;
 }
 td >.ui.fluid.image >.ui.corner.label:after {
   border-bottom-width: ~"calc(2.8em - 1px)";
@@ -712,7 +762,7 @@ td >.shipStatBarDiv >.shipSimBar >.bar {
 
 td>.shipStatBarDiv>.ui.progress>.label {
   margin: 0em;
-  /* -1px to compensate for the border and keep consistant with other progress labels */
+  /* -1px to compensate for the border and keep consistent with other progress labels */
   margin-top: ~"calc(0.2em - 1px)";
   padding: 0px;
   background: transparent;

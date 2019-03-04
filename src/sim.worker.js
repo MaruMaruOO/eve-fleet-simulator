@@ -1,4 +1,5 @@
 // @flow
+import '@babel/polyfill';
 import Side from './side_class';
 import RunFleetActions from './fleet_actions';
 import type { SideShipInfo } from './index';

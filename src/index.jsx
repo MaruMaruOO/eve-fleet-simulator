@@ -1,5 +1,6 @@
 // @flow
 /* global */
+import '@babel/polyfill';
 import React from 'react';
 import ReactDOM from 'react-dom';
 
@@ -64,17 +65,24 @@ class FullUI extends React.Component<{ },
     super(props);
     this.GetButtonColors = () => {
       const currentStyle: CSSStyleDeclaration = getComputedStyle(documentElement);
-      const buttonColorOne = currentStyle.getPropertyValue('--semantic-button-color-one').trim();
-      const buttonColorTwo = currentStyle.getPropertyValue('--semantic-button-color-two').trim();
-      const buttonColorThree = currentStyle.getPropertyValue('--semantic-button-color-three').trim();
-      const buttonColorFour = currentStyle.getPropertyValue('--semantic-button-color-four').trim();
-      const buttonColorFiveNoGroups = currentStyle
-        .getPropertyValue('--semantic-button-color-five-no-button-groups').trim();
-      const invertButtonsStr = currentStyle.getPropertyValue('--semantic-invert-buttons').trim();
-      const invertButtons = invertButtonsStr === 'true';
+      // Return the dark theme values if the browser lacks css variables or they are missing.'
+      if (currentStyle.getPropertyValue('--semantic-button-color-one')) {
+        const buttonColorOne = currentStyle.getPropertyValue('--semantic-button-color-one').trim();
+        const buttonColorTwo = currentStyle.getPropertyValue('--semantic-button-color-two').trim();
+        const buttonColorThree = currentStyle.getPropertyValue('--semantic-button-color-three').trim();
+        const buttonColorFour = currentStyle.getPropertyValue('--semantic-button-color-four').trim();
+        const buttonColorFiveNoGroups = currentStyle
+          .getPropertyValue('--semantic-button-color-five-no-button-groups').trim();
+        const invertButtonsStr = currentStyle.getPropertyValue('--semantic-invert-buttons').trim();
+        const invertButtons = invertButtonsStr === 'true';
+        return [
+          invertButtons, buttonColorOne, buttonColorTwo,
+          buttonColorThree, buttonColorFour, buttonColorFiveNoGroups,
+        ];
+      }
       return [
-        invertButtons, buttonColorOne, buttonColorTwo,
-        buttonColorThree, buttonColorFour, buttonColorFiveNoGroups,
+        false, 'pale-blue', 'pale-blue',
+        'pale-blue', 'grey', 'grey-blue',
       ];
     };
     const initalButtonColors = this.GetButtonColors();
