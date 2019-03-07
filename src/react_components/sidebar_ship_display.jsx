@@ -12,7 +12,7 @@ import { shipJSON } from './../shipJSON';
 import { shipBaseJSON } from './../base_derived_stats';
 import ShipDataDisplayManager from './../ship_data_display_manager';
 
-// uncomment line to include all ship render icons in webpack (roughly 2.5MB for W35).
+// Uncomment line to include all ship render icons in webpack (roughly 2.5MB for W35).
 import renderIconsW35Imp from '../eve_icons/renders/renderIconsW35';
 
 let renderIconsW35: ?{[string]: string};
@@ -33,6 +33,7 @@ try {
   localStorage.setItem('efsLocalShipData', JSON.stringify(localFits));
 }
 const ships: ShipData[] = localFits.length > 0 ? [...defaultFits, ...localFits] : defaultFits;
+ShipData.fixDupeNames(ships);
 const baseShips: ShipData[] = shipBaseJSON;
 baseShips.forEach(s => ShipData.processing(s));
 const ShipSizes = ['Frigate', 'Destroyer', 'Cruiser', 'Battlecruiser', 'Battleship', 'Capital', 'Industrial', 'Misc'];

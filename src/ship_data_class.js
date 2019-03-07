@@ -180,6 +180,29 @@ class ShipData {
   efsExportVersion: number;
   pyfaVersion: string;
 
+  /**
+  * Adds (1), (2) ect to the end of ship names when they share the same name and type.
+  * This method scales poorly for ship counts well over 1000.
+  * It also gets slow when 100+ ships have the same name and type.
+  * A dict based method runs in ~5ms rather than ~8ms but it's much messier.
+  */
+  static fixDupeNames(ships: ShipData[]): void {
+    const names: string[] = [];
+    for (const s of ships) {
+      const b: string = s.name + s.typeID.toString();
+      let n = b;
+      let c = 0;
+      while (names.includes(n)) {
+        c += 1;
+        n = `${b} (${c})`;
+      }
+      if (c > 0) {
+        s.name = `${s.name} (${c})`;
+      }
+      names.push(n);
+    }
+  }
+
   static processing(shipStats: ShipData): void {
     shipStats.id = Math.random();
     const fullNameBreak = shipStats.name.indexOf(':');

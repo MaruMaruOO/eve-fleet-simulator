@@ -23,6 +23,7 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
     super(props);
     this.updateLocalShipDropdown = () => {
       const localFits: ShipData[] = JSON.parse(localStorage.getItem('efsLocalShipData') || '[]');
+      ShipData.fixDupeNames(localFits);
       return localFits.map((s, i) => ({ key: i, text: s.name, value: i.toString() }));
     };
     this.state = {
@@ -43,10 +44,13 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
     const localFits: ShipData[] = JSON.parse(localStorage.getItem('efsLocalShipData') || '[]');
     const ind: number = Number(value !== '' ? value : NaN);
     if (!Number.isNaN(ind)) {
+      ships.splice((ships.length - localFits.length) + ind, 1);
       const [{ name }] = localFits.splice(ind, 1);
       localStorage.setItem('efsLocalShipData', JSON.stringify(localFits));
+      const newLocalShipData = this.state.localShipData;
+      newLocalShipData.splice(ind, 1);
       this.setState({
-        localShipData: this.updateLocalShipDropdown(),
+        localShipData: newLocalShipData,
         deleteSelection: `Successfully deleted ${name}`,
       });
     }
@@ -101,7 +105,28 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
         [...previousShipData, ...submittedArray] : [...submittedArray];
       const newShipDataStr = JSON.stringify(newShipData);
       submittedArray.forEach(shipData => ShipData.processing(shipData));
-      submittedArray.forEach(shipData => ships.push(shipData));
+      submittedArray.forEach((shipData) => {
+        // Find any ships with the same type and base name
+        const typeMatches = ships.filter(s => s.typeID === shipData.typeID);
+        const regex = new RegExp(`${shipData.name} \\(\\d+\\)$`);
+        const nameMatches = typeMatches.filter(s => s.name === shipData.name || regex.test(s.name));
+        // Find how high the (1), (2) ect numbers go, this isn't always length + 1 due to deletions.
+        let maxN = 0;
+        nameMatches.forEach((s) => {
+          const ind = s.name.lastIndexOf(' ');
+          const n = Number(s.name.substring(ind + 2).replace(')', ''));
+          if (n && n > maxN) {
+            maxN = n;
+          }
+        });
+        // Adjust the name if needed then add the ship.
+        if (maxN) {
+          shipData.name += ` (${maxN + 1})`;
+        } else if (nameMatches.length === 1) {
+          shipData.name += ' (1)';
+        }
+        ships.push(shipData);
+      });
       const newShipNum = submittedArray.length;
       let addedFitsStr: string = '';
       if (newShipNum > 1) {
