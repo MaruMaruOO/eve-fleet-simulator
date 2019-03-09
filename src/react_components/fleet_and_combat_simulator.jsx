@@ -1,5 +1,5 @@
 // @flow
-import React from 'react';
+import React, { Fragment } from 'react';
 import { Divider, Table, Grid, Button, Dimmer, Segment } from 'semantic-ui-react';
 import { XYPlot, LineSeries, XAxis, YAxis } from 'react-vis';
 import { sideOneShips, sideTwoShips, UIRefresh } from './../index';
@@ -134,8 +134,11 @@ type FleetAndCombatSimulatorState = {
   initalDistance: number, simulationSpeed: number,
   red: GuiSide, blue: GuiSide, simulationState: SimulationState,
 };
+type FleetAndCombatSimulatorProps = {
+  initalDistance?: number, narrowScreen: boolean, buttonColors: ButtonColors,
+};
 class FleetAndCombatSimulator extends React.Component<
-{ initalDistance?: number, narrowScreen: boolean, buttonColors: ButtonColors },
+FleetAndCombatSimulatorProps,
 FleetAndCombatSimulatorState
 > {
   constructor(props: {
@@ -162,8 +165,13 @@ FleetAndCombatSimulatorState
     }
     this.totalHeight = this.props.narrowScreen ? '20.66em' : '23.81458vw';
   }
-  componentWillUpdate() {
-    this.refreshSides();
+  // This shouldn't be used like this but is best changed as part of an overhaul to the class.
+  // Make sure to remove it when the component is reworked to allow a vertical variant for mobile.
+  componentWillUpdate(
+    nextProps: FleetAndCombatSimulatorProps,
+    nextState: FleetAndCombatSimulatorState,
+  ) {
+    this.refreshSides(nextState.simulationState);
     this.totalHeight = this.props.narrowScreen ? '20.66em' : '23.81458vw';
   }
   setXYPlotMargin = (charLengthOfMaxShips: number) => {
@@ -221,7 +229,9 @@ FleetAndCombatSimulatorState
         this.red.ships = v.red;
         this.blue.ships = v.blue;
         this.setState({ red: this.red, blue: this.blue }, () => {
-          worker.postMessage({ type: 'frameRenderComplete', val: '' });
+          if (this.state.simulationState !== 'paused') {
+            worker.postMessage({ type: 'frameRenderComplete', val: '' });
+          }
         });
       } else if (data.type === 'simulationFinished') {
         this.setState({ simulationState: 'finished' }, () => {
@@ -252,7 +262,7 @@ FleetAndCombatSimulatorState
       ],
     });
   };
-  refreshSides = () => {
+  refreshSides = (nextSimState: SimulationState | null = null) => {
     if (sideOneShips && sideOneShips.length > 0 &&
         (this.red.uniqueFitCount !== sideOneShips.length ||
          sideOneShips.reduce((t, c) => t + c.n, 0) !== this.red.totalShipCount)) {
@@ -260,7 +270,7 @@ FleetAndCombatSimulatorState
       if (emptyInd >= 0) {
         sideOneShips.splice(emptyInd, 1);
       }
-      if (this.state.simulationState === 'finished') {
+      if ((nextSimState || this.state.simulationState) === 'finished') {
         this.updateFleets();
         this.setState({ simulationState: 'setup' });
       } else {
@@ -276,7 +286,7 @@ FleetAndCombatSimulatorState
       if (emptyInd >= 0) {
         sideTwoShips.splice(emptyInd, 1);
       }
-      if (this.state.simulationState === 'finished') {
+      if ((nextSimState || this.state.simulationState) === 'finished') {
         this.updateFleets();
         this.setState({ simulationState: 'setup' });
       } else {
@@ -316,6 +326,22 @@ FleetAndCombatSimulatorState
       if (this.worker) {
         this.worker.postMessage({ type: 'changeSimSpeed', val: Number(e.currentTarget.value) });
       }
+    }
+  };
+  pauseSimulation = () => {
+    this.setState({ simulationState: 'paused' });
+  };
+  resumeSimulation = () => {
+    if (this.state.simulationState === 'paused') {
+      this.setState({ simulationState: 'running' }, () => {
+        this.worker.postMessage({ type: 'frameRenderComplete', val: '' });
+      });
+    }
+  };
+  resetSimulation = () => {
+    if (this.state.simulationState === 'paused') {
+      this.updateFleets();
+      this.setState({ simulationState: 'setup' });
     }
   };
   render() {
@@ -460,13 +486,39 @@ FleetAndCombatSimulatorState
                   value={this.state.initalDistance}
                 />
               </Button>
-              <Button
-                onClick={this.SimulateBattle}
-                className={this.props.buttonColors[2]}
-                inverted={this.props.buttonColors[0]}
-              >
-                Simulate Battle!
-              </Button>
+              {['setup', 'finished'].includes(this.state.simulationState) ?
+                <Button
+                  onClick={this.SimulateBattle}
+                  className={this.props.buttonColors[2]}
+                  inverted={this.props.buttonColors[0]}
+                >
+                  Simulate Battle!
+                </Button> : ''}
+              {this.state.simulationState === 'running' ?
+                <Button
+                  onClick={this.pauseSimulation}
+                  className={this.props.buttonColors[2]}
+                  inverted={this.props.buttonColors[0]}
+                >
+                  Pause
+                </Button> : ''}
+              {this.state.simulationState === 'paused' ?
+                <Fragment>
+                  <Button
+                    onClick={this.resetSimulation}
+                    className={`${this.props.buttonColors[2]} split-left`}
+                    inverted={this.props.buttonColors[0]}
+                  >
+                    Reset Simulation
+                  </Button>
+                  <Button
+                    onClick={this.resumeSimulation}
+                    className={`${this.props.buttonColors[2]} split-right`}
+                    inverted={this.props.buttonColors[0]}
+                  >
+                    Resume
+                  </Button>
+                </Fragment> : ''}
               <Button as="div" className={this.props.buttonColors[5]} inverted={this.props.buttonColors[0]}>
                 <div style={simSpeedWrapperStyle} >
                   {'Simulation Speed '}

@@ -111,7 +111,7 @@ class UploadFits extends React.Component<{ }, UploadFitsState> {
         const regex = new RegExp(`${shipData.name} \\(\\d+\\)$`);
         const nameMatches = typeMatches.filter(s => s.name === shipData.name || regex.test(s.name));
         // Find how high the (1), (2) ect numbers go, this isn't always length + 1 due to deletions.
-        let maxN = 0;
+        let maxN: number = 0;
         nameMatches.forEach((s) => {
           const ind = s.name.lastIndexOf(' ');
           const n = Number(s.name.substring(ind + 2).replace(')', ''));

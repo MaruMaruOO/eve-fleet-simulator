@@ -73,7 +73,7 @@ type SyntheticButtonEvent = SyntheticEvent<HTMLButtonElement>;
 type SyntheticDropdownEvent = SyntheticEvent<Dropdown>;
 type GenericSyntheticTransitionEvent = SyntheticTransitionEvent<HTMLElement>;
 
-type SimulationState = 'setup' | 'running' | 'finished';
+type SimulationState = 'setup' | 'running' | 'finished' | 'paused';
 
 type ButtonColors = [boolean, string, string, string, string, string];
 

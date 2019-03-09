@@ -1,4 +1,4 @@
-// Default values to pollyfill for browsers that don't support css vars.
+/* Default values to pollyfill for browsers that don't support css vars. */
 :root {
   --color2: rgba(37,44,51,1);
   --color9: rgba(17,19,21,1);
@@ -347,6 +347,18 @@ body>#root ::-webkit-scrollbar-thumb:hover {
 
 .ui.button {
   opacity: var(--button-opacity);
+}
+.ui.buttons > .ui.button.split-left {
+  width: 16.666%;
+  border-right-color: var(--inverse-color15);
+  border-right-width: 1px;
+  border-right-style: solid;
+}
+.ui.buttons > .ui.button.split-right {
+  width: 16.666%;
+  border-left-color: var(--inverse-color15);
+  border-left-width: 1px;
+  border-left-style: solid;
 }
 .ui.header.sidebarHeader {
   color: var(--high-contrast-font-color);
