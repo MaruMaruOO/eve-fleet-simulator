@@ -64,6 +64,7 @@
 - Phenomena Generators<sup>2</sup> <sup>3</sup>
 - Wormhole Effects<sup>2</sup>
 - Overheating<sup>2</sup>
+- Combat Boosters
 - Reactive Armor Hardeners
 - Assault Damage Controls<sup>4</sup>
 
