@@ -8,10 +8,13 @@ module.exports = {
     "plugin:flowtype/recommended"
   ],
   "plugins": [
-    "flowtype"
+    "flowtype",
+    "react-hooks"
   ],
   "rules": {
     "no-param-reassign": ["error", { "props": false }],
-    "no-restricted-syntax": ["off", "ForOfStatement"]
+    "no-restricted-syntax": ["off", "ForOfStatement"],
+    "react-hooks/rules-of-hooks": "error",
+    "react-hooks/exhaustive-deps": "warn"
   }
 };
