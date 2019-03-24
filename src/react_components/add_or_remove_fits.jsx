@@ -167,6 +167,10 @@ class AddOrRemoveFits extends React.Component<{ }, AddOrRemoveFitsState> {
                 onChange={this.handleChange}
                 label="Fit Data"
                 placeholder="Paste Fit Data"
+                spellCheck="false"
+                autoComplete="off"
+                autoCorrect="off"
+                autoCapitalize="off"
               />
               <Message
                 success
