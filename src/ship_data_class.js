@@ -1,6 +1,22 @@
 // @flow
 import type { Hp, Resonance, WeaponData, ShipSize, Subsystem, ProjectionTypeString } from './flow_types';
 
+const hexString = (buffer: ArrayBuffer): string => {
+  const byteArray = new Uint8Array(buffer);
+  const hexCodes = [...byteArray].map((value) => {
+    const hexCode = value.toString(16);
+    const paddedHexCode = hexCode.padStart(2, '0');
+    return paddedHexCode;
+  });
+  return hexCodes.join('');
+};
+
+const digestMessage = (message: string) => {
+  const encoder = new TextEncoder();
+  const data = encoder.encode(message);
+  return (window.crypto.subtle.digest('SHA-256', data): Promise<ArrayBuffer>);
+};
+
 function isDamageDealerShip(ship) {
   const transportGroupIDs = [28, 380, 513, 902, 1202];
   const eWarGroupIDs = [833, 893, 894, 906];
@@ -146,6 +162,7 @@ class ShipData {
   maxSpeed: number;
   name: string;
   id: number;
+  dataID: string;
   shipType: string | void;
   shipGroup: string;
   ehp: Hp;
@@ -204,49 +221,59 @@ class ShipData {
   }
 
   static processing(shipStats: ShipData): void {
-    shipStats.id = Math.random();
-    const fullNameBreak = shipStats.name.indexOf(':');
-    if (fullNameBreak > -1) {
-      const baseName = shipStats.name;
-      shipStats.name = baseName.slice(fullNameBreak + 2);
-      shipStats.shipType = baseName.slice(0, fullNameBreak);
-      shipStats.isFit = true;
-      // isSupportShip is fairly conservative in it's labeling.
-      // This could be changed or allowed an explicit toggle in the future.
-      const dps = shipStats.weapons.reduce((t, v) => t + v.dps, 0);
-      if (!isDamageDealerShip(shipStats) && shipStats.projections.length > 0) {
-        const ehp = shipStats.ehp.shield + shipStats.ehp.armor + shipStats.ehp.hull;
-        if (dps < 200 || dps < ehp / 1200) {
-          shipStats.isSupportShip = true;
+    // If it has isFit and shipType then it's already been processed.
+    if (!(shipStats.shipType && shipStats.isFit)) {
+      const fullNameBreak = shipStats.name.indexOf(':');
+      if (fullNameBreak > -1) {
+        const baseName = shipStats.name;
+        shipStats.name = baseName.slice(fullNameBreak + 2);
+        shipStats.shipType = baseName.slice(0, fullNameBreak);
+        shipStats.isFit = true;
+        // isSupportShip is fairly conservative in it's labeling.
+        // This could be changed or allowed an explicit toggle in the future.
+        const dps = shipStats.weapons.reduce((t, v) => t + v.dps, 0);
+        if (!isDamageDealerShip(shipStats) && shipStats.projections.length > 0) {
+          const ehp = shipStats.ehp.shield + shipStats.ehp.armor + shipStats.ehp.hull;
+          if (dps < 200 || dps < ehp / 1200) {
+            shipStats.isSupportShip = true;
+          }
         }
-      }
-    } else {
-      shipStats.shipType = undefined;
-      shipStats.isFit = false;
-      // Handle subsystem processing for t3c.
-      if (shipStats.groupID === 963) {
-        const subsystems = {};
-        const subTypes = ['Defensive', 'Offensive', 'Propulsion', 'Core'];
-        for (const sub of subTypes) {
-          const subName = shipStats.moduleNames.find(n => n.includes(sub)) || '';
-          const specificSubName = subName.substring(subName.indexOf(sub) + 2 + sub.length);
-          subsystems[sub] = specificSubName;
+      } else {
+        shipStats.shipType = undefined;
+        shipStats.isFit = false;
+        // Handle subsystem processing for t3c.
+        if (shipStats.groupID === 963) {
+          const subsystems = {};
+          const subTypes = ['Defensive', 'Offensive', 'Propulsion', 'Core'];
+          for (const sub of subTypes) {
+            const subName = shipStats.moduleNames.find(n => n.includes(sub)) || '';
+            const specificSubName = subName.substring(subName.indexOf(sub) + 2 + sub.length);
+            subsystems[sub] = specificSubName;
+          }
+          shipStats.subsystems = subsystems;
         }
-        shipStats.subsystems = subsystems;
-      }
-      // Handle mode processing for t3d.
-      if (shipStats.groupID === 1305) {
-        const modes = ['Defense Mode', 'Sharpshooter Mode', 'Propulsion Mode'];
-        for (const mode of modes) {
-          const modeInd = shipStats.name.indexOf(mode);
-          const modeStr = shipStats.name.substring(modeInd);
-          if (modeStr === mode) {
-            shipStats.mode = mode;
-            shipStats.name = shipStats.name.substring(0, modeInd - 1);
+        // Handle mode processing for t3d.
+        if (shipStats.groupID === 1305) {
+          const modes = ['Defense Mode', 'Sharpshooter Mode', 'Propulsion Mode'];
+          for (const mode of modes) {
+            const modeInd = shipStats.name.indexOf(mode);
+            const modeStr = shipStats.name.substring(modeInd);
+            if (modeStr === mode) {
+              shipStats.mode = mode;
+              shipStats.name = shipStats.name.substring(0, modeInd - 1);
+            }
           }
         }
       }
     }
+    shipStats.id = 0;
+    shipStats.dataID = '';
+    const text = JSON.stringify(shipStats);
+    shipStats.id = Math.random();
+    digestMessage(text).then((digestValue: ArrayBuffer) => {
+      const idStr: string = hexString(digestValue);
+      shipStats.dataID = idStr;
+    });
   }
 }
 export default ShipData;

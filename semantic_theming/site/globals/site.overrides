@@ -13,6 +13,7 @@
   --input-text-color: var(--stock-font-color);
   --input-text-color-focused: rgba(143,161,178,0.93);
 
+  --semi-faded-stock-font-color: rgba(143, 161, 178, 0.75);
   --faded-stock-font-color: rgba(143, 161, 178, 0.6);
   --weak-stock-font-color: rgba(143, 161, 178, 0.15);
 
@@ -82,7 +83,8 @@
   --inverse-color25: rgba(0, 0, 0, 0.25);
   --inverse-color35: rgba(0, 0, 0, 0.35);
 
-  --faded-stock-font-color: rgba(12, 12, 13, 0.15);
+  --semi-faded-stock-font-color: rgba(12, 12, 13, 0.45);
+  --faded-stock-font-color: rgba(12, 12, 13, 0.25);
   --weak-stock-font-color: rgba(12, 12, 13, 0.15);
   /*--stock-font-color: rgba(24, 25, 26, 1);
   --high-contrast-font-color: rgba(41, 46, 51, 1);
@@ -152,6 +154,7 @@
   --input-text-color: var(--stock-font-color);
   --input-text-color-focused: rgba(143,161,178,0.93);
 
+  --semi-faded-stock-font-color: rgba(143, 161, 178, 0.75);
   --faded-stock-font-color: rgba(143, 161, 178, 0.6);
   --weak-stock-font-color: rgba(143, 161, 178, 0.15);
 
@@ -191,7 +194,8 @@
   --input-text-color: var(--stock-font-color);
   --input-text-color-focused: rgba(24,25,26,0.93);
 
-  --faded-stock-font-color: rgba(24, 25, 26, 0.15);
+  --semi-faded-stock-font-color: rgba(24, 25, 26, 0.45);
+  --faded-stock-font-color: rgba(24, 25, 26, 0.25);
   --weak-stock-font-color: rgba(24, 25, 26, 0.15);
 
   --color3: var(--color6);
@@ -365,6 +369,69 @@ body>#root ::-webkit-scrollbar-thumb:hover {
 }
 .ui.label {
   color: var(--stock-font-color);
+}
+/* Centers and slightly increases the height of toggle checkboxes. */
+/* Not for toggles directly inside buttons as they can use the buttons hitbox. */
+:not(.button) > .ui.toggle.checkbox input.hidden + label {
+  width: 3.5em;
+  height: 2em;
+  padding: 0px;
+}
+:not(.button) > .ui.toggle.checkbox input.hidden + label:before {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+:not(.button) > .ui.toggle.checkbox input.hidden + label:after {
+  margin-top: 0.25em;
+  margin-bottom: 0.25em;
+}
+
+.ui.input > input::-webkit-input-placeholder {
+  color: var(--faded-stock-font-color);
+}
+.ui.input > input::-moz-placeholder {
+  color: var(--faded-stock-font-color);
+}
+.ui.input > input::placeholder {
+  color: var(--faded-stock-font-color);
+}
+.ui.input.focus > input::-webkit-input-placeholder, .ui.input > input:focus::-webkit-input-placeholder {
+  color: var(--semi-faded-stock-font-color);
+}
+.ui.input.focus > input::-moz-placeholder, .ui.input > input:focus::-moz-placeholder,{
+  color: var(--semi-faded-stock-font-color);
+}
+.ui.input.focus > input::placeholder, .ui.input > input:focus::placeholder {
+  color: var(--semi-faded-stock-font-color);
+}
+
+.ui.menu .item > .ui.input input {
+  background-color: var(--color9);
+}
+.ui.menu .ui.dropdown .menu > .item.semi-attached-dropdown-item {
+  padding: 0rem 1.14285714em !important;
+  padding-bottom: 0.28571429em !important;
+  text-align: right;
+}
+.item.semi-attached-dropdown-item > .checkbox {
+  vertical-align: middle;
+  padding-left: 0.64286em;
+}
+.item.semi-attached-dropdown-item > span {
+  vertical-align: text-bottom;
+}
+.ui.menu .item.semi-attached-dropdown-item > .ui.input {
+  margin: 0.4em 0em;
+}
+.item.semi-attached-dropdown-item > .checkbox > input.hidden {
+  display: none;
+}
+
+.ui.dropdown .menu .item .dropdown.icon:before {
+  content: "\F0D7";
+}
+.ui.menu .menu > .item > .ui.floating.dropdown > .menu {
+  margin-top: 1.28571429em !important;
 }
 /*.ui.label.corner {
   border-color: var(--color11);
@@ -897,7 +964,6 @@ input[type=number]:enabled:focus {
   border: 1px solid rgb(212, 212, 213);
   /*border: 1px solid var(--faded-stock-font-color);*/
 }
-
 /*
 .ui.attached.segment, .ui.attached.header {
   border-color: var(--faded-stock-font-color);

@@ -99,9 +99,8 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
               <Button className="formattingButton">
                 {ShipDataDisplayManager.dronesEnabled ? 'Drones Enabled' : 'Drones Disabled'}
               </Button>
-              <Button as="div" className="contentButton">
+              <Button as="div" className="contentButton" onClick={dronesEnabledToggle}>
                 <Checkbox
-                  onClick={dronesEnabledToggle}
                   checked={ShipDataDisplayManager.dronesEnabled}
                   toggle
                 />

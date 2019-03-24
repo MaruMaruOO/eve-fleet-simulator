@@ -9,6 +9,7 @@ import {
 import mainRifterIcon from './../eve_icons/mainRifterIcon.png';
 
 import ShipDataDisplayManager from './../ship_data_display_manager';
+import SaveLoadDropdown from './save_load_dropdown';
 import { UIRefresh } from './../index';
 import type { FullUI } from './../index';
 
@@ -108,6 +109,7 @@ function TopNavBar(props: { fullui: FullUI }) {
           >
             Upload Fits
           </Menu.Item>
+          <SaveLoadDropdown fullui={props.fullui} />
         </Menu.Menu>
         <Menu.Menu position="right">
           <Menu.Item

@@ -12,7 +12,7 @@ import pageIcon from './eve_icons/page_icon.ico';
 
 import FleetSimAndShips from './react_components/fleet_sim_and_ships';
 import TopNavBar from './react_components/top_nav_bar';
-import AddOrRemoveFits from './react_components/add_or_remove_fits';
+import { AddOrRemoveFits } from './react_components/add_or_remove_fits';
 import AboutPage from './react_components/about_page';
 
 import type { ButtonColors } from './flow_types';
@@ -48,6 +48,7 @@ if (root.clientWidth < 1920 && root.clientWidth > 1200) {
   }
 }
 type SideShipInfo = { ship: ShipData, n: number, iconColor: ?string }
+type IconlessSideShipInfo = { ship: ShipData, n: number }
 const sideOneShips: SideShipInfo[] = [];
 const sideTwoShips: SideShipInfo[] = [];
 
@@ -110,4 +111,4 @@ class FullUI extends React.Component<{ },
 UIRefresh();
 
 export { sideOneShips, sideTwoShips, UIRefresh, documentElement };
-export type { FullUI, SideShipInfo };
+export type { FullUI, SideShipInfo, IconlessSideShipInfo };
