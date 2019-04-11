@@ -1150,6 +1150,58 @@ function moveShip(ship: Ship, t: number, side: Side) {
   ship.preferedDistance = GetUpdatedPreferedDistance(ship, side);
 }
 
+function getPolyVal(x: number, coefs: number[]) {
+  const maxPower = coefs.length - 1;
+  let v = 0;
+  for (let i = 0; i < coefs.length; i += 1) {
+    const c = coefs[i];
+    const p = maxPower - i;
+    if (p > 0) {
+      v += c * (x ** p);
+    } else {
+      v += c;
+    }
+  }
+  return v;
+}
+
+// This is a loose approximation based off the graphs given in the dev blog.
+// Can be off by up to 5% but it's much closer for higher currentTotal values.
+// Ideally at some point the actual formula should be used instead.
+function getAssistEffectiveness(currentTotal: number) {
+  const coefs = [-4.6341e-25, 4.6799e-17, -4.5806e-11, 1.8663e-05, 0.0000e+00];
+  return 0.5 ** getPolyVal(currentTotal, coefs);
+}
+
+let timeElapsed = 0;
+
+type Repair = {
+  currentTarget: Ship | null,
+  attachedShip: Ship,
+  type: ProjectionTypeString,
+  [string]: number
+};
+function ApplyRepair(target: Ship, repair: Repair) {
+  const repairAmmount = repair.shieldBonus || repair.armorDamageAmount;
+  const effectiveness = getAssistEffectiveness(target.totalIncomingReps);
+  const effectiveRepair = effectiveness * (repairAmmount / target.meanResonance);
+  const postRepEhp = target.currentEHP + effectiveRepair;
+  const newEhp = Math.min(postRepEhp, target.EHP);
+  const appliedRep = (newEhp - target.currentEHP) * target.meanResonance;
+  target.currentEHP = newEhp;
+  if (appliedRep > 0) {
+    const expTime = timeElapsed + repair.duration;
+    if (target.incomingReps.length > 0) {
+      const lastTime = target.incomingReps[target.incomingReps.length - 1][0];
+      if (expTime < lastTime) {
+        target.isIncomingRepsToBeSorted = true;
+      }
+    }
+    target.incomingReps.push([expTime, appliedRep]);
+    target.totalIncomingReps += appliedRep;
+  }
+}
+
 function ApplyRemoteEffects(side: Side, t: number, opposingSide: Side) {
   if (side.subFleetEffectPurgeTimer < 0) {
     for (const subfleet of side.subFleets) {
@@ -1218,17 +1270,14 @@ function ApplyRemoteEffects(side: Side, t: number, opposingSide: Side) {
               && s.rrDelayTimer > s.lockTimeConstant / rr.scanRes
               && s !== rr.attachedShip);
             if (target) {
-              const postRepEhp = target.currentEHP + (rr.shieldBonus / target.meanResonance);
-              target.currentEHP = Math.min(postRepEhp, target.EHP);
+              ApplyRepair(target, rr);
               rr.currentDuration = rr.duration;
               rr.currentTarget = target;
             }
           } else if (rr.type === 'Remote Armor Repairer') {
             const target = rr.currentTarget;
             if (target && target.currentEHP > 0) {
-              const effRep = rr.armorDamageAmount / target.meanResonance;
-              const postRepEhp = target.currentEHP + effRep;
-              target.currentEHP = Math.min(postRepEhp, target.EHP);
+              ApplyRepair(target, rr);
             }
             const newTarget = logiLockedShips.find(s => s.currentEHP > 0 && s.tankType === 'armor'
               && s.rrDelayTimer > s.lockTimeConstant / rr.scanRes
@@ -1247,6 +1296,22 @@ function ApplyRemoteEffects(side: Side, t: number, opposingSide: Side) {
 
 function RunFleetActions(side: Side, t: number, opposingSide: Side, isSideOneOfTwo: ?boolean) {
   if (isSideOneOfTwo === true) {
+    timeElapsed += t;
+    for (const s of [side, opposingSide]) {
+      for (const ship of s.ships) {
+        if (ship.totalIncomingReps > 0) {
+          if (ship.isIncomingRepsToBeSorted) {
+            ship.incomingReps.sort((a, b) => a[0] - b[0]);
+            ship.isIncomingRepsToBeSorted = false;
+          }
+          while (ship.incomingReps.length > 0 && timeElapsed >= ship.incomingReps[0][0]) {
+            const expiredRep = ship.incomingReps.shift();
+            ship.totalIncomingReps -= expiredRep[1];
+          }
+        }
+      }
+    }
+
     ApplyRemoteEffects(side, t, opposingSide);
     ApplyRemoteEffects(opposingSide, t, side);
 

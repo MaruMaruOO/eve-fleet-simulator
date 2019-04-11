@@ -38,6 +38,9 @@ class Ship {
   droneControlRange: number;
   preferedDistance: number = -1;
   pendingDamage: PendingAttack[];
+  incomingReps: [number, number][] = [];
+  isIncomingRepsToBeSorted: boolean = false;
+  totalIncomingReps: number = 0;
   // Ewar applied to this ship.
   appliedEwar: {
     webs: [number, number, Ewar][], tps: [number, number, Ewar][],
