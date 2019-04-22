@@ -72,22 +72,26 @@ const faqAnswer6 = (
 
 const faqAnswer7 = (
   <div>
-    Imported fits are saved just for you. Specifically they are stored in your browsers local storage.
+    Imported fits are saved just for you.
+    Specifically they are stored in your browsers local storage.
   </div>
 );
 
 const faqAnswer8 = (
   <div>
-    The AI doesn't swap off targets at this time. In order to change target priories you can either drag table rows or type it in.
+    The AI doesn&apos;t swap off targets at this time.
+    In order to change target priories you can either drag table rows or type it in.
   </div>
 );
 
 const faqAnswer9 = (
   <div>
-    No, to avoid giving one side an advantage EFS sequences actions so the side doesn&apos;t impact the outcome.<br />
+    No, to avoid giving one side an advantage EFS sequences actions
+    so the side doesn&apos;t impact the outcome.<br />
     For example a tick will apply both sides weapons before either side removes loses.<br />
     Similarly ships will move based off where the opposing ships were in the previous tick.<br />
-    This doesn't cause meaningful inaccuracies because EFS uses 50ms ticks that are shorter than most players pings to the server.
+    This doesn&apos;t cause meaningful inaccuracies because EFS uses 50ms ticks
+    that are shorter than most players pings to the server.
   </div>
 );
 
@@ -102,56 +106,72 @@ const faqAnswer10 = (
 const faqAnswer11 = (
   <div>
     Take a look at the
-    <a href="https://github.com/MaruMaruOO/eve-fleet-simulator/blob/master/resources/Limitations.md"> list of known limitations</a>.<br />
-    If your query isn't impacted by anything listed then the implementation should match the game.<br />
-    If it doesn't seem to match the list or game please open an
+    <a
+      href="https://github.com/MaruMaruOO/eve-fleet-simulator/blob/master/resources/Limitations.md"
+    > list of known limitations
+    </a>.<br />
+    If your query isn&apos;t impacted by anything listed then
+    the implementation should match the game.<br />
+    If it doesn&apos;t seem to match the list or game please open an
     <a href="https://github.com/MaruMaruOO/eve-fleet-simulator/issues"> issue on GitHub </a>so it can be fixed.
   </div>
 );
 
 const faqAnswer12 = (
   <div>
-    Yes, in order to accommodate the Eve player base both these numbers are actually text boxes.<br />
+    Yes, in order to accommodate the Eve player base
+    both these numbers are actually text boxes.<br />
     So press/click the number and type in that nice round figure.
   </div>
 );
 
 const faqAnswer13 = (
   <div>
-    EFS uses it's own data format for imports, you can't export fits from zkill or the like.<br />
-    You must export fits from pyfa using the EFS format (Edit -> To Clipboard -> EFS -> OK).<br />
-    If you're doing this, pyfa is up to date and you still get the error, please report it as a bug.
+    EFS uses it&apos;s own data format for imports,
+    you can&apos;t export fits from zkill or the like.<br />
+    You must export fits from pyfa using the EFS format
+    (Edit &rArr; To Clipboard &rArr; EFS &rArr; OK).<br />
+    If you&apos;re doing this, pyfa is up to date and
+    you still get the error, please report it as a bug.
   </div>
 );
 
 const faqAnswer14 = (
   <div>
-    Each fit will position independently, selecting it's own anchor and following it around.<br />
-    Ships will try to follow their anchor but opposing tackle can cause them to get separated and fall behind.<br />
-    For specifics see the answer to "How does the AI determine at what range it wants to be at?".
+    Each fit will position independently, selecting
+    it&apos;s own anchor and following it around.<br />
+    Ships will try to follow their anchor but opposing tackle
+    can cause them to get separated and fall behind.<br />
+    For specifics see the answer to
+    &quot;How does the AI determine at what range it wants to be at?&quot;.
   </div>
 );
 
 const faqAnswer15 = (
   <div>
     Ships with remote repair start locking as soon as a friendly takes damage.<br />
-    After that they cycle the repairs, repairing at the start of the cycle for shields or the end for armor/hull.
+    After that they cycle the repairs, repairing at the
+    start of the cycle for shields or the end for armor/hull.
     Target resistance is factored into the repair.<br />
     Repair scaling uses an approximate formula that should always be within 5%.
-    In practice it's typically much closer, especially at large scales.<br />
-    There's also a system in place to avoid massively over repairing and having the target die between cycles.
+    In practice it&apos;s typically much closer, especially at large scales.<br />
+    There&apos;s also a system in place to avoid massively
+    over repairing and having the target die between cycles.
   </div>
 );
 
 const faqAnswer16 = (
   <div>
-    Each fit tests to find it's ideal range every 10 simulated seconds.<br />
+    Each fit tests to find it&apos;s ideal range every 10 simulated seconds.<br />
     Logi tries to take as little damage as possible while staying in repair range.<br />
     Support ships try and take as little damage as possible while also applying their ewar.
     If required support ships will also unanchor in order to keep applying ewar to their target/s.
-    It's particularly common to see this when they are trying to spread scrams across the opposing fleet.<br />
-    Damage dealers and other ships try to keep <code>damage done / damage taken</code> as high as possible.
-    They will also prioritize keeping application over 30% if possible, so they won't shoot from deep falloff just because the ratio is higher.
+    It&apos;s particularly common to see this when they are trying
+    to spread scrams across the opposing fleet.<br />
+    Damage dealers and other ships try to keep
+    <code> damage done / damage taken</code> as high as possible.
+    They will also prioritize keeping application over 30% if possible,
+    so they won&apos;t shoot from deep falloff just because the ratio is higher.
   </div>
 );
 
@@ -159,7 +179,8 @@ const faqAnswer17 = (
   <div>
     Make sure your phone is in landscape mode when browsing the EFS website on mobile.<br />
     A portrait mode is planned but for now landscape should hopefully work fairly well.<br />
-    Mobile apps are possible if the demand is there but they are basically just a wrapper around a local copy of the website.
+    Mobile apps are possible if the demand is there but they are basically just a
+    wrapper around a local copy of the website.
   </div>
 );
 
