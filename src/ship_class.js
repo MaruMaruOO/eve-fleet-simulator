@@ -115,7 +115,8 @@ class Ship {
       this.baseSigRadius = shipStats.signatureRadius;
       this.lockTimeConstant = (40000 / (Math.asinh(shipStats.signatureRadius) ** 2)) * 1000;
       this.unpropedSigRadius = shipStats.unpropedSig;
-      this.maxTargets = shipStats.maxTargets;
+      // Simulation assumes max targets >= 1, should only impact freighters.
+      this.maxTargets = shipStats.maxTargets || 1;
       this.maxTargetRange = shipStats.maxTargetRange;
       this.baseMaxTargetRange = shipStats.maxTargetRange;
       this.droneControlRange = shipStats.droneControlRange;
