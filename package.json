@@ -13,7 +13,8 @@
     "excludeGlob": [
       "./src/*/**.png",
       "./src/*JSON*",
-      "./src/css/sim.worker.js"
+      "./src/css/sim.worker.js",
+      "./src/staticAmmoData.js"
     ],
     "includeGlob": [
       "./src/**/**.js*"

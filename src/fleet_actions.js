@@ -3,7 +3,7 @@ import { Weapon, PendingAttack } from './weapon_classes';
 import Ship from './ship_class';
 import type { Ewar } from './ship_class';
 import Side from './side_class';
-import type { VectorMaxLenThree, ProjectionTypeString } from './flow_types';
+import type { VectorMaxLenThree, ProjectionTypeString, AmmoData } from './flow_types';
 import type { Subfleet } from './side_class';
 
 function findNewTarget(targetCaller: Ship, opposingSide: Side): ?Ship {
@@ -467,6 +467,19 @@ function dealDamage(ship: Ship, t: number, wep: Weapon, side: Side) {
         }
         side.appliedDamage += initalHP - ship.targets[0].currentEHP;
         isPendingFinished = true;
+        if (ship.isShotCaller) {
+          const ind = ship.weapons.indexOf(wep);
+          const sf = side.subFleets.find(s => s.fc === ship);
+          if (sf && sf.wepAmmoSwapData[ind].currentAmmo) {
+            sf.wepAmmoSwapData[ind].recentDamage.push(damage);
+            sf.wepAmmoSwapData[ind].cycledSinceCheck = true;
+            if (sf.wepAmmoSwapData[ind].chargesLeft > 0) {
+              sf.wepAmmoSwapData[ind].chargesLeft -= 1;
+            } else {
+              sf.wepAmmoSwapData[ind].chargesLeft = sf.wepAmmoSwapData[ind].chargesHeld;
+            }
+          }
+        }
       }
     }
     if (isPendingFinished) {
@@ -1202,7 +1215,139 @@ function ApplyRepair(target: Ship, repair: Repair) {
   }
 }
 
+function CheckForAmmoSwaps(side, subfleet) {
+  function getAmmoSwapSanity(set) {
+    const damRatios: number[] = [];
+    for (let i = 0; i < set.recentDamage.length - 1; i += 1) {
+      const d = set.recentDamage[i];
+      const nd = set.recentDamage[i + 1];
+      damRatios.push(nd / d);
+    }
+    if (damRatios.some(r => r > 1.02)) {
+      return false;
+    }
+    return true;
+  }
+  function tempAmmoSwap(wep: Weapon, newAmmo: AmmoData, oldAmmo: AmmoData) {
+    const netMulti = [];
+    for (let c = 2; c < newAmmo.length; c += 1) {
+      if (typeof oldAmmo[c] === 'number' && typeof newAmmo[c] === 'number') {
+        netMulti[c - 2] = (1 / oldAmmo[c]) * newAmmo[c];
+      }
+    }
+    wep.damage *= netMulti[0];
+    if (wep.type === 'Missile') {
+      wep.stats.sigRadius *= netMulti[1];
+      wep.stats.expVelocity *= netMulti[2];
+      wep.stats.damageReductionFactor *= netMulti[3];
+      wep.optimal *= netMulti[4];
+    } else if (wep.type === 'Turret') {
+      wep.stats.tracking *= netMulti[1];
+      wep.optimal *= netMulti[2];
+      wep.stats.falloff *= netMulti[3];
+    }
+  }
+  function ammoSwap(
+    subfleet: Subfleet, refWep: Weapon, newAmmo: AmmoData,
+    oldAmmo: AmmoData, reloadTime: number,
+  ) {
+    const wepInd = subfleet.fc.weapons.indexOf(refWep);
+    // We also want a shotCaller (fc) match because this will actually run for each subfleet
+    // when they go past the split size (1000 as of writing)
+    const shipsInSubFleet = side.ships.filter(s => (
+      s.id === subfleet.fc.id && (s.shotCaller === subfleet.fc || s === subfleet.fc)
+    ));
+    for (let i = 0; i < shipsInSubFleet.length; i += 1) {
+      const ship = shipsInSubFleet[i];
+      const wep = ship.weapons[wepInd];
+      tempAmmoSwap(wep, newAmmo, oldAmmo);
+
+      const netMulti = [];
+      for (let c = 2; c < newAmmo.length; c += 1) {
+        if (typeof oldAmmo[c] === 'number' && typeof newAmmo[c] === 'number') {
+          netMulti[c - 2] = (1 / oldAmmo[c]) * newAmmo[c];
+        }
+      }
+      // Should add exception for lasers.
+      wep.currentReload += reloadTime;
+      wep.dps *= netMulti[0];
+      if (wep.type === 'Missile') {
+        wep.stats.baseSigRadius *= netMulti[1];
+        wep.stats.baseExpVelocity *= netMulti[2];
+        wep.baseOptimal *= netMulti[4];
+      } else if (wep.type === 'Turret') {
+        wep.stats.baseTracking *= netMulti[1];
+        wep.baseOptimal *= netMulti[2];
+        wep.stats.baseFalloff *= netMulti[3];
+      }
+    }
+  }
+  for (let i = 0; i < subfleet.wepAmmoSwapData.length; i += 1) {
+    const set = subfleet.wepAmmoSwapData[i];
+    const wep = subfleet.fc.weapons[i];
+    const fcTargets = subfleet.fc.targets;
+    if (set.cycledSinceCheck && fcTargets.length > 0 && wep.currentReload < 0.75 * wep.reload) {
+      set.cycledSinceCheck = false;
+      const expectedDamage = calculateDamage(subfleet.fc, fcTargets[0], wep, side);
+      side.theoreticalDamage -= wep.damage;
+      set.recentDamage.push(expectedDamage);
+      const isAmmoSwapSane = getAmmoSwapSanity(set);
+      set.recentDamage.pop();
+      const initalAmmo = set.ammoOptions.find(t => t[1] === set.currentAmmo);
+      if (isAmmoSwapSane && initalAmmo) {
+        // Don't consider the added reload time if we'd be reloading anyway.
+        const reloadTime = set.chargesLeft > 0 ? set.reloadTime : 0;
+        const lastEff = expectedDamage / wep.damage;
+        const baseEff = initalAmmo[2] * lastEff;
+        const possibleAlts = set.ammoOptions.filter(t => (
+          t[2] > baseEff && t[1] !== set.currentAmmo
+        ));
+        const bestAlt = [0, 0];
+        let lastAmmo = initalAmmo;
+        // Require a 5% increase if there's no reloadTime, 12.5% for 5000ms and 20% for 10000ms.
+        const changeReq = 1.05 + (reloadTime * 0.000015);
+        for (let c = 0; c < possibleAlts.length; c += 1) {
+          const testAmmo = possibleAlts[c];
+          tempAmmoSwap(wep, testAmmo, lastAmmo);
+          // MISSILES AREN"T CONSIDERING DISTANCE TO THE TARGET YET~~~~~~
+          const damage = calculateDamage(subfleet.fc, fcTargets[0], wep, side);
+          // Remove added theoretical damage from calculateDamage.
+          side.theoreticalDamage -= wep.damage;
+          if (damage > expectedDamage * changeReq && damage > bestAlt[0]) {
+            bestAlt[0] = damage;
+            bestAlt[1] = c;
+          }
+          lastAmmo = testAmmo;
+        }
+        if (possibleAlts.length > 0) {
+          tempAmmoSwap(wep, initalAmmo, lastAmmo);
+          if (bestAlt[0]) {
+            const newAmmo = possibleAlts[bestAlt[1]];
+            console.log(`Took ${reloadTime}ms to swap ${subfleet.fc.name}'s ammo to ${newAmmo.toString()} from ${initalAmmo.toString()}`);
+            console.log(`Went from ${expectedDamage} to ${bestAlt[0]} damage (${100 * (bestAlt[0] / expectedDamage)}% of previous)`);
+            ammoSwap(subfleet, wep, newAmmo, initalAmmo, reloadTime);
+            const id = newAmmo[1];
+            set.currentAmmo = id;
+            set.chargesLeft = set.chargesHeld;
+            // This will trigger a fairly slow range recalc that normally runs every 10 seconds.
+            // Keep an eye on it if ammo swaps are very frequent.
+            subfleet.fc.rangeRecalc = 0;
+          }
+        }
+      }
+    }
+    // Reset if the weapon has fired twice.
+    if (set.recentDamage.length > 1) {
+      set.recentDamage = [];
+    }
+  }
+}
+
 function ApplyRemoteEffects(side: Side, t: number, opposingSide: Side) {
+  // After this file is reorganised ammo swap checks should be moved somewhere more appropriate.
+  for (const subfleet of side.subFleets) {
+    CheckForAmmoSwaps(side, subfleet);
+  }
   if (side.subFleetEffectPurgeTimer < 0) {
     for (const subfleet of side.subFleets) {
       subfleet.remoteRepair = subfleet.remoteRepair.filter(eff => eff.type !== 'Dead Host');

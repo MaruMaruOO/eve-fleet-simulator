@@ -43,6 +43,8 @@ class WeaponData {
   tracking: number;
   damageMultiplierBonusPerCycle: number;
   damageMultiplierBonusMax: number;
+  numCharges: number;
+  reloadTime: number;
 }
 
 type ProjectionTypeString =
@@ -82,6 +84,8 @@ type ButtonColors = [boolean, string, string, string, string, string];
 type FleetData = { sideOne: IconlessSideShipInfo[], sideTwo: IconlessSideShipInfo[] };
 type FleetSet = { name: string, fleets: FleetData }
 
+type AmmoData = [string, number, number, number, number, number];
+
 export type {
   Hp, SingleResonance, Resonance, WeaponData, WeaponType,
   WeaponAbility, ShipSize, ModuleQualityValue, VectorMaxLenThree,
@@ -89,4 +93,5 @@ export type {
   SimulationState, GenericSyntheticTransitionEvent, ButtonColors,
   Subsystem, SubsystemType, SideShipInfo, IconlessSideShipInfo,
   ProjectionTypeString, FleetData, FleetSet, ElementDiv,
+  AmmoData,
 };
