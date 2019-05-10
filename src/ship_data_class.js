@@ -194,6 +194,7 @@ class ShipData {
   mode: '' | 'Defense Mode' | 'Sharpshooter Mode' | 'Propulsion Mode';
   isFit: boolean = false;
   isSupportShip: boolean = false;
+  modTypeIDs: (number | [number, number])[];
   efsExportVersion: number;
   pyfaVersion: string;
 
