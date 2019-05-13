@@ -3,7 +3,10 @@ import Ship from './ship_class';
 import ShipData from './ship_data_class';
 import { Weapon } from './weapon_classes';
 import { AmmoTables, AmmoGroupMap, BaseChargeMap } from './staticAmmoData';
-import type { SideShipInfo, ProjectionTypeString, AmmoData, WeaponData } from './flow_types';
+import type {
+  SideShipInfo, ProjectionTypeString,
+  AmmoData, WeaponData, AmmoSwapValue,
+} from './flow_types';
 
 type AmmoTable = AmmoData[];
 type WepAmmoSwapData = {
@@ -60,6 +63,82 @@ function mapProjection(
   return null;
 }
 
+function GetWepAmmoSwapData(localShip: Ship, shipStats: ShipData, ammoSwaps: AmmoSwapValue) {
+  // This can be replaced with a filter if flow ever plays nice with filters.
+  const modsWithCharges: [number, number][] = shipStats.modTypeIDs.reduce(
+    (arr: [number, number][], m: number | [number, number]) =>
+      (Array.isArray(m) ? [...arr, m] : arr),
+    [],
+  );
+  const modsNamesWithCharges = shipStats.moduleNames.filter(m => m.includes(': '));
+  const weaponsWithCharges: [[number, number], string][] = [];
+  for (let v = 0; v < modsWithCharges.length; v += 1) {
+    const chargeID = modsWithCharges[v][1];
+    if (BaseChargeMap[chargeID.toString()]) {
+      weaponsWithCharges.push([modsWithCharges[v], modsNamesWithCharges[v]]);
+    }
+  }
+  const ammoSwapData: WepAmmoSwapData[] = [];
+
+  for (const wep of shipStats.weapons) {
+    const ammoTable = [];
+    let initalAmmoID: number | null = null;
+    const isSpecialWeapon = wep.damageReductionFactor === 0 && wep.type === 'Missile';
+    if (ammoSwaps !== 'None' && ['Missile', 'Turret'].includes(wep.type) && !isSpecialWeapon) {
+      const pairData: [[number, number], string] | [null, null] =
+        (weaponsWithCharges.find((pair: [[number, number], string]) => {
+          const [, n: string] = pair;
+          const ns: string[] = n.split(': ');
+          return ns.every(s => wep.name.includes(s));
+        }) || [null, null]);
+      const [idPair, name] = pairData;
+      if (idPair && name) {
+        const baseChargePair: [number, string, string] =
+          BaseChargeMap[idPair[1].toString()];
+        [initalAmmoID] = baseChargePair;
+        const groupMap = AmmoGroupMap;
+        const groupData = groupMap.find(v => v[0] === idPair[0]);
+        if (groupData) {
+          const chSize = groupData[1];
+          const groups = groupData[2];
+          const matchingTables = AmmoTables.filter(v =>
+            (groups.includes(v.ammoGroupID) && v.chargeSize === chSize));
+          const fullTable = [];
+          for (const t of matchingTables) {
+            if (ammoSwaps === 'Cargo') {
+              fullTable.push(...t.ammoData.filter(a =>
+                (a[1] === initalAmmoID || shipStats.cargoItemIDs.includes(a[1]))));
+            } else {
+              fullTable.push(...t.ammoData);
+            }
+          }
+          ammoTable.push(...fullTable);
+        }
+      }
+    }
+    const wepAmmoData = {
+      currentAmmo: initalAmmoID,
+      ammoOptions: ammoTable,
+      reloadTime: Math.round(wep.reloadTime),
+      chargesHeld: wep.numCharges,
+      chargesLeft: wep.numCharges,
+      recentDamage: [],
+      cycledSinceCheck: false,
+    };
+    ammoSwapData.push(wepAmmoData);
+  }
+  // Ships sort their weapons by dps in the simulation.
+  // We are presorting the fc's and making sure the subfleet's wepAmmoSwapData matches.
+  // This is required to avoid a mismatch when loading fleets.
+  localShip.weapons.sort((a: Weapon, b: Weapon) => b.dps - a.dps);
+  const mapped: { index: number, value: WeaponData }[] = shipStats.weapons.map((wep, ind) =>
+    ({ index: ind, value: wep }));
+  mapped.sort((a, b) => b.value.dps - a.value.dps);
+  const ammoSwapDataSorted = mapped.map(pair => ammoSwapData[pair.index]);
+
+  return ammoSwapDataSorted;
+}
+
 class Side {
   targetGrouping: number;
   reactionTime: number = 1000;
@@ -76,10 +155,11 @@ class Side {
   theoreticalDamage: number = 0;
   appliedDamage: number = 0;
   damageApplicationRatio: number = this.appliedDamage / this.theoreticalDamage;
-  makeFleet: (SideShipInfo[], number, boolean) => void = (
+  makeFleet: (SideShipInfo[], number, boolean, AmmoSwapValue) => void = (
     sidesShips: SideShipInfo[],
     initalDistance: number,
     dronesEnabled: boolean,
+    ammoSwaps: AmmoSwapValue,
   ): void => {
     this.uniqueFitCount = 0;
     this.totalShipCount = 0;
@@ -110,71 +190,7 @@ class Side {
           localShip.rangeRecalc = 10000;
           lastShotCaller = localShip;
           lastAnchor = localShip;
-          // This can be replaced with a filter if flow ever plays nice with filters.
-          const modsWithCharges: [number, number][] = shipStats.modTypeIDs.reduce(
-            (arr: [number, number][], m: number | [number, number]) =>
-              (Array.isArray(m) ? [...arr, m] : arr),
-            [],
-          );
-          const modsNamesWithCharges = shipStats.moduleNames.filter(m => m.includes(': '));
-          const weaponsWithCharges: [[number, number], string][] = [];
-          for (let v = 0; v < modsWithCharges.length; v += 1) {
-            const chargeID = modsWithCharges[v][1];
-            if (BaseChargeMap[chargeID.toString()]) {
-              weaponsWithCharges.push([modsWithCharges[v], modsNamesWithCharges[v]]);
-            }
-          }
-          const ammoSwapData: WepAmmoSwapData[] = [];
-          for (const wep of shipStats.weapons) {
-            const ammoTable = [];
-            let initalAmmoID: number | null = null;
-            const isSpecialWeapon = wep.damageReductionFactor === 0 && wep.type === 'Missile';
-            if (['Missile', 'Turret'].includes(wep.type) && !isSpecialWeapon) {
-              const pairData: [[number, number], string] | [null, null] =
-                    (weaponsWithCharges.find((pair: [[number, number], string]) => {
-                      const [, n: string] = pair;
-                      const ns: string[] = n.split(': ');
-                      return ns.every(s => wep.name.includes(s));
-                    }) || [null, null]);
-              const [idPair, name] = pairData;
-              if (idPair && name) {
-                const baseChargePair: [number, string, string] =
-                  BaseChargeMap[idPair[1].toString()];
-                [initalAmmoID] = baseChargePair;
-                const groupMap = AmmoGroupMap;
-                const groupData = groupMap.find(v => v[0] === idPair[0]);
-                if (groupData) {
-                  const chSize = groupData[1];
-                  const groups = groupData[2];
-                  const matchingTables = AmmoTables.filter(v =>
-                    (groups.includes(v.ammoGroupID) && v.chargeSize === chSize));
-                  const fullTable = [];
-                  for (const t of matchingTables) {
-                    fullTable.push(...t.ammoData);
-                  }
-                  ammoTable.push(...fullTable);
-                }
-              }
-            }
-            const wepAmmoData = {
-              currentAmmo: initalAmmoID,
-              ammoOptions: ammoTable,
-              reloadTime: Math.round(wep.reloadTime),
-              chargesHeld: wep.numCharges,
-              chargesLeft: wep.numCharges,
-              recentDamage: [],
-              cycledSinceCheck: false,
-            };
-            ammoSwapData.push(wepAmmoData);
-          }
-          // Ships sort their weapons by dps in the simulation.
-          // We are presorting the fc's and making sure the subfleet's wepAmmoSwapData matches.
-          // This is required to avoid a mismatch when loading fleets.
-          localShip.weapons.sort((a: Weapon, b: Weapon) => b.dps - a.dps);
-          const mapped: { index: number, value: WeaponData }[] = shipStats.weapons.map((wep, ind) =>
-            ({ index: ind, value: wep }));
-          mapped.sort((a, b) => b.value.dps - a.value.dps);
-          const ammoSwapDataSorted = mapped.map(pair => ammoSwapData[pair.index]);
+          const ammoSwapDataSorted = GetWepAmmoSwapData(localShip, shipStats, ammoSwaps);
 
           this.subFleets.push({
             fc: localShip,

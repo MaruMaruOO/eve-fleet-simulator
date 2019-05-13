@@ -171,6 +171,10 @@ function getApplicationArgs(ship: Ship, target: Ship, side: Side): ApplicationAr
     const trackingFactor = wep.stats.tracking * target.sigRadius;
     // Optimal + 2.5 * falloff gives a 1.31% hit rate with perfect tracking.
     maxRange = Math.min(conservativeMaxTargetRange, wep.optimal + (wep.stats.falloff * 2.5));
+    // Slightly reduce max range when falloff is extremely low as the dropoff is very sudden.
+    if (wep.stats.falloff * 2.5 < noFalloffComp) {
+      maxRange -= noFalloffComp;
+    }
     let velocity;
     const oppVelocity = [0];
     if (wep.autonomousMovement) {

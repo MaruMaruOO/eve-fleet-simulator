@@ -4,6 +4,7 @@ import Side from './side_class';
 import RunFleetActions from './fleet_actions';
 import type { SideShipInfo } from './index';
 import type { SimMessageData, ShipUpdate } from './react_components/fleet_and_combat_simulator';
+import type { AmmoSwapValue } from './flow_types';
 
 // Keeping flow happy
 type msgPos = (SimMessageData) => void;
@@ -132,8 +133,8 @@ class SimWorker {
     }
   };
   SimulateBattle = (
-    sideOneShips: SideShipInfo[], sideTwoShips: SideShipInfo[],
-    simSpeed: number, initalDistance: number, dronesEnabled: boolean,
+    sideOneShips: SideShipInfo[], sideTwoShips: SideShipInfo[], simSpeed: number,
+    initalDistance: number, dronesEnabled: boolean, ammoSwaps: AmmoSwapValue,
   ) => {
     this.simulationSpeed = simSpeed;
     this.initalDistance = initalDistance;
@@ -143,8 +144,8 @@ class SimWorker {
     this.blue = new Side('blue');
     this.red.oppSide = this.blue;
     this.blue.oppSide = this.red;
-    this.red.makeFleet(sideOneShips, this.initalDistance, dronesEnabled);
-    this.blue.makeFleet(sideTwoShips, this.initalDistance, dronesEnabled);
+    this.red.makeFleet(sideOneShips, this.initalDistance, dronesEnabled, ammoSwaps);
+    this.blue.makeFleet(sideTwoShips, this.initalDistance, dronesEnabled, ammoSwaps);
     const largestFleet = Math.max(this.blue.ships.length, this.red.ships.length);
     const charLengthOfMaxShips = largestFleet.toString().length;
     postMessage({ type: 'setXYPlotMargin', val: charLengthOfMaxShips });
@@ -162,7 +163,10 @@ class SimWorker {
   };
 }
 
-type SimStartData = [Array<SideShipInfo>, Array<SideShipInfo>, number, number, boolean];
+type SimStartData = [
+  Array<SideShipInfo>, Array<SideShipInfo>, number,
+number, boolean, AmmoSwapValue,
+];
 
 type GuiMessageData = {| +type: 'RunSimulation', +val: SimStartData |} |
   {| +type: 'frameRenderComplete', +val: null |} |
@@ -180,10 +184,13 @@ onmessage = (e: GuiMessageEvent) => {
   const { data } = e;
   if (data.type === 'RunSimulation') {
     const [
-      sideOneShips, sideTwoShips, simSpeed, initalDistance, dronesEnabled,
+      sideOneShips, sideTwoShips, simSpeed, initalDistance, dronesEnabled, ammoSwaps,
     ] = (data.val: SimStartData);
     simulation = new SimWorker();
-    simulation.SimulateBattle(sideOneShips, sideTwoShips, simSpeed, initalDistance, dronesEnabled);
+    simulation.SimulateBattle(
+      sideOneShips, sideTwoShips, simSpeed,
+      initalDistance, dronesEnabled, ammoSwaps,
+    );
   } else if (data.type === 'frameRenderComplete') {
     simulation.awaitingFrameRender = false;
   } else if (data.type === 'changeSimSpeed') {

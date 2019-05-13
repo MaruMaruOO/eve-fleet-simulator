@@ -24,7 +24,7 @@ import { GetMaxEHP } from './base_derived_stats';
 import type { SidebarShipNode } from './react_components/sidebar_ship_display';
 import { UIRefresh } from './index';
 import type {
-  ShipSize, ModuleQualityValue,
+  ShipSize, ModuleQualityValue, AmmoSwapValue,
   SyntheticButtonEvent, ElementDiv,
 } from './flow_types';
 
@@ -104,6 +104,14 @@ function ModQualEnum(str: ?string | ?number) {
   return null;
 }
 
+function AmmoSwapEnum(str: ?string) {
+  const s = String(str);
+  if (s === 'None' || s === 'Cargo' || s === 'All') {
+    return s;
+  }
+  return null;
+}
+
 class ShipDataDisplayManager {
   static isDisplayModeFit: boolean = true;
   static shipTypeDataTypes = [
@@ -129,6 +137,7 @@ class ShipDataDisplayManager {
   static moduleQuality: ModuleQualityValue = ModQualEnum(localStorage.getItem('moduleQuality')) || 1;
   static activeTank: boolean = !(localStorage.getItem('activeTank') === 'false');
   static dronesEnabled: boolean = !(localStorage.getItem('dronesEnabled') === 'false');
+  static ammoSwaps: AmmoSwapValue = AmmoSwapEnum(localStorage.getItem('ammoSwaps')) || 'All';
   static prevModuleQuality: ModuleQualityValue;
   static prevActiveTank: boolean;
   static forceSidebarUpdate: boolean = false;

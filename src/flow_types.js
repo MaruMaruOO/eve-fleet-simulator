@@ -65,6 +65,7 @@ type ProjectionTypeString =
   'Micro Jump Drive';
 
 type ModuleQualityValue = 1 | 2 | 3 | 4;
+type AmmoSwapValue = 'None' | 'Cargo' | 'All';
 type VectorMaxLenThree = [number] | [number, number] | [number, number, number];
 
 /**
@@ -93,5 +94,5 @@ export type {
   SimulationState, GenericSyntheticTransitionEvent, ButtonColors,
   Subsystem, SubsystemType, SideShipInfo, IconlessSideShipInfo,
   ProjectionTypeString, FleetData, FleetSet, ElementDiv,
-  AmmoData,
+  AmmoData, AmmoSwapValue,
 };

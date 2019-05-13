@@ -42,6 +42,17 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
     localStorage.setItem('dronesEnabled', ShipDataDisplayManager.dronesEnabled.toString());
     UIRefresh();
   };
+  const ammoSwapsToggle = () => {
+    if (ShipDataDisplayManager.ammoSwaps === 'None') {
+      ShipDataDisplayManager.ammoSwaps = 'All';
+    } else if (ShipDataDisplayManager.ammoSwaps === 'Cargo') {
+      ShipDataDisplayManager.ammoSwaps = 'None';
+    } else if (ShipDataDisplayManager.ammoSwaps === 'All') {
+      ShipDataDisplayManager.ammoSwaps = 'Cargo';
+    }
+    localStorage.setItem('ammoSwaps', ShipDataDisplayManager.ammoSwaps.toString());
+    UIRefresh();
+  };
   const isBarOrIcon = d => d.isIcon || d.isBar;
   let sortOptions;
   if (ShipDataDisplayManager.isDisplayModeFit) {
@@ -68,10 +79,35 @@ function SidebarShipDisplaySettings(props: { buttonColors: ButtonColors }) {
     },
   ];
   const defaultModQuality = ShipDataDisplayManager.moduleQuality.toString();
+  let ammoSwapState = ShipDataDisplayManager.ammoSwaps === 'All' ? 'All Ammo Swaps Enabled' : 'Ammo Swaps Disabled';
+  if (ShipDataDisplayManager.ammoSwaps === 'Cargo') {
+    ammoSwapState = 'Cargo Ammo Swaps Enabled';
+  }
   return (
     <Grid.Row verticalAlign="bottom" stretched>
       <Container className="shipDisplaySettings">
         {ShipDataDisplayManager.StatDisplayIconToggles(ShipDataDisplayManager.isDisplayModeFit)}
+        {ShipDataDisplayManager.isDisplayModeFit ?
+          <div className="ui">
+            <Button.Group
+              className={ShipDataDisplayManager.ammoSwaps !== 'None' ?
+                     props.buttonColors[1] : props.buttonColors[4]}
+              inverted={props.buttonColors[0]}
+            >
+              <Button className="formattingButton">{ammoSwapState}
+              </Button>
+              <Button as="div" className="contentButton">
+                <Checkbox
+                  onClick={ammoSwapsToggle}
+                  checked={ShipDataDisplayManager.ammoSwaps !== 'None'}
+                  indeterminate={ShipDataDisplayManager.ammoSwaps === 'Cargo'}
+                  toggle
+                />
+              </Button>
+            </Button.Group>
+          </div> :
+          null
+        }
         {!ShipDataDisplayManager.isDisplayModeFit ?
           <div className="ui">
             <Button.Group

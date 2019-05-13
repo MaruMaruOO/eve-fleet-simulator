@@ -257,8 +257,8 @@ FleetAndCombatSimulatorState
     worker.postMessage({
       type: 'RunSimulation',
       val: [
-        sideOneShips, sideTwoShips, this.state.simulationSpeed,
-        this.state.initalDistance, ShipDataDisplayManager.dronesEnabled,
+        sideOneShips, sideTwoShips, this.state.simulationSpeed, this.state.initalDistance,
+        ShipDataDisplayManager.dronesEnabled, ShipDataDisplayManager.ammoSwaps,
       ],
     });
   };

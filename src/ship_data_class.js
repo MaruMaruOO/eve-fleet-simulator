@@ -1,5 +1,9 @@
 // @flow
-import type { Hp, Resonance, WeaponData, ShipSize, Subsystem, ProjectionTypeString } from './flow_types';
+import type {
+  Hp, Resonance, WeaponData, ShipSize,
+  Subsystem, ProjectionTypeString, AmmoData,
+} from './flow_types';
+import { AmmoTables, AmmoGroupMap, BaseChargeMap } from './staticAmmoData';
 
 const hexString = (buffer: ArrayBuffer): string => {
   const byteArray = new Uint8Array(buffer);
@@ -47,6 +51,61 @@ function isDamageDealerShip(ship) {
     return false;
   }
   return true;
+}
+
+function GetWepCargoAmmoNames(shipStats) {
+  // This can be replaced with a filter if flow ever plays nice with filters.
+  const modsWithCharges: [number, number][] = shipStats.modTypeIDs.reduce(
+    (arr: [number, number][], m: number | [number, number]) =>
+      (Array.isArray(m) ? [...arr, m] : arr),
+    [],
+  );
+  const modsNamesWithCharges = shipStats.moduleNames.filter(m => m.includes(': '));
+  const weaponsWithCharges: [[number, number], string][] = [];
+  for (let v = 0; v < modsWithCharges.length; v += 1) {
+    const chargeID = modsWithCharges[v][1];
+    if (BaseChargeMap[chargeID.toString()]) {
+      weaponsWithCharges.push([modsWithCharges[v], modsNamesWithCharges[v]]);
+    }
+  }
+  const ammoSwapData: string[] = [];
+
+  for (const wep of shipStats.weapons) {
+    const ammoTable = [];
+    let initalAmmoID: number | null = null;
+    const isSpecialWeapon = wep.damageReductionFactor === 0 && wep.type === 'Missile';
+    if (['Missile', 'Turret'].includes(wep.type) && !isSpecialWeapon) {
+      const pairData: [[number, number], string] | [null, null] =
+        (weaponsWithCharges.find((pair: [[number, number], string]) => {
+          const [, n: string] = pair;
+          const ns: string[] = n.split(': ');
+          return ns.every(s => wep.name.includes(s));
+        }) || [null, null]);
+      const [idPair, name] = pairData;
+      if (idPair && name) {
+        const baseChargePair: [number, string, string] =
+          BaseChargeMap[idPair[1].toString()];
+        [initalAmmoID] = baseChargePair;
+        const groupMap = AmmoGroupMap;
+        const groupData = groupMap.find(v => v[0] === idPair[0]);
+        if (groupData) {
+          const chSize = groupData[1];
+          const groups = groupData[2];
+          const matchingTables = AmmoTables.filter(v =>
+            (groups.includes(v.ammoGroupID) && v.chargeSize === chSize));
+          const fullTable: AmmoData[] = [];
+          for (const t of matchingTables) {
+            fullTable.push(...t.ammoData.filter(a =>
+              (a[1] === initalAmmoID || shipStats.cargoItemIDs.includes(a[1]))));
+          }
+          ammoTable.push(...(fullTable.map(a => a[0])));
+        }
+      }
+      ammoSwapData.push(`${(name || '').split(':')[0]}:`);
+      ammoSwapData.push(...ammoTable);
+    }
+  }
+  return ammoSwapData;
 }
 
 class ShipData {
@@ -195,6 +254,7 @@ class ShipData {
   isFit: boolean = false;
   isSupportShip: boolean = false;
   modTypeIDs: (number | [number, number])[];
+  cargoItemIDs: number[];
   efsExportVersion: number;
   pyfaVersion: string;
 
@@ -266,6 +326,13 @@ class ShipData {
           }
         }
       }
+    }
+    shipStats.cargoItemIDs = shipStats.cargoItemIDs || [];
+    if (shipStats.cargoItemIDs.length > 0) {
+      shipStats.moduleNames.push('');
+      shipStats.moduleNames.push('Ammo Types in Cargo:');
+      const cargoAmmo = GetWepCargoAmmoNames(shipStats);
+      shipStats.moduleNames.push(...cargoAmmo);
     }
     shipStats.id = 0;
     shipStats.dataID = '';
