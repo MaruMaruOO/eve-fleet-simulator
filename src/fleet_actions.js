@@ -6,6 +6,7 @@ import CheckForAmmoSwaps from './fleet_calculations/ammo_swap';
 import { getTargets, updateProjectionTargets, updateProjTargetsIfNeeded } from './fleet_calculations/targeting';
 import calculateDamage from './fleet_calculations/calculate_damage';
 import { ApplyRemoteEffects } from './fleet_calculations/remote_effects';
+import { UpdateCapacitor } from './fleet_calculations/local_effects';
 import GetUpdatedPreferedDistance from './fleet_calculations/range_selection';
 
 
@@ -236,6 +237,12 @@ function RunFleetActions(side: Side, t: number, opposingSide: Side, isSideOneOfT
 
     ApplyRemoteEffects(side, t, opposingSide, timeElapsed);
     ApplyRemoteEffects(opposingSide, t, side, timeElapsed);
+
+    for (const s of [side, opposingSide]) {
+      for (const ship of s.ships) {
+        UpdateCapacitor(ship, t);
+      }
+    }
 
     for (const s of [side, opposingSide]) {
       for (const subFleet of s.subFleets) {

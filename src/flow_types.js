@@ -64,6 +64,11 @@ type ProjectionTypeString =
   'Burst Jammer' |
   'Micro Jump Drive';
 
+type RepairTypeString =
+  'Shield Booster' |
+  'Armor Repairer' |
+  'Capacitor Booster';
+
 type ModuleQualityValue = 1 | 2 | 3 | 4;
 type AmmoSwapValue = 'None' | 'Cargo' | 'All';
 type VectorMaxLenThree = [number] | [number, number] | [number, number, number];
@@ -87,6 +92,12 @@ type FleetSet = { name: string, fleets: FleetData }
 
 type AmmoData = [string, number, number, number, number, number];
 
+type Repair = {
+  type: RepairTypeString,
+  cycleStarted: boolean,
+  [string]: number
+};
+
 export type {
   Hp, SingleResonance, Resonance, WeaponData, WeaponType,
   WeaponAbility, ShipSize, ModuleQualityValue, VectorMaxLenThree,
@@ -94,5 +105,5 @@ export type {
   SimulationState, GenericSyntheticTransitionEvent, ButtonColors,
   Subsystem, SubsystemType, SideShipInfo, IconlessSideShipInfo,
   ProjectionTypeString, FleetData, FleetSet, ElementDiv,
-  AmmoData, AmmoSwapValue,
+  AmmoData, AmmoSwapValue, RepairTypeString, Repair,
 };

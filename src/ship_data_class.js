@@ -1,7 +1,7 @@
 // @flow
 import type {
   Hp, Resonance, WeaponData, ShipSize,
-  Subsystem, ProjectionTypeString, AmmoData,
+  Subsystem, ProjectionTypeString, RepairTypeString, AmmoData,
 } from './flow_types';
 import { AmmoTables, AmmoGroupMap, BaseChargeMap } from './staticAmmoData';
 
@@ -213,8 +213,9 @@ class ShipData {
   turretSlots: number;
   moduleNames: string[];
   projections: { type: ProjectionTypeString, [string]: number }[];
+  repairs: { type: RepairTypeString, [string]: number }[];
   projectedModules: { string: number | string }[];
-  rigSize: number;
+  rigSize: 0 | 1 | 2 | 3 | 4;
   effectiveDroneBandwidth: number;
   typeID: number;
   maxTargetRange: number;
@@ -255,6 +256,8 @@ class ShipData {
   isSupportShip: boolean = false;
   modTypeIDs: (number | [number, number])[];
   cargoItemIDs: number[];
+  capacitorCapacity: number;
+  rechargeRate: number;
   efsExportVersion: number;
   pyfaVersion: string;
 

@@ -1,6 +1,6 @@
 // @flow
 import { Weapon, PendingAttack } from './weapon_classes';
-import type { ProjectionTypeString } from './flow_types';
+import type { ProjectionTypeString, Repair } from './flow_types';
 import ShipData from './ship_data_class';
 
 class Ship {
@@ -82,6 +82,14 @@ class Ship {
   dis: number;
   pendingDis: number;
   rangeRecalc: number;
+  capRecharge: number;
+  capacitorCapacity: number;
+  cap: number;
+  expectedCapLoss: number = 0;
+  pendingCap: number;
+  rechargeRate: number;
+  repairs: Repair[];
+  rigSize: 0 | 1 | 2 | 3 | 4;
   constructor(
     currentShotCaller: Ship | null, currentAnchor: Ship | null,
     shipStats: ShipData, initalDistance: number, dronesEnabled: boolean,
@@ -93,6 +101,12 @@ class Ship {
       this.name = shipStats.name;
       this.id = shipStats.id;
       this.isSupportShip = shipStats.isSupportShip;
+      this.capRecharge = shipStats.capRecharge;
+      this.rechargeRate = shipStats.rechargeRate;
+      this.capacitorCapacity = shipStats.capacitorCapacity;
+      this.cap = this.capacitorCapacity;
+      this.pendingCap = this.cap;
+      this.rigSize = shipStats.rigSize;
       this.EHP = shipStats.ehp.shield + shipStats.ehp.armor + shipStats.ehp.hull;
       if (shipStats.ehp.armor > shipStats.ehp.shield) {
         this.tankType = 'armor';
@@ -136,6 +150,37 @@ class Ship {
       if (this.weapons.length > 1) {
         this.weapons = this.weapons.sort((a, b) => b.dps - a.dps);
       }
+      const regRepairs: Repair[] = [];
+      const ancRepairs: Repair[] = [];
+      const capBoosters: Repair[] = [];
+      for (const repair of shipStats.repairs) {
+        const rep: Repair = Object.assign({}, repair);
+        if (rep.type === 'Armor Repairer') {
+          rep.currentDuration = rep.duration;
+          rep.cycleStarted = false;
+        } else {
+          rep.currentDuration = 0;
+          rep.cycleStarted = true;
+        }
+        // For ancillary repairs and cap boosters
+        if (repair.numShots) {
+          rep.numShotsLeft = repair.numShots;
+          if (rep.type === 'Capacitor Booster') {
+            capBoosters.push(rep);
+          } else {
+            ancRepairs.push(rep);
+          }
+        } else {
+          regRepairs.push(rep);
+        }
+      }
+      // Sort for efficency to make sure better reps are (slightly) prefrenced.
+      const getEff = r => (
+        (r.armorDamageAmount || r.shieldBonus) / (r.unloadedCapacitorNeed || r.capacitorNeed));
+      ancRepairs.sort((a, b) => getEff(b) - getEff(a));
+      regRepairs.sort((a, b) => getEff(b) - getEff(a));
+      // Note this causes it to processes cap boosters first and anc reps last.
+      this.repairs = [...capBoosters, ...regRepairs, ...ancRepairs];
     }
     this.currentEHP = this.EHP;
     this.isAnchor = false;

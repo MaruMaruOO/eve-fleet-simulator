@@ -76,9 +76,13 @@ function NoScramsInRange(t: Ship, forcedDistance: ?number = null, scramSourceId:
 const TargetTypes = {
   focused: 0,
   scattered: 1,
+  // this will focus the fc's targets then scatter any leftover ewar.
+  partiallyFocused: 2,
 };
 type EwarTargetTypeMap = {
-  [ProjectionTypeString]: typeof TargetTypes.focused | typeof TargetTypes.scattered,
+  [ProjectionTypeString]: typeof TargetTypes.focused
+    | typeof TargetTypes.scattered
+    | typeof TargetTypes.partiallyFocused,
 };
 const ewarTargetType: EwarTargetTypeMap = {
   'Stasis Web': TargetTypes.focused,
@@ -86,16 +90,19 @@ const ewarTargetType: EwarTargetTypeMap = {
   'Warp Scrambler': TargetTypes.scattered,
   'Target Painter': TargetTypes.focused,
   'Sensor Dampener': TargetTypes.scattered,
+  'Energy Neutralizer': TargetTypes.partiallyFocused,
+  'Energy Nosferatu': TargetTypes.partiallyFocused,
   /* Unimplemented EWAR that's in the data export.
      ECM: 'scattered',
-     'Energy Nosferatu': TBD,
-     'Energy Neutralizer': TBD,
      'Burst Jammer': AoE,
      'Micro Jump Drive': N/A,
   */
 };
 
-function ApplyEwar(ewar: Ewar, targets: Ship[], distanceOveride: number | null = null) {
+function ApplyEwar(
+  ewar: Ewar, targets: Ship[],
+  distanceOveride: number | null = null, altScatterTarget: Ship | null = null,
+) {
   let target = targets[0];
   let distance = distanceOveride;
   if (ewar.type === 'Stasis Web') {
@@ -257,6 +264,83 @@ function ApplyEwar(ewar: Ewar, targets: Ship[], distanceOveride: number | null =
       target.velocity = NetValue(target.appliedEwar.webs, getInitalVel(target));
       target.sigRadius = NetValue(target.appliedEwar.tps, getInitalSig(target));
     }
+  } else if (ewar.type === 'Energy Neutralizer') {
+    if (ewar.attachedShip.cap > ewar.capacitorNeed) {
+      const baseDrain = ewar.energyNeutralizerAmount;
+      let i = 0;
+      while (i < targets.length &&
+             (target.currentEHP <= 0 ||
+              target.cap < target.capacitorCapacity / 10 ||
+              target.expectedCapLoss >= target.cap)) {
+        i += 1;
+        if (i === targets.length) {
+          target = altScatterTarget || target;
+        } else {
+          target = targets[i];
+        }
+      }
+      let drain = baseDrain;
+      const rs = target.rigSize;
+      if (rs <= 1) {
+        drain *= ewar.entityCapacitorLevelModifierSmall;
+      } else if (rs === 2) {
+        drain *= ewar.entityCapacitorLevelModifierMedium;
+      } else if (rs === 3) {
+        drain *= ewar.entityCapacitorLevelModifierLarge;
+      }
+      distance = distance || Math.abs(ewar.attachedShip.dis - target.dis);
+      const finalDrain = ewarFalloffCalc(drain, ewar, distance);
+      // Accept lower efficency when the target is the primary or secondary.
+      const reqEffectiveness = i <= 1 ? 0.75 : 1;
+      // Large ships don't need to be efficent in absolute terms against targets with smaller caps.
+      const capSizeRatio = target.capacitorCapacity / ewar.attachedShip.capacitorCapacity;
+      const drainMulti = Math.max(1, capSizeRatio);
+      if (Math.min(finalDrain, target.cap) * drainMulti > (reqEffectiveness * ewar.capacitorNeed)) {
+        target.pendingCap = Math.max(0, target.pendingCap - finalDrain);
+        target.expectedCapLoss += finalDrain;
+        const expectedCap = ewar.attachedShip.pendingCap - ewar.capacitorNeed;
+        ewar.attachedShip.pendingCap = Math.max(0, expectedCap);
+      } else {
+        return;
+      }
+    }
+  } else if (ewar.type === 'Energy Nosferatu') {
+    if (ewar.attachedShip.cap > ewar.capacitorNeed) {
+      distance = distance || Math.abs(ewar.attachedShip.dis - target.dis);
+      const transfer = ewarFalloffCalc(ewar.powerTransferAmount, ewar, distance);
+      let i = 0;
+      if (ewar.isBrNos) {
+        while (i < targets.length &&
+               (target.currentEHP <= 0 ||
+                target.cap < transfer ||
+                target.expectedCapLoss >= target.cap)) {
+          i += 1;
+          if (i === targets.length) {
+            target = altScatterTarget || target;
+          } else {
+            target = targets[i];
+          }
+        }
+      } else {
+        while (i < targets.length &&
+               (target.currentEHP <= 0 ||
+                target.cap < transfer ||
+                target.cap <= ewar.attachedShip.cap ||
+                target.expectedCapLoss >= (target.cap - ewar.attachedShip.cap))) {
+          i += 1;
+          if (i === targets.length) {
+            target = altScatterTarget || target;
+          } else {
+            target = targets[i];
+          }
+        }
+      }
+      distance = distance || Math.abs(ewar.attachedShip.dis - target.dis);
+      target.pendingCap = Math.max(0, target.pendingCap - transfer);
+      target.expectedCapLoss += transfer;
+      const expectedCap = ewar.attachedShip.pendingCap + transfer;
+      ewar.attachedShip.pendingCap = Math.max(ewar.attachedShip.capacitorCapacity, expectedCap);
+    }
   }
   ewar.currentTarget = target;
   ewar.currentDuration = ewar.duration;
@@ -328,7 +412,7 @@ function ApplyRemoteEffects(side: Side, t: number, opposingSide: Side, totalTime
     if (subfleet.fc.targets.length > 0) {
       let i = 0;
       for (const ewar of subfleet.ewar) {
-        if (ewarTargetType[ewar.type] === TargetTypes.scattered) {
+        if (ewarTargetType[ewar.type] !== TargetTypes.focused) {
           i += 1;
         }
         if (ewar.currentDuration <= 0) {
@@ -340,7 +424,9 @@ function ApplyRemoteEffects(side: Side, t: number, opposingSide: Side, totalTime
             ewar.type = 'Dead Host';
           } else {
             let scatterTarget = null;
-            if (ewarTargetType[ewar.type] === TargetTypes.scattered) {
+            if (ewarTargetType[ewar.type] === TargetTypes.focused) {
+              ApplyEwar(ewar, subfleet.fc.targets);
+            } else {
               const n = i % oppShipLen;
               // Don't target the subfleets anchor initially.
               // Instead target it when the rest of the subfleet has
@@ -355,8 +441,12 @@ function ApplyRemoteEffects(side: Side, t: number, opposingSide: Side, totalTime
                 // Otherwise it must be an anchor and was skipped over with the previous i value.
                 scatterTarget = prevShip.anchor || prevShip;
               }
+              if (ewarTargetType[ewar.type] === TargetTypes.partiallyFocused) {
+                ApplyEwar(ewar, subfleet.fc.targets, null, scatterTarget);
+              } else if (ewarTargetType[ewar.type] === TargetTypes.scattered) {
+                ApplyEwar(ewar, scatterTarget ? [scatterTarget] : subfleet.fc.targets);
+              }
             }
-            ApplyEwar(ewar, scatterTarget ? [scatterTarget] : subfleet.fc.targets);
             if (ewar.attachedShip.isSupportShip) {
               updateProjectionTargets(ewar.attachedShip, ewar);
             }

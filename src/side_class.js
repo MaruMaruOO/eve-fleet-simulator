@@ -38,15 +38,20 @@ function mapProjection(
   subfleet: Subfleet,
   projection: {type: ProjectionTypeString, [string]: number},
   ship: Ship,
+  shipStats: ShipData,
 ) {
   if ([
     'Stasis Web', 'Weapon Disruptor', 'Warp Scrambler', 'Target Painter', 'Sensor Dampener',
-    'ECM',
+    'ECM', 'Energy Neutralizer', 'Energy Nosferatu',
   ].some(type => type === projection.type)) {
     const ewar = Object.assign({}, projection);
     ewar.currentDuration = 0;
     ewar.currentTarget = null;
     ewar.attachedShip = ship;
+    if (projection.type === 'Energy Nosferatu') {
+      // typeIDs for Succubus, Phantasm, Bhaalgorn, Chemosh and Molok
+      ewar.isBrNos = [17924, 17718, 17920, 42243, 42241].includes(shipStats.typeID);
+    }
     subfleet.ewar.push(ewar);
     return ewar;
   } else if ([
@@ -203,8 +208,9 @@ class Side {
           console.log(shipStats);
           console.log(localShip);
         }
+        const sf = this.subFleets[this.uniqueFitCount - 1];
         for (const projection of shipStats.projections) {
-          const p = mapProjection(this.subFleets[this.uniqueFitCount - 1], projection, localShip);
+          const p = mapProjection(sf, projection, localShip, shipStats);
           if (p) {
             localShip.outgoingEffects.push(p);
           }
