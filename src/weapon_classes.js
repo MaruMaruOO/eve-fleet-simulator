@@ -138,6 +138,7 @@ class Weapon {
       wep.maxVelocity = 7000;
       this.type = 'Missile';
       this.reload = wep.rof;
+      this.dps = (wep.volley / wep.rof) * 1000;
       this.stats = new MissileStats(wep);
       this.autonomousMovement = true;
     } else {
