@@ -5,7 +5,7 @@ import { Weapon } from './weapon_classes';
 import { AmmoTables, AmmoGroupMap, BaseChargeMap } from './staticAmmoData';
 import type {
   SideShipInfo, ProjectionTypeString,
-  AmmoData, WeaponData, AmmoSwapValue,
+  AmmoData, AmmoSwapValue,
 } from './flow_types';
 
 type AmmoTable = AmmoData[];
@@ -121,24 +121,38 @@ function GetWepAmmoSwapData(localShip: Ship, shipStats: ShipData, ammoSwaps: Amm
         }
       }
     }
-    const wepAmmoData = {
-      currentAmmo: initalAmmoID,
-      ammoOptions: ammoTable,
-      reloadTime: Math.round(wep.reloadTime),
-      chargesHeld: wep.numCharges,
-      chargesLeft: wep.numCharges,
-      recentDamage: [],
-      cycledSinceCheck: false,
-    };
-    ammoSwapData.push(wepAmmoData);
+    // Ships (but not ShipData) treat fighter abilities as separate weapons.
+    // Thus multiple entries are needed for fighters so that the length matches.
+    const loops = wep.type === 'Fighter' ? wep.abilities.length : 1;
+    for (let i = 0; i < loops; i += 1) {
+      const wepAmmoData = {
+        currentAmmo: initalAmmoID,
+        ammoOptions: ammoTable,
+        reloadTime: Math.round(wep.reloadTime),
+        chargesHeld: wep.numCharges,
+        chargesLeft: wep.numCharges,
+        recentDamage: [],
+        cycledSinceCheck: false,
+      };
+      ammoSwapData.push(wepAmmoData);
+    }
   }
   // Ships sort their weapons by dps in the simulation.
   // We are presorting the fc's and making sure the subfleet's wepAmmoSwapData matches.
   // This is required to avoid a mismatch when loading fleets.
   localShip.weapons.sort((a: Weapon, b: Weapon) => b.dps - a.dps);
-  const mapped: { index: number, value: WeaponData }[] = shipStats.weapons.map((wep, ind) =>
-    ({ index: ind, value: wep }));
-  mapped.sort((a, b) => b.value.dps - a.value.dps);
+  const mapped: { index: number, dps: number }[] = shipStats.weapons.reduce((
+    (arr, wep) => {
+      if (wep.type === 'Fighter') {
+        for (const ab of wep.abilities) {
+          arr.push({ index: arr.length, dps: (ab.volley / ab.rof) * 1000 });
+        }
+      } else {
+        arr.push({ index: arr.length, dps: wep.dps });
+      }
+      return arr;
+    }), []);
+  mapped.sort((a, b) => b.dps - a.dps);
   const ammoSwapDataSorted = mapped.map(pair => ammoSwapData[pair.index]);
 
   return ammoSwapDataSorted;
