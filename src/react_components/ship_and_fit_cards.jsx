@@ -17,9 +17,12 @@ import nosIcon from './../eve_icons/1_64_3.png';
 import neutIcon from './../eve_icons/1_64_1.png';
 import mjdIcon from './../eve_icons/108_64_22.png';
 import pointIcon from './../eve_icons/4_64_9.png';
+import shieldBoostIcon from './../eve_icons/2_64_3.png';
+import armorRepairIcon from './../eve_icons/1_64_11.png';
+import capBoostIcon from './../eve_icons/1_64_6.png';
 
 import ShipData from './../ship_data_class';
-import type { SyntheticInputEvent, ProjectionTypeString } from './../flow_types';
+import type { SyntheticInputEvent, ProjectionTypeString, RepairTypeString } from './../flow_types';
 
 // uncomment line to include all ship render icons in webpack (roughly 6.3MB for W80).
 import renderIconsW80Imp from '../eve_icons/renders/renderIconsW80';
@@ -106,7 +109,7 @@ const FitInfoPopup = (props: { fitdata: ShipData }) => {
 };
 
 function shipTypeAndEffectIcons(fitData: ShipData) {
-  const ewarIcons: {[ProjectionTypeString]: [string, boolean]} = {
+  const effectIcons: {[ProjectionTypeString | RepairTypeString]: [string, boolean]} = {
     'Stasis Web': [webIcon, true],
     'Weapon Disruptor': [weaponDisruptorIcon, true],
     'Warp Scrambler': [scramIcon, true],
@@ -114,19 +117,32 @@ function shipTypeAndEffectIcons(fitData: ShipData) {
     'Sensor Dampener': [sensorDampenerIcon, true],
     'Remote Shield Booster': [remoteShieldIcon, true],
     'Remote Armor Repairer': [remoteArmorIcon, true],
+    'Energy Nosferatu': [nosIcon, true],
+    'Energy Neutralizer': [neutIcon, true],
     // The rest of these aren't implemented and the icon should make that clear.
     ECM: [ecmIcon, false],
-    'Energy Nosferatu': [nosIcon, false],
-    'Energy Neutralizer': [neutIcon, false],
     'Burst Jammer': [ecmIcon, false],
     'Micro Jump Drive': [mjdIcon, false],
     'Warp Disruptor': [pointIcon, false],
+    'Shield Booster': [shieldBoostIcon, true],
+    'Armor Repairer': [armorRepairIcon, true],
+    'Capacitor Booster': [capBoostIcon, true],
   };
-  const projSet: {[ProjectionTypeString]: number} = {};
+  const projSet: {[ProjectionTypeString | RepairTypeString]: number} = {};
   for (const p of fitData.projections) {
     if (p.type) {
       const isNotPoint = p.type !== 'Warp Scrambler' || p.activationBlockedStrenght > 0;
       const t = isNotPoint ? p.type : 'Warp Disruptor';
+      if (Object.keys(projSet).includes(t)) {
+        projSet[t] += 1;
+      } else {
+        projSet[t] = 1;
+      }
+    }
+  }
+  for (const p of fitData.repairs) {
+    if (p.type) {
+      const t = p.type;
       if (Object.keys(projSet).includes(t)) {
         projSet[t] += 1;
       } else {
@@ -139,8 +155,8 @@ function shipTypeAndEffectIcons(fitData: ShipData) {
     projSet[p] > 1 ? (
       <div key={p}>
         <Image
-          src={ewarIcons[p][0]}
-          disabled={!ewarIcons[p][1]}
+          src={effectIcons[p][0]}
+          disabled={!effectIcons[p][1]}
           inline
           centered={false}
           circular
@@ -151,8 +167,8 @@ function shipTypeAndEffectIcons(fitData: ShipData) {
     ) : (
       <Image
         key={p}
-        src={ewarIcons[p][0]}
-        disabled={!ewarIcons[p][1]}
+        src={effectIcons[p][0]}
+        disabled={!effectIcons[p][1]}
         inline
         centered={false}
         circular

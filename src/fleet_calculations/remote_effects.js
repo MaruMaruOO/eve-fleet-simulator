@@ -301,6 +301,9 @@ function ApplyEwar(
         const expectedCap = ewar.attachedShip.pendingCap - ewar.capacitorNeed;
         ewar.attachedShip.pendingCap = Math.max(0, expectedCap);
       } else {
+        // Uncomment line to limit how often the neut will recheck for a valid target.
+        // Notably speeds up long simulations where nuets completely cap out one side.
+        // ewar.currentDuration = 1000;
         return;
       }
     }
