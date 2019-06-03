@@ -109,6 +109,8 @@ function GetWepCargoAmmoNames(shipStats) {
 }
 
 class ShipData {
+  static LastestEfsExportVersion: number = 0.04;
+
   static getMaxShieldEHP(shipData: ShipData): number {
     return shipData.maxShieldEHP;
   }
@@ -330,7 +332,12 @@ class ShipData {
         }
       }
     }
-    shipStats.cargoItemIDs = shipStats.cargoItemIDs || [];
+    if (shipStats.efsExportVersion !== ShipData.LastestEfsExportVersion) {
+      shipStats.cargoItemIDs = shipStats.cargoItemIDs || [];
+      shipStats.repairs = shipStats.repairs || [];
+      shipStats.capacitorCapacity = shipStats.capacitorCapacity || 1000000;
+      shipStats.rechargeRate = shipStats.rechargeRate || 100000;
+    }
     if (shipStats.cargoItemIDs.length > 0) {
       shipStats.moduleNames.push('');
       shipStats.moduleNames.push('Ammo Types in Cargo:');

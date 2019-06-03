@@ -1,6 +1,6 @@
 // @flow
 import * as React from 'react';
-import { Card, Image, Input, Popup, Label } from 'semantic-ui-react';
+import { Card, Image, Input, Popup, Label, Icon } from 'semantic-ui-react';
 import { SidebarShipNode, dataConst, ships, baseShips } from './sidebar_ship_display';
 import { sideOneShips, sideTwoShips, UIRefresh } from './../index';
 import ShipDataDisplayManager from './../ship_data_display_manager';
@@ -197,6 +197,24 @@ class ShipAndFitCards extends React.Component<ShipAndFitCardsProps, {}> {
     const iconSrc = renderIconsW80 ?
       renderIconsW80[`i${fitData.typeID.toString()}`] :
       `./Renders/w80/${fitData.typeID.toString()}.png`;
+
+    let renderLabel = fitData.name;
+    if (fitData.efsExportVersion !== ShipData.LastestEfsExportVersion) {
+      renderLabel = (
+        <Popup
+          wide
+          position="right center"
+          trigger={(<div>{fitData.name}<Icon fitted size="large" name="warning circle" /></div>)}
+          content={(
+            <div>
+              Fit was exported using an outdated version of pyfa.<br />
+              Please export it with the current version of pyfa or it will
+              not behave correctly with new EFS features.
+            </div>
+          )}
+        />
+      );
+    }
     return (
       <Card key={fitData.id}>
         <Card.Content>
@@ -206,7 +224,7 @@ class ShipAndFitCards extends React.Component<ShipAndFitCardsProps, {}> {
               centered
               rounded
               size="tiny"
-              label={{ content: fitData.name, attached: 'bottom' }}
+              label={{ content: renderLabel, attached: 'bottom' }}
               src={iconSrc}
             />
           </Card.Header>
