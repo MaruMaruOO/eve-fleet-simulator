@@ -1,6 +1,7 @@
 // @flow
 
 import Ship from './../ship_class';
+import Side from './../side_class';
 import type { Repair } from './../flow_types';
 
 function repairLocal(ship: Ship, repair: Repair) {
@@ -106,7 +107,7 @@ function RunRepairs(ship: Ship, t: number) {
   }
 }
 
-function RunLocalEffects(ship: Ship, t: number) {
+function RunLocalEffects(ship: Ship, t: number, s: Side) {
   ship.cap = ship.pendingCap;
   const t5 = ship.rechargeRate / 5;
   const cap = ((1 + ((Math.sqrt(ship.cap / ship.capacitorCapacity) - 1) * Math.exp(-t / t5))) ** 2)
@@ -122,6 +123,8 @@ function RunLocalEffects(ship: Ship, t: number) {
   for (const w of ship.weapons) {
     if (w.currentReload === w.reload && w.capacitorNeed && w.capacitorNeed > ship.cap) {
       w.currentReload += t;
+      // Note damage / reload will give damage per millisecond.
+      s.theoreticalDamage += (w.damage / w.reload) * t;
     }
   }
 }

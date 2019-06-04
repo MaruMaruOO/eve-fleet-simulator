@@ -240,7 +240,7 @@ function RunFleetActions(side: Side, t: number, opposingSide: Side, isSideOneOfT
 
     for (const s of [side, opposingSide]) {
       for (const ship of s.ships) {
-        RunLocalEffects(ship, t);
+        RunLocalEffects(ship, t, s);
       }
     }
 
