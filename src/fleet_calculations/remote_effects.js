@@ -279,6 +279,10 @@ function ApplyEwar(
           target = targets[i];
         }
       }
+      if ((target.currentEHP <= 0 ||
+           target.expectedCapLoss >= target.cap) && (ewar.attachedShip.currentEHP > 0)) {
+        return;
+      }
       let drain = baseDrain;
       const rs = target.rigSize;
       if (rs <= 1) {
@@ -293,14 +297,16 @@ function ApplyEwar(
       // Accept lower efficency when the target is the primary or secondary.
       const reqEffectiveness = i <= 1 ? 0.75 : 1;
       // Large ships don't need to be efficent in absolute terms against targets with smaller caps.
-      const capSizeRatio = target.capacitorCapacity / ewar.attachedShip.capacitorCapacity;
+      const capSizeRatio = ewar.attachedShip.capacitorCapacity / target.capacitorCapacity;
       const drainMulti = Math.max(1, capSizeRatio);
       if (Math.min(finalDrain, target.cap) * drainMulti > (reqEffectiveness * ewar.capacitorNeed)) {
         target.pendingCap = Math.max(0, target.pendingCap - finalDrain);
         target.expectedCapLoss += finalDrain;
         const expectedCap = ewar.attachedShip.pendingCap - ewar.capacitorNeed;
         ewar.attachedShip.pendingCap = Math.max(0, expectedCap);
-      } else {
+      } else if (ewar.attachedShip.currentEHP > 0) {
+        // Return if the source isn't dead to allow it to try to find a viable target next tick.
+
         // Uncomment line to limit how often the neut will recheck for a valid target.
         // Notably speeds up long simulations where nuets completely cap out one side.
         // ewar.currentDuration = 1000;
