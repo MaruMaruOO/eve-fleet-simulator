@@ -230,8 +230,9 @@ function RunFleetActions(side: Side, t: number, opposingSide: Side, isSideOneOfT
           }
         }
       }
+      const os = s === side ? opposingSide : side;
       for (const subfleet of s.subFleets) {
-        CheckForAmmoSwaps(s, subfleet);
+        CheckForAmmoSwaps(s, subfleet, os);
       }
     }
 

@@ -73,15 +73,14 @@ function ammoSwap(
   }
 }
 
-function CheckForAmmoSwaps(side: Side, subfleet: Subfleet) {
+function CheckForAmmoSwaps(side: Side, subfleet: Subfleet, opposingSide: Side) {
   for (let i = 0; i < subfleet.wepAmmoSwapData.length; i += 1) {
     const set = subfleet.wepAmmoSwapData[i];
     const wep = subfleet.fc.weapons[i];
     const fcTargets = subfleet.fc.targets;
     if (set.cycledSinceCheck && fcTargets.length > 0 && wep.currentReload < 0.75 * wep.reload) {
       set.cycledSinceCheck = false;
-      const expectedDamage = calculateDamage(subfleet.fc, fcTargets[0], wep, side);
-      side.theoreticalDamage -= wep.damage;
+      const expectedDamage = calculateDamage(subfleet.fc, fcTargets[0], wep, side, false);
       set.recentDamage.push(expectedDamage);
       const isAmmoSwapSane = getAmmoSwapSanity(set);
       set.recentDamage.pop();
@@ -102,9 +101,7 @@ function CheckForAmmoSwaps(side: Side, subfleet: Subfleet) {
           const testAmmo = possibleAlts[c];
           tempAmmoSwap(wep, testAmmo, lastAmmo);
           // MISSILES AREN"T CONSIDERING DISTANCE TO THE TARGET YET~~~~~~
-          const damage = calculateDamage(subfleet.fc, fcTargets[0], wep, side);
-          // Remove added theoretical damage from calculateDamage.
-          side.theoreticalDamage -= wep.damage;
+          const damage = calculateDamage(subfleet.fc, fcTargets[0], wep, side, false);
           if (damage > expectedDamage * changeReq && damage > bestAlt[0]) {
             bestAlt[0] = damage;
             bestAlt[1] = c;
@@ -123,7 +120,12 @@ function CheckForAmmoSwaps(side: Side, subfleet: Subfleet) {
             set.chargesLeft = set.chargesHeld;
             // This will trigger a fairly slow range recalc that normally runs every 10 seconds.
             // Keep an eye on it if ammo swaps are very frequent.
-            subfleet.fc.rangeRecalc = 0;
+            // It's set for every FC on both sides, otherwise the order would impact the results.
+            for (const s of [side, opposingSide]) {
+              for (const sf of s.subFleets) {
+                sf.fc.rangeRecalc = 0;
+              }
+            }
           }
         }
       }

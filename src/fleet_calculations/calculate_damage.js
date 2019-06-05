@@ -5,8 +5,13 @@ import Ship from './../ship_class';
 import Side from './../side_class';
 import { Weapon } from './../weapon_classes';
 
-function calculateDamage(ship: Ship, target: Ship, wep: Weapon, side: Side): number {
-  side.theoreticalDamage += wep.damage;
+function calculateDamage(
+  ship: Ship, target: Ship, wep: Weapon,
+  side: Side, runSideEffects: boolean = true,
+): number {
+  if (runSideEffects) {
+    side.theoreticalDamage += wep.damage;
+  }
   if (ship.distanceFromTarget > ship.maxTargetRange) {
     return 0;
   }
@@ -41,7 +46,7 @@ function calculateDamage(ship: Ship, target: Ship, wep: Weapon, side: Side): num
     }
     const hasDmgRamp = Boolean(wep.stats.bonusMultiInc);
     const bonusMulti = hasDmgRamp ? (1 + wep.bonusMulti) / (1 + wep.stats.bonusMultiCap) : 1;
-    if (wep.stats.bonusMultiInc && wep.bonusMulti < wep.stats.bonusMultiCap) {
+    if (wep.stats.bonusMultiInc && wep.bonusMulti < wep.stats.bonusMultiCap && runSideEffects) {
       wep.bonusMulti += wep.stats.bonusMultiInc;
     }
     return wep.damage * bonusMulti * TurretApplication(distance, [
