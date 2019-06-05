@@ -204,7 +204,7 @@ class ShipAndFitCards extends React.Component<ShipAndFitCardsProps, {}> {
         <Popup
           wide
           position="right center"
-          trigger={(<div>{fitData.name}<Icon fitted size="large" name="warning circle" /></div>)}
+          trigger={(<div>{fitData.name}<br /><Icon fitted size="large" name="warning circle" /></div>)}
           content={(
             <div>
               Fit was exported using an outdated version of pyfa.<br />
