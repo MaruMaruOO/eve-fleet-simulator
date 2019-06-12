@@ -1,9 +1,6 @@
 ## Currently Known Limitations:
 
 ### Unimplemented Module Types:
-- Local Repair Modules
-- Energy Neutralizers
-- Energy Nosferatus
 - Micro Jump Drives and Field Generators
 - Area of Effect Doomsday Weapons
 - Burst Projectors
@@ -31,7 +28,6 @@
 - Damage Types<sup>1</sup>
 - Warping or jumping ships.
 - Structures
-- Capacitor
 - Full 3D positioning and movement.<sup>2</sup>
 - Missile and Bomb destructibility.
 - Ewar resistance or immunity.
@@ -53,10 +49,26 @@
   - Cannot be destroyed
   - They teleport to the target if they're faster and in control range.<sup>2</sup>
   - Sentry Drones stay with the controlling ship.
+- Remote Repair Scaling<sup>3</sup>
+- Ammo swapping treats any T1 ammo as standard navy faction ammo (which deals 15% more damage than non-faction ammo).
 
 1: Due to the lack of destructibility and potentially very long ranges.<br />
-2: It's done this way because they have a much shorter range than fighters. If slower they are attached to the controlling ship.
+2: It's done this way because they have a much shorter range than fighters. If slower they are attached to the controlling ship.<br />
+3: The formula used to calculate the diminishing returns isn't exact but should be very close, especially for high remote repair rates.
 
+### Capacitor Interactions:
+- Capacitors will only impact ships as outlined here.
+- Modules and effects that fully interact with the ships capacitor
+  - Capacitor Regeneration
+  - Capacitor Boosters
+  - Local Repairs (including ancillary repairs)
+  - Energy Neutralizers
+  - Energy Nosferatus
+- Modules that require any needed capacitor to cycle but don't consume that capacitor when cycled.<sup>1</sup>
+  - All weapons that require capacitor to function.
+- All other modules and effects will behave as if the ship has limitless capacitor.
+
+1: Typically this is done to reduce the complexity and runtime the AI needs to avoid dumb piloting errors.
 
 ### Effects and modules which have a fixed state when exported from pyfa or added to efs<sup>1</sup>:
 - Weapon and module charges don't change or need reloading.
