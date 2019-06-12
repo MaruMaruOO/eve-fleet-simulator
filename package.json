@@ -1,6 +1,6 @@
 {
   "name": "eve_sim",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "description": "simple sim to calculate fleet battle outcomes",
   "main": "lib/index.js",
   "scripts": {
