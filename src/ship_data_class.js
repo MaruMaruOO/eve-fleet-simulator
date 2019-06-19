@@ -94,9 +94,16 @@ function GetWepCargoAmmoNames(shipStats) {
           const matchingTables = AmmoTables.filter(v =>
             (groups.includes(v.ammoGroupID) && v.chargeSize === chSize));
           const fullTable: AmmoData[] = [];
+          const baseCargoIDs: number[] = shipStats.cargoItemIDs.reduce((arr, id) => {
+            const cd: ?[number, string, string] = BaseChargeMap[id.toString()];
+            if (cd) {
+              arr.push(cd[0]);
+            }
+            return arr;
+          }, []);
           for (const t of matchingTables) {
             fullTable.push(...t.ammoData.filter(a =>
-              (a[1] === initalAmmoID || shipStats.cargoItemIDs.includes(a[1]))));
+              (a[1] === initalAmmoID || baseCargoIDs.includes(a[1]))));
           }
           ammoTable.push(...(fullTable.map(a => a[0])));
         }

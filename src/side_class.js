@@ -111,8 +111,15 @@ function GetWepAmmoSwapData(localShip: Ship, shipStats: ShipData, ammoSwaps: Amm
           const fullTable = [];
           for (const t of matchingTables) {
             if (ammoSwaps === 'Cargo') {
+              const baseCargoIDs: number[] = shipStats.cargoItemIDs.reduce((arr, id) => {
+                const cd: ?[number, string, string] = BaseChargeMap[id.toString()];
+                if (cd) {
+                  arr.push(cd[0]);
+                }
+                return arr;
+              }, []);
               fullTable.push(...t.ammoData.filter(a =>
-                (a[1] === initalAmmoID || shipStats.cargoItemIDs.includes(a[1]))));
+                (a[1] === initalAmmoID || baseCargoIDs.includes(a[1]))));
             } else {
               fullTable.push(...t.ammoData);
             }
